@@ -1,5 +1,5 @@
-import { packPremulColor, packColor } from '../color-pack.mjs';
-import { createProgram } from '../webgl-util.mjs';
+import { packPremulColor, packColor, packPickIndex } from '../color-pack.mjs';
+import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
 
 export const NODE_STRIDE = 11; // floats per node
 
@@ -23,12 +23,6 @@ export const SHAPE_ENUM = {
   'cut-rectangle': 15, 'cutrectangle': 15,
   'concave-hexagon': 16, 'concavehexagon': 16,
 };
-
-// Unit quad: 2 triangles forming a [0,0]-[1,1] square
-const UNIT_QUAD = new Float32Array([
-  0, 0,  1, 0,  1, 1,
-  0, 0,  1, 1,  0, 1,
-]);
 
 // ---- Shader Sources ----
 
@@ -566,13 +560,7 @@ export class NodeSDFProgram {
     const bp = node.pstyle('border-position').value;
     buf[off + 9] = bp === 'inside' ? 1 : (bp === 'outside' ? 2 : 0);
 
-    // Pick index encoded as packed RGBA
-    buf[off + 10] = packColor(
-      (pickIndex) & 0xFF,
-      (pickIndex >> 8) & 0xFF,
-      (pickIndex >> 16) & 0xFF,
-      (pickIndex >> 24) & 0xFF
-    );
+    buf[off + 10] = packPickIndex(pickIndex);
 
     this.needsUpload = true;
   }

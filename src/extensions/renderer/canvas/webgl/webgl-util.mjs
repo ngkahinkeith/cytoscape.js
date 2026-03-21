@@ -3,6 +3,11 @@
  * WebGL utility functions used by the new rendering engine.
  */
 
+/** Unit quad: 2 triangles forming a [0,0]-[1,1] square. Shared across all programs. */
+export const UNIT_QUAD = new Float32Array([
+  0, 0,  1, 0,  1, 1,
+  0, 0,  1, 1,  0, 1,
+]);
 
 export function compileShader(gl, type, source) {
   const shader = gl.createShader(type);

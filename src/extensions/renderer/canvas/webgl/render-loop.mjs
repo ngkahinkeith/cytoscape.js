@@ -3,7 +3,7 @@ import { NodeTextureProgram } from './programs/node-texture.mjs';
 import { EdgeProgram } from './programs/edge.mjs';
 import { TexturePageManager } from './texture-page-manager.mjs';
 import { LabelGrid } from './label-grid.mjs';
-import { packPremulColor, packColor } from './color-pack.mjs';
+import { packPremulColor, packColor, packPickIndex } from './color-pack.mjs';
 
 /**
  * WebGLRenderLoop — the main orchestrator for the new WebGL renderer.
@@ -26,7 +26,6 @@ export class WebGLRenderLoop {
     this.labelGrid = new LabelGrid(opts.labelGridCellSize || 100);
 
     this.needsProcess = true;  // true on first frame and after data changes
-    this.needsUpload = false;
     this._initialized = false;
 
     // Label data for Canvas 2D rendering
@@ -174,7 +173,6 @@ export class WebGLRenderLoop {
         } else {
           ele._private._webglTexSlot = undefined;
         }
-        ele._private._webglNodeSlot = nodeSlot;
         nodeSlots.push(nodeSlot);
 
         nodeSlot++;
@@ -196,7 +194,8 @@ export class WebGLRenderLoop {
           this._labelCandidates.push({
             ele,
             screenX: 0, screenY: 0, // filled in renderLabels()
-            screenSize: ele.outerWidth(),
+            baseSize: ele.outerWidth(),
+            screenSize: 0,
             fontSize: ele.pstyle('font-size').pfValue,
             isNode: true,
           });
@@ -224,14 +223,15 @@ export class WebGLRenderLoop {
           this._labelCandidates.push({
             ele,
             screenX: 0, screenY: 0,
-            screenSize: edgeScreenSize,
+            baseSize: edgeScreenSize,
+            screenSize: 0,
             fontSize: ele.pstyle('font-size').pfValue,
             isNode: false,
           });
         }
       }
 
-      ele._private._webglPickIndex = pickIndex;
+      // pickIndex is encoded into buffers via packColor; no need to store on element
       pickIndex++;
     }
 
@@ -243,7 +243,6 @@ export class WebGLRenderLoop {
     this.nodeTexProgram.needsUpload = true;
     this.edgeProgram.needsUpload = true;
     this.needsProcess = false;
-    this.needsUpload = true;
   }
 
   /**
@@ -277,13 +276,7 @@ export class WebGLRenderLoop {
     buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
     buf[off + 8] = cornerRadius.value === 'auto' ? -1 : cornerRadius.pfValue;
     buf[off + 9] = 0; // border position: center (irrelevant with no border)
-    // Use same pick index as the parent node so clicking overlay selects the node
-    buf[off + 10] = packColor(
-      (pickIndex) & 0xFF,
-      (pickIndex >> 8) & 0xFF,
-      (pickIndex >> 16) & 0xFF,
-      (pickIndex >> 24) & 0xFF
-    );
+    buf[off + 10] = packPickIndex(pickIndex);
 
     this.nodeSDFProgram.needsUpload = true;
   }
@@ -404,8 +397,8 @@ export class WebGLRenderLoop {
       // Model-space grid coordinates (stable during pan, prevents cell-boundary flicker)
       candidate.gridX = pos.x * zoom;
       candidate.gridY = pos.y * zoom;
-      // screenSize scales with zoom for LOD
-      candidate.screenSize = candidate.screenSize * zoom;
+      // screenSize scales with zoom for LOD (use baseSize to avoid exponential growth)
+      candidate.screenSize = candidate.baseSize * zoom;
     }
 
     // Get visible labels from LabelGrid

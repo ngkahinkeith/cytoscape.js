@@ -1,13 +1,7 @@
-import { packPremulColor, packColor } from '../color-pack.mjs';
-import { createProgram } from '../webgl-util.mjs';
+import { packPremulColor, packPickIndex } from '../color-pack.mjs';
+import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
 
 export const NODE_TEX_STRIDE = 11; // floats per textured node
-
-// Unit quad: 2 triangles forming a [0,0]-[1,1] square
-const UNIT_QUAD = new Float32Array([
-  0, 0,  1, 0,  1, 1,
-  0, 0,  1, 1,  0, 1,
-]);
 
 // ---- Shader Sources ----
 
@@ -271,12 +265,7 @@ export class NodeTextureProgram {
     }
 
     // Pick index encoded as packed RGBA
-    buf[off + 10] = packColor(
-      (pickIndex) & 0xFF,
-      (pickIndex >> 8) & 0xFF,
-      (pickIndex >> 16) & 0xFF,
-      (pickIndex >> 24) & 0xFF
-    );
+    buf[off + 10] = packPickIndex(pickIndex);
 
     this.needsUpload = true;
   }

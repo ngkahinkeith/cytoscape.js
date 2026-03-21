@@ -1,5 +1,5 @@
-import { packPremulColor, packColor } from '../color-pack.mjs';
-import { createProgram } from '../webgl-util.mjs';
+import { packPremulColor, packColor, packPickIndex } from '../color-pack.mjs';
+import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
 
 export const EDGE_STRIDE = 11; // floats per edge instance
 export const EDGE_TYPE_STRIDE = 1; // int per instance (vertex type)
@@ -11,12 +11,6 @@ const EDGE_ARROW = 2;
 
 // Number of segments for bezier subdivision
 const BEZIER_SEGMENTS = 16;
-
-// Unit quad: 2 triangles forming a [0,0]-[1,1] square
-const UNIT_QUAD = new Float32Array([
-  0, 0,  1, 0,  1, 1,
-  0, 0,  1, 1,  0, 1,
-]);
 
 // ---- Shader Sources ----
 
@@ -265,17 +259,10 @@ export class EdgeProgram {
     if(!rs || rs.badLine || !rs.allpts) return startSlot;
 
     const controlPoints = rs.allpts;
-    const color = packPremulColor(
-      edge.pstyle('line-color').value,
-      edge.pstyle('opacity').value * edge.pstyle('line-opacity').value
-    );
+    const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+    const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
     const width = edge.pstyle('width').pfValue;
-    const pickId = packColor(
-      pickIndex & 0xFF,
-      (pickIndex >> 8) & 0xFF,
-      (pickIndex >> 16) & 0xFF,
-      (pickIndex >> 24) & 0xFF
-    );
+    const pickId = packPickIndex(pickIndex);
 
     let slot = startSlot;
 
@@ -309,11 +296,11 @@ export class EdgeProgram {
     // Arrows
     const srcShape = edge.pstyle('source-arrow-shape').value;
     if(srcShape !== 'none') {
-      slot = this._writeArrow(slot, edge, 'source', color, width, pickId, r);
+      slot = this._writeArrow(slot, edge, 'source', color, width, pickId, r, combinedOpacity);
     }
     const tgtShape = edge.pstyle('target-arrow-shape').value;
     if(tgtShape !== 'none') {
-      slot = this._writeArrow(slot, edge, 'target', color, width, pickId, r);
+      slot = this._writeArrow(slot, edge, 'target', color, width, pickId, r, combinedOpacity);
     }
 
     return slot;
@@ -336,7 +323,7 @@ export class EdgeProgram {
     this.needsUpload = true;
   }
 
-  _writeArrow(slot, edge, prefix, edgeColor, edgeWidth, pickId, r) {
+  _writeArrow(slot, edge, prefix, edgeColor, edgeWidth, pickId, r, combinedOpacity) {
     const rs = edge._private.rscratch;
     let x, y, angle;
     if(prefix === 'source') {
@@ -353,7 +340,7 @@ export class EdgeProgram {
     const scale = edge.pstyle('arrow-scale').value;
     const arrowColor = packPremulColor(
       edge.pstyle(prefix + '-arrow-color').value,
-      edge.pstyle('opacity').value * edge.pstyle('line-opacity').value
+      combinedOpacity
     );
     const size = r.getArrowWidth(edgeWidth, scale);
 

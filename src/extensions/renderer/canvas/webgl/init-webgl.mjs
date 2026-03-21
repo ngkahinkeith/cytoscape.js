@@ -1,9 +1,18 @@
 import { WebGLRenderLoop } from './render-loop.mjs';
 import * as util from './webgl-util.mjs';
-import * as eleTextureCache from '../ele-texture-cache.mjs';
 import { mat3 } from 'gl-matrix';
 
 const CRp = {};
+
+// Pre-allocated mat3 arrays reused every frame (avoids 3 typed-array allocs per frame)
+const _transform = mat3.create();
+const _projection = mat3.create();
+const _product = mat3.create();
+
+// Pre-allocated pick buffer (6x6 pixels × 4 bytes = 144 bytes)
+const PICK_SIZE = 6;
+const PICK_PIXELS = PICK_SIZE * PICK_SIZE;
+const _pickData = new Uint8Array(PICK_PIXELS * 4);
 
 /**
  * Initialize the new WebGL rendering mode after the Canvas renderer has been set up.
@@ -42,17 +51,15 @@ function createPanZoomMatrix(r) {
   const height = r.canvasHeight;
   const { pan, zoom } = util.getEffectivePanZoom(r);
 
-  const transform = mat3.create();
-  mat3.translate(transform, transform, [pan.x, pan.y]);
-  mat3.scale(transform, transform, [zoom, zoom]);
+  mat3.identity(_transform);
+  mat3.translate(_transform, _transform, [pan.x, pan.y]);
+  mat3.scale(_transform, _transform, [zoom, zoom]);
 
-  const projection = mat3.create();
-  mat3.projection(projection, width, height);
+  mat3.projection(_projection, width, height);
 
-  const product = mat3.create();
-  mat3.multiply(product, projection, transform);
+  mat3.multiply(_product, _projection, _transform);
 
-  return product;
+  return _product;
 }
 
 
@@ -156,29 +163,6 @@ function overrideRendererFunctions(r) {
 
 
 /**
- * Clear the WebGL canvases (used before Canvas 2D fallback at high zoom).
- */
-function clearWebglCanvases(r) {
-  const glNode = r.data.contexts[r.NODE_WEBGL];
-  const glEdge = r.data.contexts[r.EDGE_WEBGL];
-  if(glNode && glNode.clear) {
-    glNode.clear(glNode.COLOR_BUFFER_BIT | glNode.DEPTH_BUFFER_BIT);
-  }
-  if(glEdge && glEdge.clear) {
-    glEdge.clear(glEdge.COLOR_BUFFER_BIT | glEdge.DEPTH_BUFFER_BIT);
-  }
-  // Also clear the labels canvas — Canvas 2D fallback draws its own labels
-  const labelCtx = r.data.contexts[r.LABELS];
-  if(labelCtx) {
-    labelCtx.save();
-    labelCtx.setTransform(1, 0, 0, 1, 0, 0);
-    labelCtx.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
-    labelCtx.restore();
-  }
-}
-
-
-/**
  * Clear the Canvas 2D node/drag layers (they are behind WebGL layers).
  */
 function clearCanvasLayers(r) {
@@ -262,19 +246,16 @@ function findNearestElementsWebgl(r, x, y) {
   }
 
   // Read a 6x6 pixel area around the cursor
-  const t = 6;
-  const px = Math.round(rx - t / 2);
-  const py = Math.round(ry - t / 2);
-  const n = t * t;
-  const data = new Uint8Array(n * 4);
-  gl.readPixels(px, py, t, t, gl.RGBA, gl.UNSIGNED_BYTE, data);
+  const px = Math.round(rx - PICK_SIZE / 2);
+  const py = Math.round(ry - PICK_SIZE / 2);
+  gl.readPixels(px, py, PICK_SIZE, PICK_SIZE, gl.RGBA, gl.UNSIGNED_BYTE, _pickData);
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  // Decode pick indices
+  // Decode pick indices (read directly from buffer, no slice)
   const indexes = new Set();
-  for(let i = 0; i < n; i++) {
-    const pixel = data.slice(i * 4, i * 4 + 4);
-    const index = util.vec4ToIndex(pixel) - 1; // 0 is background
+  for(let i = 0; i < PICK_PIXELS; i++) {
+    const off = i * 4;
+    const index = (_pickData[off] | (_pickData[off+1] << 8) | (_pickData[off+2] << 16) | (_pickData[off+3] << 24)) - 1;
     if(index >= 0) {
       indexes.add(index);
     }

@@ -25,3 +25,13 @@ export function packPremulColor(colorArr, opacity) {
   const b = Math.round(colorArr[2] * opacity);
   return packColor(r, g, b, a);
 }
+
+/** Pack a pick index (integer) as RGBA float for use in picking shaders. */
+export function packPickIndex(index) {
+  return packColor(
+    index & 0xFF,
+    (index >> 8) & 0xFF,
+    (index >> 16) & 0xFF,
+    (index >> 24) & 0xFF
+  );
+}
