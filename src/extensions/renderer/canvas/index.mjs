@@ -19,7 +19,7 @@ import drawingImages from './drawing-images.mjs';
 import drawingLabelText from './drawing-label-text.mjs';
 import drawingNodes from './drawing-nodes.mjs';
 import drawingRedraw from './drawing-redraw.mjs';
-import drawingRedrawWebGL from './webgl/drawing-redraw-webgl.mjs';
+import initWebglModule from './webgl/init-webgl.mjs';
 import drawingShapes from './drawing-shapes.mjs';
 import exportImage from './export-image.mjs';
 import nodeShapes from './node-shapes.mjs';
@@ -32,9 +32,8 @@ CRp.CANVAS_LAYERS = 3;
 CRp.SELECT_BOX = 0;
 CRp.DRAG = 1;
 CRp.NODE = 2;
-CRp.WEBGL = 3;
 
-CRp.CANVAS_TYPES = [ '2d', '2d', '2d', 'webgl2' ];
+CRp.CANVAS_TYPES = [ '2d', '2d', '2d' ];
 
 CRp.BUFFER_COUNT = 3;
 //
@@ -48,8 +47,44 @@ function CanvasRenderer( options ){
   var containerWindow = r.cy.window();
   var document = containerWindow.document;
 
+  // Auto-enable WebGL when not explicitly set: try creating a test WebGL2 context.
+  // The default in core/renderer.mjs is false (safe for headless/Node.js tests).
+  // Here in the canvas renderer (which has a real DOM), we auto-detect.
+  if( options.webgl === false ) {
+    // Explicitly disabled — skip
+  } else {
+    // Auto-detect: try to get a WebGL2 context
+    try {
+      var testCanvas = document.createElement('canvas');
+      var testCtx = testCanvas.getContext('webgl2');
+      if( testCtx ) {
+        options.webgl = true;
+        r.webgl = true;
+      }
+      testCanvas = null;
+      testCtx = null;
+    } catch(e) {
+      // WebGL2 not available
+    }
+  }
+
   if( options.webgl ){
-    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 4;
+    // WebGL layer stack:
+    //   0 (SELECT_BOX): 2d context, z-index 6 (top - mouse events)
+    //   1 (DRAG):       2d context, z-index 5
+    //   2 (NODE_WEBGL): webgl2 context, z-index 4 (SDF shapes + texture overlays)
+    //   3 (LABELS):     2d context, z-index 3 (Canvas 2D labels with LabelGrid)
+    //   4 (EDGE_WEBGL): webgl2 context, z-index 2 (edges + arrows)
+    //   5 (NODE):       2d context, z-index 1 (Canvas 2D fallback for nodes, used by export)
+    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 6;
+    CRp.SELECT_BOX = r.SELECT_BOX = 0;
+    CRp.DRAG = r.DRAG = 1;
+    CRp.NODE_WEBGL = r.NODE_WEBGL = 2;
+    CRp.WEBGL = r.WEBGL = 2; // backward compat
+    CRp.LABELS = r.LABELS = 3;
+    CRp.EDGE_WEBGL = r.EDGE_WEBGL = 4;
+    CRp.NODE = r.NODE = 5;
+    CRp.CANVAS_TYPES = [ '2d', '2d', 'webgl2', '2d', 'webgl2', '2d' ];
     console.log('webgl rendering enabled');
   }
 
@@ -88,12 +123,21 @@ function CanvasRenderer( options ){
     styleMap['touch-action'] = 'none';
   }
 
+  r.data.webglFailed = false;
+
   for( var i = 0; i < CRp.CANVAS_LAYERS; i++ ){
     var canvas = r.data.canvases[ i ] = document.createElement( 'canvas' );  // eslint-disable-line no-undef
     var type = CRp.CANVAS_TYPES[ i ];
     r.data.contexts[ i ] = canvas.getContext( type );
     if( !r.data.contexts[ i ] ) {
-      util.error( 'Could not create canvas of type ' + type );
+      if( type === 'webgl2' ) {
+        util.error( 'WebGL2 context creation failed for layer ' + i + '; falling back to Canvas 2D rendering' );
+        r.data.webglFailed = true;
+        // Create a 2d fallback context so the canvas is still usable
+        r.data.contexts[ i ] = canvas.getContext( '2d' );
+      } else {
+        util.error( 'Could not create canvas of type ' + type );
+      }
     }
     Object.keys(styleMap).forEach((k) => {
       canvas.style[k] = styleMap[k];
@@ -107,11 +151,13 @@ function CanvasRenderer( options ){
   }
   r.data.topCanvas = r.data.canvases[0];
 
-  r.data.canvases[ CRp.NODE ].setAttribute( 'data-id', 'layer' + CRp.NODE + '-node' );
   r.data.canvases[ CRp.SELECT_BOX ].setAttribute( 'data-id', 'layer' + CRp.SELECT_BOX + '-selectbox' );
   r.data.canvases[ CRp.DRAG ].setAttribute( 'data-id', 'layer' + CRp.DRAG + '-drag' );
-  if( r.data.canvases[ CRp.WEBGL ] ) {
-    r.data.canvases[ CRp.WEBGL ].setAttribute( 'data-id', 'layer' + CRp.WEBGL + '-webgl' );
+  r.data.canvases[ CRp.NODE ].setAttribute( 'data-id', 'layer' + CRp.NODE + '-node' );
+  if( options.webgl ) {
+    r.data.canvases[ CRp.LABELS ].setAttribute( 'data-id', 'layer' + CRp.LABELS + '-labels' );
+    r.data.canvases[ CRp.NODE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.NODE_WEBGL + '-node-webgl' );
+    r.data.canvases[ CRp.EDGE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.EDGE_WEBGL + '-edge-webgl' );
   }
 
   for( var i = 0; i < CRp.BUFFER_COUNT; i++ ){
@@ -277,29 +323,8 @@ function CanvasRenderer( options ){
   slbTxrCache.onDequeue(refineInLayers);
   tlbTxrCache.onDequeue(refineInLayers);
 
-  if( options.webgl ) {
-    r.initWebgl( options, {
-      getStyleKey,
-      getLabelKey,
-      getSourceLabelKey,
-      getTargetLabelKey,
-      drawElement,
-      drawLabel,
-      drawSourceLabel,
-      drawTargetLabel,
-      getElementBox,
-      getLabelBox,
-      getSourceLabelBox,
-      getTargetLabelBox,
-      getElementRotationPoint,
-      getElementRotationOffset,
-      getLabelRotationPoint,
-      getSourceLabelRotationPoint,
-      getTargetLabelRotationPoint,
-      getLabelRotationOffset,
-      getSourceLabelRotationOffset,
-      getTargetLabelRotationOffset
-    } );
+  if( options.webgl && !r.data.webglFailed ) {
+    r.initWebgl( options );
   }
 }
 
@@ -379,7 +404,7 @@ CRp.makeOffscreenCanvas = function(width, height){
   drawingLabelText,
   drawingNodes,
   drawingRedraw,
-  drawingRedrawWebGL,
+  initWebglModule,
   drawingShapes,
   exportImage,
   nodeShapes

@@ -70,33 +70,39 @@ CRp.bufferCanvasImage = function( options ){
 
     buffCxt.globalCompositeOperation = 'source-over';
 
-    var zsortedEles = this.getCachedZSortedEles();
+    // WebGL export path: composite the multi-canvas layers
+    if( this.webgl && this.renderLoop && this.data.contexts[this.NODE_WEBGL] ){
+      this._bufferCanvasImageWebgl( buffCxt, options, width, height, scale, bb );
+    } else {
+      // Canvas 2D fallback export path
+      var zsortedEles = this.getCachedZSortedEles();
 
-    if( options.full ){ // draw the full bounds of the graph
-      buffCxt.translate( -bb.x1 * scale, -bb.y1 * scale );
-      buffCxt.scale( scale, scale );
+      if( options.full ){ // draw the full bounds of the graph
+        buffCxt.translate( -bb.x1 * scale, -bb.y1 * scale );
+        buffCxt.scale( scale, scale );
 
-      this.drawElements( buffCxt, zsortedEles );
+        this.drawElements( buffCxt, zsortedEles );
 
-      buffCxt.scale( 1/scale, 1/scale );
-      buffCxt.translate( bb.x1 * scale, bb.y1 * scale );
-    } else { // draw the current view
-      var pan = cy.pan();
+        buffCxt.scale( 1/scale, 1/scale );
+        buffCxt.translate( bb.x1 * scale, bb.y1 * scale );
+      } else { // draw the current view
+        var pan = cy.pan();
 
-      var translation = {
-        x: pan.x * scale,
-        y: pan.y * scale
-      };
+        var translation = {
+          x: pan.x * scale,
+          y: pan.y * scale
+        };
 
-      scale *= cy.zoom();
+        scale *= cy.zoom();
 
-      buffCxt.translate( translation.x, translation.y );
-      buffCxt.scale( scale, scale );
+        buffCxt.translate( translation.x, translation.y );
+        buffCxt.scale( scale, scale );
 
-      this.drawElements( buffCxt, zsortedEles );
+        this.drawElements( buffCxt, zsortedEles );
 
-      buffCxt.scale( 1/scale, 1/scale );
-      buffCxt.translate( -translation.x, -translation.y );
+        buffCxt.scale( 1/scale, 1/scale );
+        buffCxt.translate( -translation.x, -translation.y );
+      }
     }
 
     // need to fill bg at end like this in order to fill cleared transparent pixels in jpgs
@@ -110,6 +116,38 @@ CRp.bufferCanvasImage = function( options ){
   }
 
   return buffCanvas;
+};
+
+/**
+ * WebGL export path: force a full render, then composite edge canvas,
+ * node canvas, and label canvas onto the export buffer in the correct order.
+ */
+CRp._bufferCanvasImageWebgl = function( buffCxt, options, width, height, scale, bb ) {
+  // Force a full process + render so all canvases are up to date
+  this.renderLoop.invalidate();
+  // Mark canvases as needing redraw to trigger the full render path
+  this.data.canvasNeedsRedraw[this.NODE] = true;
+  this.data.canvasNeedsRedraw[this.DRAG] = true;
+  this.render({});
+
+  buffCxt.save();
+
+  if( options.full ){
+    buffCxt.translate( -bb.x1 * scale, -bb.y1 * scale );
+    // Scale from rendered pixels back to model coordinates, then apply export scale
+    buffCxt.scale( scale / this.getPixelRatio(), scale / this.getPixelRatio() );
+  }
+
+  // Composite layers in order: edges (bottom) -> nodes (middle) -> labels (top)
+  var edgeCanvas = this.data.canvases[this.EDGE_WEBGL];
+  var nodeCanvas = this.data.canvases[this.NODE_WEBGL];
+  var labelCanvas = this.data.canvases[this.LABELS];
+
+  if( edgeCanvas ) buffCxt.drawImage( edgeCanvas, 0, 0 );
+  if( nodeCanvas ) buffCxt.drawImage( nodeCanvas, 0, 0 );
+  if( labelCanvas ) buffCxt.drawImage( labelCanvas, 0, 0 );
+
+  buffCxt.restore();
 };
 
 function b64ToBlob( b64, mimeType ){

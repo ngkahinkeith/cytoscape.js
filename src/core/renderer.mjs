@@ -13,7 +13,7 @@ let rendererDefaults = util.defaults({
   showFps: false,
   
   // webgl options
-  webgl: false,
+  webgl: undefined,
   webglDebug: false,
   webglDebugShowAtlases: false,
   // defaults good for mobile

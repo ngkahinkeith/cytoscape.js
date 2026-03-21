@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Cytoscape.js — WebGL Engine Rewrite Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #0f0f1a; color: #eee; }
+    #cy { width: 100vw; height: 72vh; background: #16213e; }
+    #controls {
+      padding: 8px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      background: #0f3460;
+    }
+    button {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #e94560;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    button:hover { background: #c73e54; }
+    button.secondary { background: #533483; }
+    button.secondary:hover { background: #6b44a8; }
+    button.tier { background: #0a8754; font-weight: bold; }
+    button.tier:hover { background: #0b9d62; }
+    select, input[type="number"] {
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #1a1a2e;
+      color: #eee;
+      font-size: 13px;
+      width: 65px;
+    }
+    select { width: auto; }
+    #stats {
+      padding: 8px 16px;
+      background: #0a0a14;
+      font-family: monospace;
+      font-size: 12px;
+      min-height: 90px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    label { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+    .sep { border-left: 1px solid #555; height: 24px; }
+  </style>
+</head>
+<body>
+
+<div id="controls">
+  <label>Nodes: <input type="number" id="nodeCount" value="10" min="10" step="1000"></label>
+  <label>Parallel/pair: <input type="number" id="parallelCount" value="3" min="1" max="10"></label>
+
+  <label>Shape:
+    <select id="shape">
+      <option value="ellipse">Ellipse</option>
+      <option value="rectangle">Rectangle</option>
+      <option value="round-rectangle">Round Rect</option>
+      <option value="triangle">Triangle</option>
+      <option value="diamond">Diamond</option>
+      <option value="hexagon">Hexagon</option>
+      <option value="octagon">Octagon</option>
+      <option value="star">Star</option>
+      <option value="tag">Tag</option>
+    </select>
+  </label>
+
+  <label>Curve:
+    <select id="curveStyle">
+      <option value="bezier">Bezier</option>
+      <option value="straight">Straight</option>
+    </select>
+  </label>
+
+  <label>Arrow:
+    <select id="arrowShape">
+      <option value="triangle">Triangle</option>
+      <option value="none">None</option>
+    </select>
+  </label>
+
+  <label>% BG img: <input type="number" id="bgImagePct" value="100" min="0" max="100" step="20"></label>
+
+  <div class="sep"></div>
+
+  <button onclick="loadGraph()">Load Graph</button>
+  <button class="secondary" onclick="benchmarkPan()">Bench Pan</button>
+  <button class="secondary" onclick="benchmarkZoom()">Bench Zoom</button>
+  <button class="secondary" onclick="benchmarkPick()">Bench Pick</button>
+  <button class="secondary" onclick="cy.fit()">Fit</button>
+  <button class="secondary" onclick="exportPng()">PNG</button>
+
+  <div class="sep"></div>
+
+  <button class="tier" onclick="loadTier(1)">Tier 1 (50K+150K)</button>
+  <button class="tier" onclick="loadTier(2)">Tier 2 (100K+250K)</button>
+  <button class="tier" onclick="loadTier(3)">Tier 3 (200K+500K)</button>
+</div>
+
+<div id="cy"></div>
+<div id="stats">WebGL Engine Rewrite Demo
+Architecture: sigma.js-inspired — process() on data change, render() is O(1) per frame.
+Click "Load Graph" or a Tier button to start.</div>
+
+<script src="build/cytoscape.umd.js"></script>
+<script>
+  let cy;
+
+  // Each SVG uses a unique gradient ID suffix to avoid conflicts
+  function makeSvg(body) {
+    return 'data:image/svg+xml,' + encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">'
+      + body + '</svg>'
+    );
+  }
+
+  const bgImages = [
+    makeSvg('<circle cx="64" cy="36" r="22" fill="white" opacity="0.9"/><path d="M22,110 Q22,70 64,70 Q106,70 106,110" fill="white" opacity="0.8"/><circle cx="54" cy="32" r="3" fill="#333"/><circle cx="74" cy="32" r="3" fill="#333"/><path d="M56,44 Q64,52 72,44" fill="none" stroke="#333" stroke-width="2"/>'),
+    makeSvg('<ellipse cx="64" cy="30" rx="30" ry="10" fill="#5dade2"/><rect x="34" y="30" width="60" height="20" fill="#3498db"/><ellipse cx="64" cy="50" rx="30" ry="10" fill="#2e86c1"/><rect x="34" y="50" width="60" height="20" fill="#2874a6"/><ellipse cx="64" cy="70" rx="30" ry="10" fill="#21618c"/><rect x="34" y="70" width="60" height="20" fill="#1b4f72"/><ellipse cx="64" cy="90" rx="30" ry="10" fill="#154360"/>'),
+    makeSvg('<g transform="translate(64,64)"><polygon points="0,-40 8,-38 10,-28 18,-30 26,-22 18,-16 22,-8 30,-6 30,6 22,8 18,16 26,24 18,32 10,30 8,40 0,42 -8,40 -10,30 -18,32 -26,24 -18,16 -22,8 -30,6 -30,-6 -22,-8 -18,-16 -26,-22 -18,-32 -10,-28 -8,-38" fill="white" opacity="0.85"/><circle r="18" fill="#e67e22"/><circle r="12" fill="white" opacity="0.5"/><circle r="5" fill="#e67e22"/></g>'),
+    makeSvg('<circle cx="46" cy="48" r="24" fill="white" opacity="0.85"/><circle cx="78" cy="50" r="20" fill="white" opacity="0.85"/><circle cx="62" cy="36" r="22" fill="white" opacity="0.9"/><rect x="28" y="50" width="70" height="20" rx="8" fill="white" opacity="0.75"/><polygon points="60,64 50,84 62,80 54,104 78,74 64,78 74,64" fill="#f1c40f"/>'),
+    makeSvg('<path d="M64,12 L108,34 V66 Q108,102 64,120 Q20,102 20,66 V34 Z" fill="white" opacity="0.85"/><path d="M64,22 L98,40 V66 Q98,96 64,112 Q30,96 30,66 V40 Z" fill="#27ae60"/><polyline points="42,66 56,80 86,46" fill="none" stroke="white" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'),
+    makeSvg('<rect x="28" y="28" width="72" height="72" rx="8" fill="white" opacity="0.85"/><rect x="38" y="38" width="52" height="52" rx="4" fill="#8e44ad"/><circle cx="64" cy="64" r="8" fill="white" opacity="0.6"/><rect x="42" y="14" width="7" height="16" rx="2" fill="white" opacity="0.7"/><rect x="56" y="14" width="7" height="16" rx="2" fill="white" opacity="0.7"/><rect x="70" y="14" width="7" height="16" rx="2" fill="white" opacity="0.7"/><rect x="42" y="98" width="7" height="16" rx="2" fill="white" opacity="0.7"/><rect x="56" y="98" width="7" height="16" rx="2" fill="white" opacity="0.7"/><rect x="70" y="98" width="7" height="16" rx="2" fill="white" opacity="0.7"/><rect x="14" y="42" width="16" height="7" rx="2" fill="white" opacity="0.7"/><rect x="14" y="56" width="16" height="7" rx="2" fill="white" opacity="0.7"/><rect x="14" y="70" width="16" height="7" rx="2" fill="white" opacity="0.7"/><rect x="98" y="42" width="16" height="7" rx="2" fill="white" opacity="0.7"/><rect x="98" y="56" width="16" height="7" rx="2" fill="white" opacity="0.7"/><rect x="98" y="70" width="16" height="7" rx="2" fill="white" opacity="0.7"/>'),
+    makeSvg('<circle cx="64" cy="64" r="42" fill="#3498db"/><ellipse cx="64" cy="64" rx="22" ry="42" fill="none" stroke="white" stroke-width="1.5" opacity="0.5"/><line x1="22" y1="46" x2="106" y2="46" stroke="white" stroke-width="1" opacity="0.4"/><line x1="22" y1="64" x2="106" y2="64" stroke="white" stroke-width="1.5" opacity="0.5"/><line x1="22" y1="82" x2="106" y2="82" stroke="white" stroke-width="1" opacity="0.4"/><path d="M34,40 Q50,34 64,42 Q78,50 96,38" fill="#2ecc71" opacity="0.6"/><path d="M28,60 Q44,50 58,58 Q72,66 100,54" fill="#27ae60" opacity="0.5"/>'),
+    makeSvg('<circle cx="64" cy="70" r="44" fill="none" stroke="white" stroke-width="3" opacity="0.2"/><path d="M24,84 A44,44 0 1,1 104,84" fill="none" stroke="white" stroke-width="7" opacity="0.15" stroke-linecap="round"/><path d="M24,84 A44,44 0 1,1 92,36" fill="none" stroke="#2ecc71" stroke-width="7" stroke-linecap="round"/><line x1="64" y1="70" x2="84" y2="40" stroke="#e74c3c" stroke-width="3" stroke-linecap="round"/><circle cx="64" cy="70" r="7" fill="white"/><circle cx="64" cy="70" r="3" fill="#2c3e50"/>'),
+    makeSvg('<rect x="18" y="34" width="92" height="60" rx="6" fill="white" opacity="0.9"/><path d="M18,34 L64,70 L110,34" fill="none" stroke="#e74c3c" stroke-width="3"/><path d="M18,94 L52,64" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.4"/><path d="M110,94 L76,64" fill="none" stroke="#e74c3c" stroke-width="1.5" opacity="0.4"/><circle cx="100" cy="30" r="14" fill="#f39c12"/>'),
+    makeSvg('<rect x="10" y="18" width="108" height="96" rx="8" fill="#0d0d0d" opacity="0.8"/><circle cx="26" cy="30" r="5" fill="#e74c3c"/><circle cx="40" cy="30" r="5" fill="#f39c12"/><circle cx="54" cy="30" r="5" fill="#2ecc71"/><line x1="10" y1="40" x2="118" y2="40" stroke="white" stroke-width="0.5" opacity="0.2"/><rect x="22" y="50" width="50" height="4" rx="2" fill="#2ecc71" opacity="0.8"/><rect x="22" y="62" width="70" height="4" rx="2" fill="#3498db" opacity="0.6"/><rect x="22" y="74" width="40" height="4" rx="2" fill="#f39c12" opacity="0.7"/><rect x="22" y="86" width="60" height="4" rx="2" fill="#2ecc71" opacity="0.5"/>'),
+    makeSvg('<circle cx="30" cy="20" r="2" fill="white" opacity="0.6"/><circle cx="95" cy="35" r="1.5" fill="white" opacity="0.4"/><circle cx="15" cy="85" r="1" fill="white" opacity="0.5"/><g transform="translate(64,60) rotate(-30)"><path d="M0,-40 Q-14,-22 -12,12 L12,12 Q14,-22 0,-40" fill="white" opacity="0.9"/><path d="M0,-40 Q-7,-22 -6,12 L6,12 Q7,-22 0,-40" fill="#e74c3c"/><circle cx="0" cy="-12" r="6" fill="#3498db"/><path d="M-12,12 L-20,26 L-7,16 Z" fill="#f39c12"/><path d="M12,12 L20,26 L7,16 Z" fill="#f39c12"/><path d="M-7,12 L-5,28 L0,20 L5,28 L7,12" fill="#e67e22"/></g>'),
+    makeSvg('<path d="M40,8 Q66,28 40,50 Q14,72 40,92 Q66,112 40,122" fill="none" stroke="white" stroke-width="3" opacity="0.8"/><path d="M88,8 Q62,28 88,50 Q114,72 88,92 Q62,112 88,122" fill="none" stroke="white" stroke-width="3" opacity="0.8"/><line x1="42" y1="18" x2="86" y2="18" stroke="white" stroke-width="2" opacity="0.5"/><line x1="28" y1="34" x2="100" y2="34" stroke="white" stroke-width="2" opacity="0.4"/><line x1="40" y1="50" x2="88" y2="50" stroke="white" stroke-width="2" opacity="0.5"/><line x1="28" y1="66" x2="100" y2="66" stroke="white" stroke-width="2" opacity="0.4"/><circle cx="42" cy="18" r="5" fill="#e74c3c"/><circle cx="86" cy="18" r="5" fill="#3498db"/><circle cx="28" cy="34" r="4" fill="#f39c12"/><circle cx="100" cy="34" r="4" fill="#9b59b6"/><circle cx="40" cy="50" r="5" fill="#2ecc71"/><circle cx="88" cy="50" r="5" fill="#e74c3c"/><circle cx="28" cy="66" r="4" fill="#3498db"/><circle cx="100" cy="66" r="4" fill="#f39c12"/>'),
+  ];
+
+  const nodeNames = [
+    'Alpha','Bravo','Charlie','Delta','Echo','Foxtrot','Golf','Hotel',
+    'India','Juliet','Kilo','Lima','Mike','November','Oscar','Papa',
+    'Quebec','Romeo','Sierra','Tango','Uniform','Victor','Whiskey','Xray',
+  ];
+
+  function log(msg) {
+    document.getElementById('stats').textContent = msg;
+    console.log(msg);
+  }
+
+  function seededRandom(seed) {
+    let s = seed;
+    return () => { s = (s * 1664525 + 1013904223) & 0x7fffffff; return s / 0x7fffffff; };
+  }
+
+  function generateGraph(nodeCount, parallelCount, bgImagePct) {
+    const rand = seededRandom(42);
+    const nodes = [];
+    const edges = [];
+    const spread = Math.sqrt(nodeCount) * 40;
+    const bgThreshold = bgImagePct / 100;
+
+    for (let i = 0; i < nodeCount; i++) {
+      const node = {
+        data: { id: 'n' + i, label: nodeNames[i % nodeNames.length] + ' ' + i },
+        position: { x: (rand() - 0.5) * spread, y: (rand() - 0.5) * spread },
+      };
+      if (rand() < bgThreshold) {
+        node.data.bgimg = bgImages[i % bgImages.length];
+      }
+      nodes.push(node);
+    }
+
+    const pairCount = Math.floor(nodeCount * 1.5 / parallelCount);
+    const seenPairs = new Set();
+    let edgeId = 0;
+    for (let i = 0; i < pairCount; i++) {
+      let src, tgt, pk, tries = 0;
+      do {
+        src = Math.floor(rand() * nodeCount);
+        tgt = Math.floor(rand() * nodeCount);
+        pk = Math.min(src, tgt) + ':' + Math.max(src, tgt);
+        tries++;
+      } while ((src === tgt || seenPairs.has(pk)) && tries < 20);
+      if (tries >= 20) continue;
+      seenPairs.add(pk);
+      const edgeLabels = ['depends on','calls','imports','extends','uses','triggers',
+        'reads','writes','creates','monitors','connects','routes'];
+      for (let p = 0; p < parallelCount; p++) {
+        edges.push({ data: {
+          id: 'e' + edgeId,
+          source: 'n' + src,
+          target: 'n' + tgt,
+          label: edgeLabels[edgeId % edgeLabels.length]
+        }});
+        edgeId++;
+      }
+    }
+    return { nodes, edges, pairCount: seenPairs.size };
+  }
+
+  function loadTier(tier) {
+    const configs = {
+      1: { nodes: 50000, parallel: 3, bgPct: 100, curve: 'bezier', arrow: 'triangle' },
+      2: { nodes: 100000, parallel: 3, bgPct: 100, curve: 'bezier', arrow: 'triangle' },
+      3: { nodes: 200000, parallel: 3, bgPct: 100, curve: 'bezier', arrow: 'triangle' },
+    };
+    const c = configs[tier];
+    document.getElementById('nodeCount').value = c.nodes;
+    document.getElementById('parallelCount').value = c.parallel;
+    document.getElementById('bgImagePct').value = c.bgPct;
+    document.getElementById('curveStyle').value = c.curve;
+    document.getElementById('arrowShape').value = c.arrow;
+    loadGraph();
+  }
+
+  function loadGraph() {
+    const nodeCount = parseInt(document.getElementById('nodeCount').value) || 5000;
+    const parallelCount = parseInt(document.getElementById('parallelCount').value) || 3;
+    const bgImagePct = parseInt(document.getElementById('bgImagePct').value) || 0;
+    const shape = document.getElementById('shape').value;
+    const curveStyle = document.getElementById('curveStyle').value;
+    const arrowShape = document.getElementById('arrowShape').value;
+
+    log('Generating graph...');
+    if (cy) cy.destroy();
+
+    const t0 = performance.now();
+    const graph = generateGraph(nodeCount, parallelCount, bgImagePct);
+    const t1 = performance.now();
+
+    const nodeColors = ['#e94560','#533483','#0f3460','#e9a645','#45e96b','#4587e9','#e97045','#2ecc71'];
+    const edgeColors = [
+      'rgba(233,69,96,0.4)','rgba(83,52,131,0.4)','rgba(69,135,233,0.4)',
+      'rgba(69,233,107,0.4)','rgba(233,166,69,0.4)','rgba(46,204,113,0.4)'
+    ];
+
+    const nodeStyle = {
+      'shape': shape,
+      'width': 20, 'height': 20,
+      'background-color': "transparent",
+      //'border-width': 1,
+      //'border-color': 'rgba(255,255,255,0.2)',
+      'label': 'data(label)',
+      'font-size': 8,
+      'color': '#ccc',
+      'text-valign': 'bottom',
+      'text-margin-y': 3,
+    };
+
+    const styles = [
+      { selector: 'node', style: nodeStyle },
+      {
+        selector: 'node[bgimg]',
+        style: {
+          'background-image': 'data(bgimg)',
+          'background-fit': 'cover',
+          'background-clip': 'node',
+          //'background-opacity': 0,
+          'width': 36, 'height': 36,
+        }
+      },
+      {
+        selector: 'edge',
+        style: {
+          'width': 1.5,
+          'line-color': function(ele) {
+            return edgeColors[parseInt(ele.id().substring(1)) % edgeColors.length];
+          },
+          'curve-style': curveStyle,
+          'control-point-step-size': 20,
+          'target-arrow-shape': arrowShape,
+          'target-arrow-color': function(ele) {
+            return edgeColors[parseInt(ele.id().substring(1)) % edgeColors.length];
+          },
+          'label': 'data(label)',
+          'font-size': 7,
+          'color': '#aaa',
+          'text-rotation': 'autorotate',
+          'text-outline-width': 1,
+          'text-outline-color': '#000',
+        }
+      },
+    ];
+
+    cy = cytoscape({
+      container: document.getElementById('cy'),
+      elements: graph,
+      style: styles,
+      layout: { name: 'preset' },
+    });
+
+    const t2 = performance.now();
+    const totalEles = graph.nodes.length + graph.edges.length;
+    const renderer = cy.renderer();
+    const isWebGL = renderer.webgl ? 'YES' : 'NO (Canvas 2D fallback)';
+    const bgCount = graph.nodes.filter(n => n.data.bgimg).length;
+
+    log([
+      'Graph loaded (' + (t2 - t0).toFixed(0) + 'ms):',
+      '  ' + graph.nodes.length.toLocaleString() + ' nodes (shape: ' + shape + ', ' + bgCount + ' with bg-image)',
+      '  ' + graph.edges.length.toLocaleString() + ' edges (' + graph.pairCount + ' pairs x ' + parallelCount + ' parallel, curve: ' + curveStyle + ', arrow: ' + arrowShape + ')',
+      '  ' + totalEles.toLocaleString() + ' total elements',
+      '  WebGL active: ' + isWebGL,
+      '  Generate: ' + (t1 - t0).toFixed(0) + 'ms | Init+Render: ' + (t2 - t1).toFixed(0) + 'ms',
+      '',
+      'Pan/zoom with mouse. Use "Bench Pan" to measure frame times.',
+    ].join('\n'));
+
+    window.cy = cy;
+  }
+
+  function benchmarkPan() {
+    if (!cy) { log('Load a graph first!'); return; }
+    log('Running 60-frame pan benchmark...');
+
+    requestAnimationFrame(() => {
+      const frameTimes = [];
+      let frame = 0;
+      function panFrame() {
+        const start = performance.now();
+        cy.panBy({ x: 3, y: 1 });
+        requestAnimationFrame(() => {
+          frameTimes.push(performance.now() - start);
+          frame++;
+          if (frame < 60) { panFrame(); }
+          else { reportBenchmark('Pan', frameTimes); }
+        });
+      }
+      panFrame();
+    });
+  }
+
+  function benchmarkZoom() {
+    if (!cy) { log('Load a graph first!'); return; }
+    log('Running 30-frame zoom benchmark...');
+
+    const startZoom = cy.zoom();
+    requestAnimationFrame(() => {
+      const frameTimes = [];
+      let frame = 0;
+      function zoomFrame() {
+        const start = performance.now();
+        const newZoom = startZoom * (1 + 0.02 * frame);
+        cy.zoom({ level: newZoom, position: { x: 0, y: 0 } });
+        requestAnimationFrame(() => {
+          frameTimes.push(performance.now() - start);
+          frame++;
+          if (frame < 30) { zoomFrame(); }
+          else {
+            cy.zoom({ level: startZoom });
+            reportBenchmark('Zoom', frameTimes);
+          }
+        });
+      }
+      zoomFrame();
+    });
+  }
+
+  function reportBenchmark(name, frameTimes) {
+    const avg = frameTimes.reduce((a, b) => a + b) / frameTimes.length;
+    const sorted = [...frameTimes].sort((a, b) => a - b);
+    const p50 = sorted[Math.floor(sorted.length * 0.5)];
+    const p95 = sorted[Math.floor(sorted.length * 0.95)];
+    const max = sorted[sorted.length - 1];
+    const fps = 1000 / avg;
+
+    log([
+      name + ' Benchmark (' + frameTimes.length + ' frames):',
+      '  Elements: ' + cy.elements().length.toLocaleString() + ' (' + cy.nodes().length.toLocaleString() + ' N / ' + cy.edges().length.toLocaleString() + ' E)',
+      '  Avg:  ' + avg.toFixed(1) + 'ms  (~' + fps.toFixed(0) + ' FPS)',
+      '  P50:  ' + p50.toFixed(1) + 'ms | P95: ' + p95.toFixed(1) + 'ms | Max: ' + max.toFixed(1) + 'ms',
+      '  WebGL: ' + (cy.renderer().webgl ? 'YES' : 'NO'),
+      '',
+      'Architecture: process() O(N) on data change, render() O(1) per frame.',
+      'During pan/zoom: zero per-element JS work, only camera uniform + drawArraysInstanced.',
+    ].join('\n'));
+  }
+
+  function benchmarkPick() {
+    if (!cy) { log('Load a graph first!'); return; }
+    const picks = 50;
+    const times = [];
+    const bb = cy.elements().boundingBox();
+
+    for (let i = 0; i < picks; i++) {
+      const x = bb.x1 + Math.random() * bb.w;
+      const y = bb.y1 + Math.random() * bb.h;
+      const start = performance.now();
+      cy.renderer().findNearestElements(x, y);
+      times.push(performance.now() - start);
+    }
+
+    const avg = times.reduce((a, b) => a + b) / times.length;
+    const max = Math.max(...times);
+
+    log([
+      'Pick Benchmark (' + picks + ' random picks):',
+      '  Elements: ' + cy.elements().length.toLocaleString(),
+      '  Avg: ' + avg.toFixed(3) + 'ms | Max: ' + max.toFixed(3) + 'ms',
+      '  WebGL: ' + (cy.renderer().webgl ? 'YES' : 'NO'),
+      '',
+      'Picking uses dual-render with same GPU buffers (no buffer overwrite).',
+    ].join('\n'));
+  }
+
+  function exportPng() {
+    if (!cy) { log('Load a graph first!'); return; }
+    const t0 = performance.now();
+    const png = cy.png({ scale: 1, bg: '#16213e' });
+    const t1 = performance.now();
+    const link = document.createElement('a');
+    link.href = png;
+    link.download = 'cytoscape-webgl-export.png';
+    link.click();
+    log('Exported PNG in ' + (t1 - t0).toFixed(0) + 'ms');
+  }
+
+  loadGraph();
+</script>
+</body>
+</html>
