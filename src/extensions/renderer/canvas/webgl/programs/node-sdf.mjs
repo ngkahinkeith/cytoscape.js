@@ -1,5 +1,6 @@
 import { packPremulColor, packColor, packPickIndex } from '../color-pack.mjs';
 import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
+import { getRoundRectangleRadius } from '../../../../../math.mjs';
 
 export const NODE_STRIDE = 11; // floats per node
 
@@ -530,10 +531,12 @@ export class NodeSDFProgram {
     const off = slot * NODE_STRIDE;
     const pos = node.position();
 
+    const ow = node.outerWidth();
+    const oh = node.outerHeight();
     buf[off + 0] = pos.x;
     buf[off + 1] = pos.y;
-    buf[off + 2] = node.outerWidth();
-    buf[off + 3] = node.outerHeight();
+    buf[off + 2] = ow;
+    buf[off + 3] = oh;
     const bgColor = node.pstyle('background-color').value;
     let bgOpacity = node.pstyle('background-opacity').value;
     // Honor alpha from color tuple (e.g. 'transparent' → [0,0,0,0])
@@ -557,13 +560,7 @@ export class NodeSDFProgram {
     buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
 
     const cr = node.pstyle('corner-radius');
-    if(cr.value === 'auto') {
-      const w = node.outerWidth();
-      const h = node.outerHeight();
-      buf[off + 8] = Math.min(w / 4, h / 4, 8);
-    } else {
-      buf[off + 8] = cr.pfValue;
-    }
+    buf[off + 8] = cr.value === 'auto' ? getRoundRectangleRadius(ow, oh) : cr.pfValue;
 
     const bp = node.pstyle('border-position').value;
     buf[off + 9] = bp === 'inside' ? 1 : (bp === 'outside' ? 2 : 0);

@@ -1,9 +1,10 @@
 import { NodeSDFProgram, NODE_STRIDE, SHAPE_ENUM } from './programs/node-sdf.mjs';
 import { NodeTextureProgram } from './programs/node-texture.mjs';
-import { EdgeProgram } from './programs/edge.mjs';
+import { EdgeProgram, EDGE_STRIDE } from './programs/edge.mjs';
 import { TexturePageManager } from './texture-page-manager.mjs';
 import { LabelGrid } from './label-grid.mjs';
 import { packPremulColor, packColor, packPickIndex } from './color-pack.mjs';
+import { getRoundRectangleRadius } from '../../../../math.mjs';
 
 /**
  * WebGLRenderLoop — the main orchestrator for the new WebGL renderer.
@@ -26,6 +27,7 @@ export class WebGLRenderLoop {
     this.labelGrid = new LabelGrid(opts.labelGridCellSize || 100);
 
     this.needsProcess = true;  // true on first frame and after data changes
+    this._overlayDirty = true; // set by notify('style'), gates refreshOverlayColors O(N) scan
     this._initialized = false;
 
     // Label data for Canvas 2D rendering
@@ -282,12 +284,8 @@ export class WebGLRenderLoop {
     buf[off + 5] = packColor(0, 0, 0, 0);
     buf[off + 6] = 0;
     buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
-    // Resolve 'auto' corner radius to actual value (matches Canvas 2D renderer)
-    let cr = cornerRadius.pfValue;
-    if(cornerRadius.value === 'auto') {
-      cr = Math.min(overlayW / 4, overlayH / 4, 8);
-    }
-    buf[off + 8] = cr;
+    buf[off + 8] = cornerRadius.value === 'auto'
+      ? getRoundRectangleRadius(overlayW, overlayH) : cornerRadius.pfValue;
     buf[off + 9] = 0; // border position: center (irrelevant with no border)
     buf[off + 10] = packPickIndex(pickIndex);
 
@@ -436,10 +434,63 @@ export class WebGLRenderLoop {
     this.needsProcess = true;
   }
 
-  /** Refresh overlay colors from live styles. Called every frame by renderWebgl(),
-   *  OUTSIDE the conditional render block (like Canvas 2D's drawElementOverlay).
-   *  Returns true if any overlay color changed. */
+  /** Incrementally update visual style (color/border) for specific elements. O(k).
+   *  Avoids full O(N) process() for activate/select/unactivate style changes. */
+  updateStyleIncremental(eles) {
+    if(!this._initialized || !this.nodeSDFProgram.buffer) return;
+
+    const nodeBuf = this.nodeSDFProgram.buffer;
+    const edgeBuf = this.edgeProgram.buffer;
+
+    for(let i = 0; i < eles.length; i++) {
+      const ele = eles[i];
+      if(ele.isNode && ele.isNode()) {
+        const slots = ele._private._webglNodeSlots;
+        if(!slots || slots.length === 0) continue;
+
+        // Update body slot color (background-color may change on :selected)
+        // Body is the slot after underlay (if exists) — typically slots[0] or slots[1]
+        const bodySlot = slots.length > 2 ? slots[1] : slots[0];
+        const off = bodySlot * NODE_STRIDE;
+
+        const bgColor = ele.pstyle('background-color').value;
+        let bgOpacity = ele.pstyle('background-opacity').value;
+        if(bgColor.length > 3 && bgColor[3] < 1) bgOpacity *= bgColor[3];
+        nodeBuf[off + 4] = packPremulColor(bgColor, bgOpacity);
+
+        const bw = ele.pstyle('border-width').value;
+        let bop = ele.pstyle('border-opacity').value;
+        if(bw > 0 && bop > 0) {
+          const bc = ele.pstyle('border-color').value;
+          if(bc.length > 3 && bc[3] < 1) bop *= bc[3];
+          nodeBuf[off + 5] = packPremulColor(bc, bop);
+        }
+
+        this.nodeSDFProgram._markDirty(bodySlot);
+      } else if(ele.isEdge && ele.isEdge()) {
+        const slot = ele._private._webglEdgeSlot;
+        const count = ele._private._webglEdgeInstances;
+        if(slot === undefined || !count || !edgeBuf) continue;
+
+        const combinedOpacity = ele.pstyle('opacity').value * ele.pstyle('line-opacity').value;
+        const color = packPremulColor(ele.pstyle('line-color').value, combinedOpacity);
+
+        for(let j = 0; j < count; j++) {
+          edgeBuf[(slot + j) * EDGE_STRIDE + 8] = color;
+        }
+        this.edgeProgram._markDirty(slot);
+        if(count > 1) this.edgeProgram._markDirty(slot + count - 1);
+      }
+    }
+    // Overlay is handled separately by refreshOverlayColors
+  }
+
+  /** Refresh overlay colors from live ele._private.active state.
+   *  Gated by _overlayDirty flag to avoid O(N) scan every frame. */
   refreshOverlayColors() {
+    if(!this._overlayDirty) return false;
+    this._overlayDirty = false;
+
     const buf = this.nodeSDFProgram.buffer;
     if(!buf || !this._initialized) return false;
 
@@ -452,18 +503,10 @@ export class WebGLRenderLoop {
       if(overlaySlot === undefined) continue;
 
       const off = overlaySlot * NODE_STRIDE;
-      // Read :active state directly from ele._private.active instead of pstyle(),
-      // because updateStyle() defers style.apply() (sets styleDirty=true) and
-      // pstyle() returns stale cached values until cleanStyle() runs in beforeRender.
       const isActive = ele._private.active;
-      let packed;
-      if(isActive) {
-        const opacity = ele.pstyle('overlay-opacity').value || 0.25;
-        const color = ele.pstyle('overlay-color').value || [0, 0, 0];
-        packed = packPremulColor(color, opacity);
-      } else {
-        packed = packPremulColor([0, 0, 0], 0);
-      }
+      const packed = isActive
+        ? packPremulColor(ele.pstyle('overlay-color').value || [0, 0, 0], 0.25)
+        : packPremulColor([0, 0, 0], 0);
       if(buf[off + 4] !== packed) {
         buf[off + 4] = packed;
         this.nodeSDFProgram._markDirty(overlaySlot);
@@ -479,85 +522,6 @@ export class WebGLRenderLoop {
    * Re-packs only the affected elements' visual properties (color, border, overlay)
    * without re-running the full O(N) process().
    */
-  updateElementStyles(eles) {
-    if(!this._initialized) return;
-
-    for(let i = 0; i < eles.length; i++) {
-      const ele = eles[i];
-      if(ele.isNode && ele.isNode()) {
-        const slots = ele._private._webglNodeSlots;
-        if(!slots) { this.needsProcess = true; return; }
-
-        // Check if overlay/underlay slot count changed (e.g. opacity 0→non-zero)
-        const overlayNow = ele.pstyle('overlay-opacity').value > 0 ? 1 : 0;
-        const underlayNow = ele.pstyle('underlay-opacity').value > 0 ? 1 : 0;
-        const expectedSlots = 1 + overlayNow + underlayNow;
-        if(expectedSlots !== slots.length) {
-          // Structural change — need full process() to reallocate slots
-          this.needsProcess = true;
-          return;
-        }
-
-        // Re-pack the main node slot (body) with updated style
-        const bodySlot = slots.length >= 2 ? slots[slots.length > 2 ? 1 : 0] : slots[0];
-        this._updateNodeStyle(bodySlot, ele);
-
-        // Re-pack overlay/underlay slots if they exist
-        if(slots.length > 1) {
-          for(let s = 0; s < slots.length; s++) {
-            if(s === (slots.length > 2 ? 1 : 0)) continue; // skip body
-            const slot = slots[s];
-            const buf = this.nodeSDFProgram.buffer;
-            const off = slot * NODE_STRIDE;
-            const prefix = s === 0 && slots.length > 2 ? 'underlay' : 'overlay';
-            const opacity = ele.pstyle(`${prefix}-opacity`).value;
-            const color = ele.pstyle(`${prefix}-color`).value;
-            buf[off + 4] = packPremulColor(color, opacity);
-            this.nodeSDFProgram._markDirty(slot);
-          }
-        }
-      } else if(ele.isEdge && ele.isEdge()) {
-        const slot = ele._private._webglEdgeSlot;
-        const instanceCount = ele._private._webglEdgeInstances;
-        if(slot === undefined || !instanceCount) continue;
-
-        const combinedOpacity = ele.pstyle('opacity').value * ele.pstyle('line-opacity').value;
-        const color = packPremulColor(ele.pstyle('line-color').value, combinedOpacity);
-
-        for(let j = 0; j < instanceCount; j++) {
-          this.edgeProgram.buffer[(slot + j) * 11 + 8] = color;
-        }
-        this.edgeProgram._markDirty(slot);
-        if(instanceCount > 1) this.edgeProgram._markDirty(slot + instanceCount - 1);
-      }
-    }
-  }
-
-  /** Update a single node's visual style in the SDF buffer. O(1). */
-  _updateNodeStyle(slot, node) {
-    const buf = this.nodeSDFProgram.buffer;
-    const off = slot * NODE_STRIDE;
-
-    const bgColor = node.pstyle('background-color').value;
-    let bgOpacity = node.pstyle('background-opacity').value;
-    if(bgColor.length > 3 && bgColor[3] < 1) {
-      bgOpacity *= bgColor[3];
-    }
-    buf[off + 4] = packPremulColor(bgColor, bgOpacity);
-
-    const bw = node.pstyle('border-width').value;
-    let bop = node.pstyle('border-opacity').value;
-    if(bw > 0 && bop > 0) {
-      const bc = node.pstyle('border-color').value;
-      if(bc.length > 3 && bc[3] < 1) bop *= bc[3];
-      buf[off + 5] = packPremulColor(bc, bop);
-    } else {
-      buf[off + 5] = packColor(0, 0, 0, 0);
-    }
-    buf[off + 6] = bw;
-
-    this.nodeSDFProgram._markDirty(slot);
-  }
 
   /** Update just one node's position (for drag). O(1). */
   updateNodePosition(node) {

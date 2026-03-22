@@ -8,8 +8,9 @@ const CRp = {};
 const _transform = mat3.create();
 const _projection = mat3.create();
 const _product = mat3.create();
+const _translateVec = [0, 0];  // reused by createPanZoomMatrix
+const _scaleVec = [0, 0];
 
-// Pre-allocated pick buffer (6x6 pixels × 4 bytes = 144 bytes)
 const PICK_SIZE = 6;
 const PICK_PIXELS = PICK_SIZE * PICK_SIZE;
 const _pickData = new Uint8Array(PICK_PIXELS * 4);
@@ -51,9 +52,13 @@ function createPanZoomMatrix(r) {
   const height = r.canvasHeight;
   const { pan, zoom } = util.getEffectivePanZoom(r);
 
+  _translateVec[0] = pan.x;
+  _translateVec[1] = pan.y;
+  _scaleVec[0] = zoom;
+  _scaleVec[1] = zoom;
   mat3.identity(_transform);
-  mat3.translate(_transform, _transform, [pan.x, pan.y]);
-  mat3.scale(_transform, _transform, [zoom, zoom]);
+  mat3.translate(_transform, _transform, _translateVec);
+  mat3.scale(_transform, _transform, _scaleVec);
 
   mat3.projection(_projection, width, height);
 
@@ -144,10 +149,16 @@ function overrideRendererFunctions(r) {
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'style') {
-      // Write overlay colors to buffer immediately (no rAF needed).
-      // refreshOverlayColors reads ele._private.active which is set synchronously.
+      // Overlay: update immediately via _private.active (O(k) for affected elements)
+      r.renderLoop._overlayDirty = true;
       r.renderLoop.refreshOverlayColors();
-      r.renderLoop.invalidate();
+      // Style: incrementally update affected elements' colors in the buffer (O(k))
+      // instead of full O(N) process() rebuild
+      if(eles && eles.length > 0) {
+        r.renderLoop.updateStyleIncremental(eles);
+      } else {
+        r.renderLoop.invalidate();
+      }
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'background') {
       // Background image finished loading — rebuild textures
