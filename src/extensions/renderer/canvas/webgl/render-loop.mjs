@@ -28,6 +28,7 @@ export class WebGLRenderLoop {
 
     this.needsProcess = true;  // true on first frame and after data changes
     this._overlayDirty = true; // set by notify('style'), gates refreshOverlayColors O(N) scan
+    this._activeEdges = [];    // edges with :active state, rebuilt by refreshOverlayColors
     this._initialized = false;
 
     // Label data for Canvas 2D rendering
@@ -44,6 +45,7 @@ export class WebGLRenderLoop {
     this.nodeSDFProgram.init(glNode);
     this.nodeTexProgram.init(glNode);
     this.edgeProgram.init(glEdge);
+    this.edgeProgram.initPicking(glNode); // edge picking on node GL context
 
     // Wire texture page manager to the node texture program
     this.nodeTexProgram.setTextureManager(this.texturePageManager);
@@ -342,6 +344,9 @@ export class WebGLRenderLoop {
     const bgColor = this._getBGColor();
     this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor);
 
+    // Draw edge :active overlays (wider semi-transparent line on top)
+    this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom);
+
     // Draw nodes (on node canvas)
     this.nodeSDFProgram.draw(glNode, panZoomMatrix, false, zoom);
     this.nodeTexProgram.draw(glNode, panZoomMatrix, false, zoom);
@@ -373,10 +378,11 @@ export class WebGLRenderLoop {
       glNode.bindTexture(glNode.TEXTURE_2D, null);
     }
 
-    // Draw with picking shaders — SAME buffers, different output
+    // Draw edges first (behind nodes) for picking
+    this.edgeProgram.drawPicking(glNode, panZoomMatrix, zoom);
+
+    // Draw nodes on top for picking
     this.nodeSDFProgram.draw(glNode, panZoomMatrix, true, zoom);
-    // Skip nodeTexProgram in picking mode — nodes are picked via SDF shape
-    // (avoids feedback loop from atlas texture bindings)
 
     // NOTE: do NOT unbind the framebuffer here — the caller (findNearestElementsWebgl)
     // needs it bound for readPixels. The caller manages the framebuffer lifecycle.
@@ -468,21 +474,26 @@ export class WebGLRenderLoop {
 
         this.nodeSDFProgram._markDirty(bodySlot);
       } else if(ele.isEdge && ele.isEdge()) {
-        const slot = ele._private._webglEdgeSlot;
-        const count = ele._private._webglEdgeInstances;
-        if(slot === undefined || !count || !edgeBuf) continue;
-
-        const combinedOpacity = ele.pstyle('opacity').value * ele.pstyle('line-opacity').value;
-        const color = packPremulColor(ele.pstyle('line-color').value, combinedOpacity);
-
-        for(let j = 0; j < count; j++) {
-          edgeBuf[(slot + j) * EDGE_STRIDE + 8] = color;
-        }
-        this.edgeProgram._markDirty(slot);
-        if(count > 1) this.edgeProgram._markDirty(slot + count - 1);
+        this._updateEdgeColor(ele);
       }
     }
-    // Overlay is handled separately by refreshOverlayColors
+  }
+
+  /** Update a single edge's line-color in the buffer (for :selected style change). */
+  _updateEdgeColor(edge) {
+    const edgeBuf = this.edgeProgram.buffer;
+    const slot = edge._private._webglEdgeSlot;
+    const count = edge._private._webglEdgeInstances;
+    if(slot === undefined || !count || !edgeBuf) return;
+
+    const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+    const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
+
+    for(let j = 0; j < count; j++) {
+      edgeBuf[(slot + j) * EDGE_STRIDE + 8] = color;
+    }
+    this.edgeProgram._markDirty(slot);
+    if(count > 1) this.edgeProgram._markDirty(slot + count - 1);
   }
 
   /** Refresh overlay colors from live ele._private.active state.
@@ -490,6 +501,7 @@ export class WebGLRenderLoop {
   refreshOverlayColors() {
     if(!this._overlayDirty) return false;
     this._overlayDirty = false;
+    this._activeEdges = [];
 
     const buf = this.nodeSDFProgram.buffer;
     if(!buf || !this._initialized) return false;
@@ -498,30 +510,88 @@ export class WebGLRenderLoop {
     const eles = this.r.getCachedZSortedEles();
     for(let i = 0; i < eles.length; i++) {
       const ele = eles[i];
-      if(!ele.isNode()) continue;
-      const overlaySlot = ele._private._webglOverlaySlot;
-      if(overlaySlot === undefined) continue;
+      if(ele.isNode()) {
+        const overlaySlot = ele._private._webglOverlaySlot;
+        if(overlaySlot === undefined) continue;
 
-      const off = overlaySlot * NODE_STRIDE;
-      const isActive = ele._private.active;
-      const packed = isActive
-        ? packPremulColor(ele.pstyle('overlay-color').value || [0, 0, 0], 0.25)
-        : packPremulColor([0, 0, 0], 0);
-      if(buf[off + 4] !== packed) {
-        buf[off + 4] = packed;
-        this.nodeSDFProgram._markDirty(overlaySlot);
-        changed = true;
+        const off = overlaySlot * NODE_STRIDE;
+        const isActive = ele._private.active;
+        const packed = isActive
+          ? packPremulColor(ele.pstyle('overlay-color').value || [0, 0, 0], 0.25)
+          : packPremulColor([0, 0, 0], 0);
+        if(buf[off + 4] !== packed) {
+          buf[off + 4] = packed;
+          this.nodeSDFProgram._markDirty(overlaySlot);
+          changed = true;
+        }
+      } else {
+        // Track active edges for overlay drawing
+        if(ele._private.active) {
+          this._activeEdges.push(ele);
+          changed = true;
+        }
       }
     }
     return changed;
   }
 
 
-  /**
-   * Incremental style update for specific elements. O(k) where k = eles.length.
-   * Re-packs only the affected elements' visual properties (color, border, overlay)
-   * without re-running the full O(N) process().
-   */
+  /** Draw edge :active overlays — a wider semi-transparent line on top of normal edges.
+   *  Only draws for edges in _activeEdges (typically 0-3 edges). */
+  _drawEdgeOverlays(gl, panZoomMatrix, zoom) {
+    if(this._activeEdges.length === 0) return;
+
+    const edgeBuf = this.edgeProgram.buffer;
+    if(!edgeBuf) return;
+
+    // Save original color+width, replace with overlay values, draw, restore
+    const saved = [];
+    for(const edge of this._activeEdges) {
+      const slot = edge._private._webglEdgeSlot;
+      const count = edge._private._webglEdgeInstances;
+      if(slot === undefined || !count) continue;
+
+      const overlayColor = edge.pstyle('overlay-color').value || [0, 0, 0];
+      const overlayOpacity = edge.pstyle('overlay-opacity').value || 0.25;
+      const overlayPadding = edge.pstyle('overlay-padding').pfValue || 10;
+      const packedOverlay = packPremulColor(overlayColor, overlayOpacity);
+      const overlayWidth = 2 * overlayPadding;
+
+      const typeBuf = this.edgeProgram.typeBuffer;
+      for(let j = 0; j < count; j++) {
+        if(typeBuf[slot + j] === 2) continue; // skip arrows — Canvas 2D only overlays the line
+        const off = (slot + j) * EDGE_STRIDE;
+        saved.push({ off, color: edgeBuf[off + 8], width: edgeBuf[off + 9] });
+        edgeBuf[off + 8] = packedOverlay;
+        edgeBuf[off + 9] = overlayWidth;
+      }
+    }
+
+    if(saved.length === 0) return;
+
+    // Upload just the modified range and draw
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeProgram.glBuffer);
+    const minOff = saved[0].off;
+    const maxOff = saved[saved.length - 1].off;
+    const startByte = minOff * 4;
+    const endByte = (maxOff + EDGE_STRIDE) * 4;
+    gl.bufferSubData(gl.ARRAY_BUFFER, startByte,
+      edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
+
+    const bgColor = this._getBGColor();
+    this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
+
+    // Restore original values
+    for(const s of saved) {
+      edgeBuf[s.off + 8] = s.color;
+      edgeBuf[s.off + 9] = s.width;
+    }
+
+    // Re-upload restored data
+    gl.bufferSubData(gl.ARRAY_BUFFER, startByte,
+      edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+  }
 
   /** Update just one node's position (for drag). O(1). */
   updateNodePosition(node) {

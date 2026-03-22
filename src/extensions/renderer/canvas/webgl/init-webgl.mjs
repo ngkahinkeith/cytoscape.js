@@ -256,11 +256,12 @@ function findNearestElementsWebgl(r, x, y) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, r.pickingFrameBuffer);
 
   if(r.pickingFrameBuffer.needsDraw) {
-    // Ensure GPU buffers are current before picking — draw() bails if needsUpload is true
+    // Ensure GPU buffers are current before picking
     const glEdge = r.data.contexts[r.EDGE_WEBGL];
     r.renderLoop.nodeSDFProgram.upload(gl);
     r.renderLoop.nodeTexProgram.upload(gl);
     r.renderLoop.edgeProgram.upload(glEdge);
+    r.renderLoop.edgeProgram.uploadPicking(gl); // edge data on node GL context for picking
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     const panZoomMatrix = createPanZoomMatrix(r);

@@ -173,6 +173,14 @@ export class EdgeProgram {
     this.vao = null;
     this.screenProgram = null;
     this.pickingProgram = null;
+    // Picking resources on the node GL context (separate from edge GL context)
+    this._pickVao = null;
+    this._pickGlBuffer = null;
+    this._pickGlTypeBuffer = null;
+    this._pickQuadBuffer = null;
+    this._pickProgram = null;
+    this._pickGpuFloatSize = 0;
+    this._pickGpuTypeSize = 0;
   }
 
   /** Initialize GL resources. Called once. */
@@ -234,6 +242,101 @@ export class EdgeProgram {
     gl.vertexAttribDivisor(LOC_VERT_TYPE, 1); // per-instance
 
     gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+  }
+
+  /** Initialize picking resources on a DIFFERENT GL context (the node GL context)
+   *  so edges can be drawn into the node-context picking framebuffer. */
+  initPicking(gl) {
+    this._pickProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE);
+    this._pickProgram.uPanZoomMatrix = gl.getUniformLocation(this._pickProgram, 'uPanZoomMatrix');
+    this._pickProgram.uBGColor = gl.getUniformLocation(this._pickProgram, 'uBGColor');
+
+    this._pickGlBuffer = gl.createBuffer();
+    this._pickGlTypeBuffer = gl.createBuffer();
+
+    this._pickVao = gl.createVertexArray();
+    gl.bindVertexArray(this._pickVao);
+
+    this._pickQuadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickQuadBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+    // Instance float attribs (same layout as init)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+    const stride = EDGE_STRIDE * 4;
+    const floatAttribs = [
+      { loc: 1, size: 4, offset: 0 },
+      { loc: 2, size: 4, offset: 4 },
+      { loc: 3, size: 1, offset: 8 },
+      { loc: 4, size: 1, offset: 9 },
+      { loc: 5, size: 1, offset: 10 },
+    ];
+    for(const attr of floatAttribs) {
+      gl.enableVertexAttribArray(attr.loc);
+      gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+      gl.vertexAttribDivisor(attr.loc, 1);
+    }
+
+    // Instance type attrib
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlTypeBuffer);
+    gl.enableVertexAttribArray(6);
+    gl.vertexAttribIPointer(6, 1, gl.INT, 0, 0);
+    gl.vertexAttribDivisor(6, 1);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+  }
+
+  /** Upload edge data to the picking GL context. */
+  uploadPicking(gl) {
+    if(!this._pickGlBuffer || !this.buffer || this.count === 0) return;
+    const floatSize = this.count * EDGE_STRIDE;
+    const typeSize = this.count;
+
+    if(floatSize > this._pickGpuFloatSize || typeSize > this._pickGpuTypeSize) {
+      this._pickGpuFloatSize = floatSize;
+      this._pickGpuTypeSize = typeSize;
+      gl.bindVertexArray(this._pickVao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.buffer.subarray(0, floatSize), gl.DYNAMIC_DRAW);
+      const stride = EDGE_STRIDE * 4;
+      const floatAttribs = [
+        { loc: 1, size: 4, offset: 0 },
+        { loc: 2, size: 4, offset: 4 },
+        { loc: 3, size: 1, offset: 8 },
+        { loc: 4, size: 1, offset: 9 },
+        { loc: 5, size: 1, offset: 10 },
+      ];
+      for(const attr of floatAttribs) {
+        gl.enableVertexAttribArray(attr.loc);
+        gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+        gl.vertexAttribDivisor(attr.loc, 1);
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlTypeBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.typeBuffer.subarray(0, typeSize), gl.DYNAMIC_DRAW);
+      gl.bindVertexArray(null);
+    } else {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, floatSize));
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlTypeBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.typeBuffer.subarray(0, typeSize));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
+  }
+
+  /** Draw edges for picking on the node GL context. */
+  drawPicking(gl, panZoomMatrix, zoom) {
+    if(this.count === 0 || !this.buffer || !this._pickProgram) return;
+    gl.useProgram(this._pickProgram);
+    gl.bindVertexArray(this._pickVao);
+    gl.uniformMatrix3fv(this._pickProgram.uPanZoomMatrix, false, panZoomMatrix);
+    if(this._pickProgram.uBGColor !== null) {
+      gl.uniform4fv(this._pickProgram.uBGColor, [1.0, 1.0, 1.0, 1.0]);
+    }
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
     gl.bindVertexArray(null);
   }
 
