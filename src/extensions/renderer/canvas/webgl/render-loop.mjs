@@ -106,8 +106,8 @@ export class WebGLRenderLoop {
           // Register image with texture page manager
           this.texturePageManager.registerImage(bgImg.strValue);
         }
-        // Count overlay/underlay slots for active nodes
-        if(ele.pstyle('overlay-opacity').value > 0) overlaySlotCount++;
+        // Always allocate overlay slot (underlay only when active)
+        overlaySlotCount++; // overlay always pre-allocated
         if(ele.pstyle('underlay-opacity').value > 0) overlaySlotCount++;
       } else {
         // Count instances for this edge
@@ -177,13 +177,11 @@ export class WebGLRenderLoop {
 
         nodeSlot++;
 
-        // Pack overlay (drawn after/on top of the node body)
-        const overlayOpacity = ele.pstyle('overlay-opacity').value;
-        if(overlayOpacity > 0) {
-          this._packOverlayInstance(nodeSlot, ele, 'overlay', pickIndex);
-          nodeSlots.push(nodeSlot);
-          nodeSlot++;
-        }
+        // Always pack overlay slot (transparent if inactive, discarded by fragment shader)
+        this._packOverlayInstance(nodeSlot, ele, 'overlay', pickIndex);
+        ele._private._webglOverlaySlot = nodeSlot;
+        nodeSlots.push(nodeSlot);
+        nodeSlot++;
 
         // Store all SDF slots for position update during drag
         ele._private._webglNodeSlots = nodeSlots;
@@ -271,7 +269,16 @@ export class WebGLRenderLoop {
     const overlayH = node.height() + 2 * nodePadding + padding * 2;
     buf[off + 2] = overlayW;
     buf[off + 3] = overlayH;
-    buf[off + 4] = packPremulColor(color, opacity);
+    // Use ele._private.active directly — pstyle('overlay-opacity') may be stale
+    // because updateStyle() defers style.apply().
+    if(prefix === 'overlay') {
+      const isActive = node._private.active;
+      buf[off + 4] = isActive
+        ? packPremulColor(color, opacity > 0 ? opacity : 0.25)
+        : packPremulColor([0, 0, 0], 0);
+    } else {
+      buf[off + 4] = packPremulColor(color, opacity);
+    }
     buf[off + 5] = packColor(0, 0, 0, 0);
     buf[off + 6] = 0;
     buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
@@ -297,6 +304,11 @@ export class WebGLRenderLoop {
     if(this.needsProcess) {
       this.process();
     }
+
+    // Fix overlay colors AFTER process() — process() uses stale pstyle() cache
+    // (because updateStyle() defers style.apply()), so we override with the
+    // authoritative ele._private.active flag.
+    this.refreshOverlayColors();
 
     // Upload dirty buffers to GPU — each program checks its own needsUpload flag
     this.edgeProgram.upload(this.glEdge);
@@ -368,7 +380,8 @@ export class WebGLRenderLoop {
     // Skip nodeTexProgram in picking mode — nodes are picked via SDF shape
     // (avoids feedback loop from atlas texture bindings)
 
-    glNode.bindFramebuffer(glNode.FRAMEBUFFER, null);
+    // NOTE: do NOT unbind the framebuffer here — the caller (findNearestElementsWebgl)
+    // needs it bound for readPixels. The caller manages the framebuffer lifecycle.
   }
 
   /**
@@ -422,6 +435,44 @@ export class WebGLRenderLoop {
   invalidate() {
     this.needsProcess = true;
   }
+
+  /** Refresh overlay colors from live styles. Called every frame by renderWebgl(),
+   *  OUTSIDE the conditional render block (like Canvas 2D's drawElementOverlay).
+   *  Returns true if any overlay color changed. */
+  refreshOverlayColors() {
+    const buf = this.nodeSDFProgram.buffer;
+    if(!buf || !this._initialized) return false;
+
+    let changed = false;
+    const eles = this.r.getCachedZSortedEles();
+    for(let i = 0; i < eles.length; i++) {
+      const ele = eles[i];
+      if(!ele.isNode()) continue;
+      const overlaySlot = ele._private._webglOverlaySlot;
+      if(overlaySlot === undefined) continue;
+
+      const off = overlaySlot * NODE_STRIDE;
+      // Read :active state directly from ele._private.active instead of pstyle(),
+      // because updateStyle() defers style.apply() (sets styleDirty=true) and
+      // pstyle() returns stale cached values until cleanStyle() runs in beforeRender.
+      const isActive = ele._private.active;
+      let packed;
+      if(isActive) {
+        const opacity = ele.pstyle('overlay-opacity').value || 0.25;
+        const color = ele.pstyle('overlay-color').value || [0, 0, 0];
+        packed = packPremulColor(color, opacity);
+      } else {
+        packed = packPremulColor([0, 0, 0], 0);
+      }
+      if(buf[off + 4] !== packed) {
+        buf[off + 4] = packed;
+        this.nodeSDFProgram._markDirty(overlaySlot);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
 
   /**
    * Incremental style update for specific elements. O(k) where k = eles.length.

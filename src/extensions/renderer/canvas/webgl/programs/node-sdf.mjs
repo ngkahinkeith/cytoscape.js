@@ -628,7 +628,7 @@ export class NodeSDFProgram {
 
   /** Draw all nodes. */
   draw(gl, panZoomMatrix, isPicking, zoom) {
-    if(this.count === 0 || !this.buffer || this.needsUpload) return;
+    if(this.count === 0 || !this.buffer) return;
     const program = isPicking ? this.pickingProgram : this.screenProgram;
     gl.useProgram(program);
     gl.bindVertexArray(this.vao);

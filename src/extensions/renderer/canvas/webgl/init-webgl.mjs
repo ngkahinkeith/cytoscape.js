@@ -144,7 +144,9 @@ function overrideRendererFunctions(r) {
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'style') {
-      // Style change — full process() needed to handle overlay/underlay slot changes
+      // Write overlay colors to buffer immediately (no rAF needed).
+      // refreshOverlayColors reads ele._private.active which is set synchronously.
+      r.renderLoop.refreshOverlayColors();
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'background') {
@@ -243,6 +245,12 @@ function findNearestElementsWebgl(r, x, y) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, r.pickingFrameBuffer);
 
   if(r.pickingFrameBuffer.needsDraw) {
+    // Ensure GPU buffers are current before picking — draw() bails if needsUpload is true
+    const glEdge = r.data.contexts[r.EDGE_WEBGL];
+    r.renderLoop.nodeSDFProgram.upload(gl);
+    r.renderLoop.nodeTexProgram.upload(gl);
+    r.renderLoop.edgeProgram.upload(glEdge);
+
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     const panZoomMatrix = createPanZoomMatrix(r);
     r.renderLoop.renderPicking(r.pickingFrameBuffer, panZoomMatrix, zoom);

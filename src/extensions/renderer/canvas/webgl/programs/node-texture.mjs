@@ -323,7 +323,7 @@ export class NodeTextureProgram {
 
   /** Draw all textured nodes. */
   draw(gl, panZoomMatrix, isPicking, zoom) {
-    if(this.count === 0 || !this.buffer || this.needsUpload) return;
+    if(this.count === 0 || !this.buffer) return;
 
     // Recompile shaders if page count changed
     const mgr = this._textureManager;
