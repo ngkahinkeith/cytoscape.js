@@ -57,7 +57,16 @@ flat out int vShape;
 flat out float vCornerRadius;
 flat out float vPickId;
 
+uniform float uZoom;
+
 void main() {
+  // LOD cull: skip if node is < 2 pixels on screen
+  float screenSize = max(aNodeSize.x, aNodeSize.y) * uZoom;
+  if(screenSize < 2.0) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    return;
+  }
+
   float hw = aNodeSize.x / 2.0;
   float hh = aNodeSize.y / 2.0;
   float outerBorder = 0.0;

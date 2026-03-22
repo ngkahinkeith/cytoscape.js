@@ -9,11 +9,10 @@ export const VERTEX_SHADER_SOURCE = `#version 300 es
 precision highp float;
 
 uniform mat3 uPanZoomMatrix;
+uniform float uZoom;
 
-// Unit quad vertex (not instanced)
 layout(location = 0) in vec2 aVertex;
 
-// Per-instance (divisor=1)
 layout(location = 1) in vec2 aNodePos;
 layout(location = 2) in vec2 aNodeSize;
 layout(location = 3) in float aColor;
@@ -22,20 +21,22 @@ layout(location = 5) in vec2 aTexSize;
 layout(location = 6) in float aTexPageIndex;
 layout(location = 7) in float aPickId;
 
-// To fragment shader
 out vec2 vTexCoord;
 flat out float vColor;
 flat out float vTexPageIndex;
 flat out float vPickId;
 
 void main() {
-  float hw = aNodeSize.x / 2.0;
-  float hh = aNodeSize.y / 2.0;
-  vec2 modelPos = aNodePos + (aVertex - 0.5) * aNodeSize;
+  // LOD cull: skip bg-image when node is too small for detail to be visible
+  float screenSize = max(aNodeSize.x, aNodeSize.y) * uZoom;
+  if(screenSize < 10.0) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    return;
+  }
 
+  vec2 modelPos = aNodePos + (aVertex - 0.5) * aNodeSize;
   gl_Position = vec4((uPanZoomMatrix * vec3(modelPos, 1.0)).xy, 0.0, 1.0);
 
-  // Interpolate texture coordinates across the quad
   vTexCoord = aTexXY + aVertex * aTexSize;
   vColor = aColor;
   vTexPageIndex = aTexPageIndex;
@@ -201,6 +202,7 @@ export class NodeTextureProgram {
     // Cache uniform locations on both programs
     for(const prog of [this.screenProgram, this.pickingProgram]) {
       prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
+      prog.uZoom = gl.getUniformLocation(prog, 'uZoom');
       prog.uAtlas = [];
       for(let i = 0; i < pageCount; i++) {
         prog.uAtlas.push(gl.getUniformLocation(prog, `u_atlas[${i}]`));
@@ -336,6 +338,7 @@ export class NodeTextureProgram {
     gl.useProgram(program);
     gl.bindVertexArray(this.vao);
     gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
+    gl.uniform1f(program.uZoom, zoom || 1.0);
 
     // Bind all texture pages
     if(mgr) {
