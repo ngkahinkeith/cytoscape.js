@@ -139,8 +139,12 @@ function overrideRendererFunctions(r) {
           }
         }
       }
-    } else if(eventName === 'add' || eventName === 'remove' || eventName === 'style') {
-      // Element data changed — full process() on next render
+    } else if(eventName === 'add' || eventName === 'remove') {
+      // Structural change — full process() on next render
+      r.renderLoop.invalidate();
+      r.pickingFrameBuffer.needsDraw = true;
+    } else if(eventName === 'style') {
+      // Style change — full process() needed to handle overlay/underlay slot changes
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'background') {
@@ -188,7 +192,7 @@ function renderWebgl(r, options) {
   }
 
   // --- WebGL ---
-  if(r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG]) {
+  if(r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG] || r.renderLoop.needsProcess) {
     const panZoomMatrix = createPanZoomMatrix(r);
     const { pan, zoom } = util.getEffectivePanZoom(r);
 

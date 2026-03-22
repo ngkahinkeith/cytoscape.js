@@ -114,6 +114,8 @@ export class NodeTextureProgram {
     this.capacity = 0;
     this.count = 0;
     this.needsUpload = false;
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
     this.glBuffer = null;     // WebGL buffer object
     this.quadBuffer = null;   // WebGL buffer for unit quad
     this.vao = null;          // WebGL VAO
@@ -264,10 +266,9 @@ export class NodeTextureProgram {
       buf[off + 9] = 0;
     }
 
-    // Pick index encoded as packed RGBA
     buf[off + 10] = packPickIndex(pickIndex);
 
-    this.needsUpload = true;
+    this._markDirty(slot);
   }
 
   /** Upload buffer to GPU if dirty. */
@@ -302,11 +303,21 @@ export class NodeTextureProgram {
         gl.vertexAttribDivisor(attr.loc, 1);
       }
       gl.bindVertexArray(null);
+    } else if(this._dirtyMin <= this._dirtyMax) {
+      // Partial upload: only the dirty range
+      const startFloat = this._dirtyMin * NODE_TEX_STRIDE;
+      const endFloat = (this._dirtyMax + 1) * NODE_TEX_STRIDE;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4,
+        this.buffer.subarray(startFloat, Math.min(endFloat, dataSize)));
     } else {
+      // Full upload
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
     }
 
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
     this.needsUpload = false;
   }
 
@@ -349,6 +360,12 @@ export class NodeTextureProgram {
     const off = slot * NODE_TEX_STRIDE;
     this.buffer[off + 0] = x;
     this.buffer[off + 1] = y;
+    this._markDirty(slot);
+  }
+
+  _markDirty(slot) {
+    if(slot < this._dirtyMin) this._dirtyMin = slot;
+    if(slot > this._dirtyMax) this._dirtyMax = slot;
     this.needsUpload = true;
   }
 

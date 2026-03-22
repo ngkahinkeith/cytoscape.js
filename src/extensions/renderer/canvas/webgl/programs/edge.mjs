@@ -163,6 +163,8 @@ export class EdgeProgram {
     this.capacity = 0;
     this.count = 0;           // total instances across all edges
     this.needsUpload = false;
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
     this.glBuffer = null;     // WebGL buffer for float instance data
     this.glTypeBuffer = null; // WebGL buffer for int vertex types
     this._gpuFloatSize = 0;
@@ -320,6 +322,12 @@ export class EdgeProgram {
     this.buffer[off + 9] = width;
     this.buffer[off + 10] = pickId;
     this.typeBuffer[slot] = type;
+    this._markDirty(slot);
+  }
+
+  _markDirty(slot) {
+    if(slot < this._dirtyMin) this._dirtyMin = slot;
+    if(slot > this._dirtyMax) this._dirtyMax = slot;
     this.needsUpload = true;
   }
 
@@ -431,7 +439,19 @@ export class EdgeProgram {
 
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
       gl.bindVertexArray(null);
+    } else if(this._dirtyMin <= this._dirtyMax) {
+      // Partial upload: only the dirty range
+      const startFloat = this._dirtyMin * EDGE_STRIDE;
+      const endFloat = (this._dirtyMax + 1) * EDGE_STRIDE;
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4,
+        this.buffer.subarray(startFloat, Math.min(endFloat, floatSize)));
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, this._dirtyMin * 4,
+        this.typeBuffer.subarray(this._dirtyMin, Math.min(this._dirtyMax + 1, typeSize)));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
     } else {
+      // Full upload
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, floatData);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
@@ -439,6 +459,8 @@ export class EdgeProgram {
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
     this.needsUpload = false;
   }
 
@@ -516,6 +538,10 @@ export class EdgeProgram {
       }
     }
 
+    // Mark dirty range for partial upload
+    if(slot < this._dirtyMin) this._dirtyMin = slot;
+    const endSlot = slot + instanceCount - 1;
+    if(endSlot > this._dirtyMax) this._dirtyMax = endSlot;
     this.needsUpload = true;
   }
 

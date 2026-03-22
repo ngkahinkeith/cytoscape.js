@@ -436,6 +436,8 @@ export class NodeSDFProgram {
     this.capacity = 0;
     this.count = 0;
     this.needsUpload = false;
+    this._dirtyMin = Infinity; // dirty range tracking (slot indices)
+    this._dirtyMax = -1;
     this.glBuffer = null;     // WebGL buffer object
     this._gpuBufferSize = 0;  // current GPU buffer size in floats
     this.quadBuffer = null;   // WebGL buffer for unit quad
@@ -555,30 +557,35 @@ export class NodeSDFProgram {
     buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
 
     const cr = node.pstyle('corner-radius');
-    buf[off + 8] = cr.value === 'auto' ? -1 : cr.pfValue;
+    if(cr.value === 'auto') {
+      const w = node.outerWidth();
+      const h = node.outerHeight();
+      buf[off + 8] = Math.min(w / 4, h / 4, 8);
+    } else {
+      buf[off + 8] = cr.pfValue;
+    }
 
     const bp = node.pstyle('border-position').value;
     buf[off + 9] = bp === 'inside' ? 1 : (bp === 'outside' ? 2 : 0);
 
     buf[off + 10] = packPickIndex(pickIndex);
 
-    this.needsUpload = true;
+    this._markDirty(slot);
   }
 
-  /** Upload buffer to GPU if dirty. */
+  /** Upload buffer to GPU if dirty. Uses dirty range for partial uploads. */
   upload(gl) {
     if(!this.needsUpload || !this.buffer || this.count === 0) return;
 
     const dataSize = this.count * NODE_STRIDE;
-    const data = this.buffer.subarray(0, dataSize);
 
     // If GPU buffer is too small, delete and recreate it, then rebind in VAO
     if(dataSize > this._gpuBufferSize) {
+      const data = this.buffer.subarray(0, dataSize);
       gl.deleteBuffer(this.glBuffer);
       this.glBuffer = gl.createBuffer();
       this._gpuBufferSize = dataSize;
 
-      // Rebind new buffer into VAO attribute pointers
       gl.bindVertexArray(this.vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
       gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
@@ -601,12 +608,21 @@ export class NodeSDFProgram {
         gl.vertexAttribDivisor(attr.loc, 1);
       }
       gl.bindVertexArray(null);
-    } else {
-      // Buffer big enough — just update data
+    } else if(this._dirtyMin <= this._dirtyMax) {
+      // Partial upload: only the dirty range
+      const startFloat = this._dirtyMin * NODE_STRIDE;
+      const endFloat = (this._dirtyMax + 1) * NODE_STRIDE;
+      const dirtyData = this.buffer.subarray(startFloat, Math.min(endFloat, dataSize));
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
+      gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, dirtyData);
+    } else {
+      // Full upload (e.g. after process())
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, dataSize));
     }
 
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
     this.needsUpload = false;
   }
 
@@ -627,6 +643,13 @@ export class NodeSDFProgram {
     const off = slot * NODE_STRIDE;
     this.buffer[off + 0] = x;
     this.buffer[off + 1] = y;
+    this._markDirty(slot);
+  }
+
+  /** Mark a slot as dirty for partial upload. */
+  _markDirty(slot) {
+    if(slot < this._dirtyMin) this._dirtyMin = slot;
+    if(slot > this._dirtyMax) this._dirtyMax = slot;
     this.needsUpload = true;
   }
 
