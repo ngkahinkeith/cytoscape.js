@@ -133,7 +133,9 @@ let Core = function( opts ){
 
     if( elements != null ){
       if( is.plainObject( elements ) || is.array( elements ) ){
+        cy.startBatch();
         cy.add( elements );
+        cy.endBatch();
       }
     }
 

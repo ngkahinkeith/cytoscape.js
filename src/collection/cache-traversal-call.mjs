@@ -13,7 +13,7 @@ let cache = function( fn, name ){
       key = selectorOrEles.id();
     }
 
-    if( eles.length === 1 && key ){
+    if( eles.length === 1 && key !== undefined && key !== null ){
       let _p = eles[0]._private;
       let tch = _p.traversalCache = _p.traversalCache || {};
       let ch = tch[ name ] = tch[ name ] || [];

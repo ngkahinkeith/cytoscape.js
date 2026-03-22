@@ -540,17 +540,16 @@ elesfn.restore = function( notifyRenderer = true, addToPool = true ){
   if( elements.length > 0 ){
     let restored = elements.length === self.length ? self : new Collection( cy, elements );
 
-    for( let i = 0; i < restored.length; i++ ){
-      let ele = restored[i];
-
-      if( ele.isNode() ){ continue; }
-
-      // adding an edge invalidates the traversal caches for the parallel edges
-      ele.parallelEdges().clearTraversalCache();
-
-      // adding an edge invalidates the traversal cache for the connected nodes
-      ele.source().clearTraversalCache();
-      ele.target().clearTraversalCache();
+    // Invalidate traversal caches for source/target nodes of added edges.
+    // Skip if this is a bulk initial add (no pre-existing edges to invalidate).
+    // Phase 1 (line 392) already clears each element's own cache.
+    if( cy_p.elements.length > restored.length ){
+      for( let i = 0; i < restored.length; i++ ){
+        let ele = restored[i];
+        if( ele.isNode() ){ continue; }
+        ele.source().clearTraversalCache();
+        ele.target().clearTraversalCache();
+      }
     }
 
     let toUpdateStyle;

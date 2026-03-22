@@ -73,23 +73,6 @@ export class WebGLRenderLoop {
   process() {
     const r = this.r;
 
-    // Ensure edge control points are computed before we read them.
-    // The base renderer's recalculateRenderedStyle computes node positions,
-    // then recalculateEdgeProjections computes edge control points (bezier, etc.).
-    // Without this, parallel bezier edges all get straight-line allpts.
-    if(r.recalculateRenderedStyle && r.cy.mutableElements) {
-      try {
-        const allEles = r.cy.mutableElements();
-        // useCache=false forces recalculation even if rstyle.clean is true.
-        // This is needed because the beforeRender callback may have already
-        // marked elements clean without computing edge control points for
-        // the WebGL path.
-        r.recalculateRenderedStyle(allEles, false);
-      } catch(e) {
-        // May fail in headless/test environments
-      }
-    }
-
     const eles = r.getCachedZSortedEles();
 
     // Count elements by type
@@ -98,51 +81,39 @@ export class WebGLRenderLoop {
     let edgeInstanceCount = 0;
     let overlaySlotCount = 0; // extra SDF instances for overlay/underlay
 
-    // First pass: count
+    // Single counting pass to determine buffer sizes
     for(let i = 0; i < eles.length; i++) {
       const ele = eles[i];
       if(ele.isNode()) {
         nodeCount++;
-        // Check if node has background-image
         const bgImg = ele.pstyle('background-image');
         if(bgImg && bgImg.strValue && bgImg.strValue !== 'none') {
           texturedNodeCount++;
-          // Register image with texture page manager
           this.texturePageManager.registerImage(bgImg.strValue);
         }
-        // Always allocate overlay slot (underlay only when active)
         overlaySlotCount++; // overlay always pre-allocated
         if(ele.pstyle('underlay-opacity').value > 0) overlaySlotCount++;
       } else {
-        // Count instances for this edge
         const rs = ele._private.rscratch;
         if(rs && !rs.badLine && rs.allpts) {
-          const pts = rs.allpts;
-          if(pts.length === 4) {
-            edgeInstanceCount += 1; // straight line
-          } else {
-            edgeInstanceCount += 16; // bezier segments = curve instances
-          }
-          // Arrows
+          edgeInstanceCount += rs.allpts.length === 4 ? 1 : 16;
           if(ele.pstyle('source-arrow-shape').value !== 'none') edgeInstanceCount++;
           if(ele.pstyle('target-arrow-shape').value !== 'none') edgeInstanceCount++;
         }
       }
     }
 
-    // Reallocate buffers (extra slots for overlay/underlay SDF instances)
-    const totalNodeSlots = nodeCount + overlaySlotCount;
-    this.nodeSDFProgram.reallocate(totalNodeSlots);
+    // Reallocate buffers
+    this.nodeSDFProgram.reallocate(nodeCount + overlaySlotCount);
     this.nodeTexProgram.reallocate(texturedNodeCount);
     this.nodeTexProgram.count = texturedNodeCount;
-    // Add 10% safety margin for edge instance count estimation
     this.edgeProgram.reallocate(Math.ceil(edgeInstanceCount * 1.1));
 
-    // Second pass: pack data
+    // Pack data
     let nodeSlot = 0;
     let texNodeSlot = 0;
     let edgeSlot = 0;
-    let pickIndex = 1; // 0 reserved for background
+    let pickIndex = 1;
 
     this._labelCandidates = [];
 
@@ -240,7 +211,6 @@ export class WebGLRenderLoop {
     this.nodeSDFProgram.count = nodeSlot;
     this.edgeProgram.count = edgeSlot;
 
-    // Mark all programs as needing GPU upload
     this.nodeSDFProgram.needsUpload = true;
     this.nodeTexProgram.needsUpload = true;
     this.edgeProgram.needsUpload = true;

@@ -840,10 +840,15 @@ styfn.checkParallelEdgesBoundsTrigger = function( ele, name, fromValue, toValue 
 styfn.checkTriggers = function( ele, name, fromValue, toValue ){
   ele.dirtyStyleCache();
 
-  this.checkZOrderTrigger( ele, name, fromValue, toValue );
-  this.checkBoundsTrigger( ele, name, fromValue, toValue );
-  this.checkConnectedEdgesBoundsTrigger( ele, name, fromValue, toValue );
-  this.checkParallelEdgesBoundsTrigger( ele, name, fromValue, toValue );
+  // Only run expensive trigger cascades after initial style is applied.
+  // During first apply(), appliedInitStyle is still false and all elements are
+  // already dirty, so there is no need to traverse connected/parallel edges.
+  if( ele._private.appliedInitStyle ){
+    this.checkZOrderTrigger( ele, name, fromValue, toValue );
+    this.checkBoundsTrigger( ele, name, fromValue, toValue );
+    this.checkConnectedEdgesBoundsTrigger( ele, name, fromValue, toValue );
+    this.checkParallelEdgesBoundsTrigger( ele, name, fromValue, toValue );
+  }
 };
 
 export default styfn;

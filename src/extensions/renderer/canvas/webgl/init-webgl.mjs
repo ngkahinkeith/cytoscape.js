@@ -95,7 +95,6 @@ function overrideRendererFunctions(r) {
     const cy = r.cy;
 
     if(r.webgl && r.renderLoop) {
-      // Always use WebGL — SDF shapes are resolution-independent at any zoom
       clearCanvasLayers(r);
       renderWebgl(r, options);
     }

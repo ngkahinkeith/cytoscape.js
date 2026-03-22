@@ -469,15 +469,22 @@ export class EdgeProgram {
    */
   _computeSegments(controlPoints, numSegments) {
     const n = controlPoints.length;
-    const result = new Array((numSegments + 1) * 2);
-    // First point = first control point
+    // Reuse pre-allocated arrays to avoid GC pressure (called per bezier edge)
+    const resultLen = (numSegments + 1) * 2;
+    if(!this._segResult || this._segResult.length < resultLen) {
+      this._segResult = new Array(resultLen);
+    }
+    if(!this._segWork || this._segWork.length < n) {
+      this._segWork = new Array(n);
+    }
+    const result = this._segResult;
+    const work = this._segWork;
+
     result[0] = controlPoints[0];
     result[1] = controlPoints[1];
-    // Last point = last control point
     result[numSegments * 2] = controlPoints[n - 2];
     result[numSegments * 2 + 1] = controlPoints[n - 1];
 
-    const work = new Array(n);
     for(let s = 1; s < numSegments; s++) {
       const t = s / numSegments;
       const omt = 1 - t;
