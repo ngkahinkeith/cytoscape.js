@@ -225,6 +225,26 @@ util.extend( corefn, {
 
     cy._private.destroyed = true;
 
+    // Release all elements to free memory (275K elements = 100+ MB)
+    let _p = cy._private;
+    if(_p.elements) {
+      // Clear per-element back-references and caches
+      for(let i = 0; i < _p.elements.length; i++) {
+        let ep = _p.elements[i]._private;
+        ep.cy = null;
+        ep.traversalCache = null;
+        ep.style = null;
+        ep.rstyle = null;
+        ep.edges = null;
+        ep.children = null;
+        ep.parent = null;
+      }
+      _p.elements = null;
+    }
+    _p.byGroup = null;
+    _p.listeners = [];
+    _p.emitter = null;
+
     return cy;
   },
 

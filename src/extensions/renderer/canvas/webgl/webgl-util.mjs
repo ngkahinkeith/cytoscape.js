@@ -91,5 +91,10 @@ export function createPickingFrameBuffer(gl) {
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
   };
 
+  fb.destroy = () => {
+    gl.deleteTexture(targetTexture);
+    gl.deleteFramebuffer(fb);
+  };
+
   return fb;
 }

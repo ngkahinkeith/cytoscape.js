@@ -92,13 +92,10 @@ function overrideRendererFunctions(r) {
   // --- Override render ---
   const renderCanvas = r.render;
   r.render = function(options) {
+    if(r.destroyed || !r.renderLoop) return;
     options = options || {};
-    const cy = r.cy;
-
-    if(r.webgl && r.renderLoop) {
-      clearCanvasLayers(r);
-      renderWebgl(r, options);
-    }
+    clearCanvasLayers(r);
+    renderWebgl(r, options);
   };
 
   // --- Override matchCanvasSize ---
@@ -128,6 +125,9 @@ function overrideRendererFunctions(r) {
   const baseNotify = r.notify;
   r.notify = function(eventName, eles) {
     baseNotify.call(r, eventName, eles);
+
+    // After 'destroy', all resources are freed — skip further processing
+    if(r.destroyed || !r.renderLoop) return;
 
     if(eventName === 'viewport') {
       // Camera changed — picking buffer is stale but NO buffer rebuild
@@ -176,6 +176,69 @@ function overrideRendererFunctions(r) {
   r.onUpdateEleCalcs(function(willDraw, eles) {
     // No-op: do not invalidate renderLoop or rebuild buffers here.
   });
+
+  // --- Override destroy to clean up ALL WebGL + renderer resources ---
+  const baseDestroy = r.destroy;
+  r.destroy = function() {
+    // 1. WebGL render loop — frees GPU buffers, CPU typed arrays, element slot refs
+    if(r.renderLoop) {
+      r.renderLoop.destroy();
+      r.renderLoop = null;
+    }
+
+    // 2. Picking framebuffer — frees FB + color texture
+    if(r.pickingFrameBuffer) {
+      r.pickingFrameBuffer.destroy();
+      r.pickingFrameBuffer = null;
+    }
+
+    // 3. Label offscreen canvas
+    r._labelBuffer = null;
+
+    // 4. Lose WebGL contexts to release GPU memory immediately
+    const glNode = r.data && r.data.contexts && r.data.contexts[r.NODE_WEBGL];
+    const glEdge = r.data && r.data.contexts && r.data.contexts[r.EDGE_WEBGL];
+    if(glNode) {
+      const ext = glNode.getExtension('WEBGL_lose_context');
+      if(ext) ext.loseContext();
+    }
+    if(glEdge) {
+      const ext = glEdge.getExtension('WEBGL_lose_context');
+      if(ext) ext.loseContext();
+    }
+
+    // 5. Clear texture caches (Canvas 2D renderer caches — canvas tiles + element refs)
+    if(r.data) {
+      ['eleTxrCache', 'lblTxrCache', 'slbTxrCache', 'tlbTxrCache', 'lyrTxrCache'].forEach(key => {
+        if(r.data[key]) {
+          if(r.data[key].invalidateElements) {
+            r.data[key].invalidateElements(r.cy.mutableElements());
+          }
+          r.data[key] = null;
+        }
+      });
+
+      // 6. Null canvas/context references
+      r.data.canvases = null;
+      r.data.contexts = null;
+      r.data.bufferCanvases = null;
+      r.data.bufferContexts = null;
+    }
+
+    // 7. Clear element traversal caches + style data to free retained Collections
+    const eles = r.cy.mutableElements();
+    for(let i = 0; i < eles.length; i++) {
+      const p = eles[i]._private;
+      p.traversalCache = null;
+      p.bbCache = null;
+      p.bodyBounds = null;
+      p.overlayBounds = null;
+      p.labelBounds = null;
+      p.arrowBounds = null;
+    }
+
+    baseDestroy.call(r);
+  };
 }
 
 

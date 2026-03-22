@@ -609,16 +609,42 @@ export class WebGLRenderLoop {
   }
 
   destroy() {
+    // Delete all GPU resources
     if(this.glNode) {
       this.nodeSDFProgram.destroy(this.glNode);
       this.nodeTexProgram.destroy(this.glNode);
+      this.edgeProgram.destroyPicking(this.glNode);
     }
     if(this.glEdge) {
       this.edgeProgram.destroy(this.glEdge);
     }
-    if(this.glNode) {
-      this.edgeProgram.destroyPicking(this.glNode);
-    }
     this.texturePageManager.destroy(this.glNode);
+
+    // Release CPU-side typed arrays (large buffers — up to 100+ MB)
+    this.nodeSDFProgram.buffer = null;
+    this.nodeTexProgram.buffer = null;
+    this.edgeProgram.buffer = null;
+    this.edgeProgram.typeBuffer = null;
+
+    // Clear label candidates (up to 275K objects)
+    this._labelCandidates = null;
+    this._activeEdges = null;
+
+    // Clear element references to allow GC of WebGL slot data
+    const eles = this.r.cy.mutableElements();
+    for(let i = 0; i < eles.length; i++) {
+      const p = eles[i]._private;
+      delete p._webglNodeSlots;
+      delete p._webglOverlaySlot;
+      delete p._webglTexSlot;
+      delete p._webglEdgeSlot;
+      delete p._webglEdgeInstances;
+    }
+
+    // Null GL context references
+    this.glNode = null;
+    this.glEdge = null;
+    this.r = null;
+    this._initialized = false;
   }
 }
