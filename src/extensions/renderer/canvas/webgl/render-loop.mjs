@@ -6,6 +6,8 @@ import { LabelGrid } from './label-grid.mjs';
 import { packPremulColor, packColor, packPickIndex } from './color-pack.mjs';
 import { getRoundRectangleRadius } from '../../../../math.mjs';
 
+const WHITE_RGBA = [1.0, 1.0, 1.0, 1.0]; // reused for edge bgColor uniform
+
 /**
  * WebGLRenderLoop — the main orchestrator for the new WebGL renderer.
  *
@@ -27,6 +29,7 @@ export class WebGLRenderLoop {
     this.labelGrid = new LabelGrid(opts.labelGridCellSize || 100);
 
     this.needsProcess = true;  // true on first frame and after data changes
+    this._hasProcessed = false; // false until first process() completes
     this._overlayDirty = true; // set by notify('style'), gates refreshOverlayColors O(N) scan
     this._activeEdges = [];    // edges with :active state, rebuilt by refreshOverlayColors
     this._initialized = false;
@@ -73,6 +76,13 @@ export class WebGLRenderLoop {
   process() {
     const r = this.r;
 
+    // Ensure edge control points (rs.allpts) are computed before we read them.
+    const useCache = this._hasProcessed;
+    const allEles = r.cy.mutableElements();
+    r.recalculateRenderedStyle(allEles, useCache);
+    this._hasProcessed = true;
+
+
     const eles = r.getCachedZSortedEles();
 
     // Count elements by type
@@ -95,7 +105,7 @@ export class WebGLRenderLoop {
         if(ele.pstyle('underlay-opacity').value > 0) overlaySlotCount++;
       } else {
         const rs = ele._private.rscratch;
-        if(rs && !rs.badLine && rs.allpts) {
+        if(rs && rs.allpts) {
           edgeInstanceCount += rs.allpts.length === 4 ? 1 : 16;
           if(ele.pstyle('source-arrow-shape').value !== 'none') edgeInstanceCount++;
           if(ele.pstyle('target-arrow-shape').value !== 'none') edgeInstanceCount++;
@@ -174,7 +184,6 @@ export class WebGLRenderLoop {
           });
         }
       } else {
-        // Pack edge data (segments + arrows)
         const prevSlot = edgeSlot;
         edgeSlot = this.edgeProgram.processEdge(edgeSlot, ele, pickIndex, r);
         ele._private._webglEdgeSlot = prevSlot;
@@ -369,27 +378,26 @@ export class WebGLRenderLoop {
     // screenSize uses zoom for LOD but screenX/screenY are model-space × zoom
     // with a FIXED grid origin (not pan-dependent) to prevent cell-boundary flicker.
     for(const candidate of this._labelCandidates) {
-      let pos;
+      let px, py;
       if(candidate.ele.isNode()) {
-        pos = candidate.ele.position();
+        const p = candidate.ele.position();
+        px = p.x; py = p.y;
       } else {
-        // Edge label: use midpoint of the edge
         const rs = candidate.ele._private.rscratch;
         if(rs && rs.midX !== undefined) {
-          pos = { x: rs.midX, y: rs.midY };
+          px = rs.midX; py = rs.midY;
         } else if(rs && rs.allpts && rs.allpts.length >= 4) {
           const pts = rs.allpts;
-          pos = { x: (pts[0] + pts[pts.length-2]) / 2, y: (pts[1] + pts[pts.length-1]) / 2 };
+          px = (pts[0] + pts[pts.length-2]) / 2;
+          py = (pts[1] + pts[pts.length-1]) / 2;
         } else {
-          pos = { x: 0, y: 0 };
+          px = 0; py = 0;
         }
       }
-      // Screen position for viewport culling
-      candidate.screenX = pos.x * zoom + pan.x;
-      candidate.screenY = pos.y * zoom + pan.y;
-      // Model-space grid coordinates (stable during pan, prevents cell-boundary flicker)
-      candidate.gridX = pos.x * zoom;
-      candidate.gridY = pos.y * zoom;
+      candidate.screenX = px * zoom + pan.x;
+      candidate.screenY = py * zoom + pan.y;
+      candidate.gridX = px * zoom;
+      candidate.gridY = py * zoom;
       // screenSize scales with zoom for LOD (use baseSize to avoid exponential growth)
       candidate.screenSize = candidate.baseSize * zoom;
     }
@@ -416,16 +424,12 @@ export class WebGLRenderLoop {
     if(!this._initialized || !this.nodeSDFProgram.buffer) return;
 
     const nodeBuf = this.nodeSDFProgram.buffer;
-    const edgeBuf = this.edgeProgram.buffer;
 
     for(let i = 0; i < eles.length; i++) {
       const ele = eles[i];
       if(ele.isNode && ele.isNode()) {
         const slots = ele._private._webglNodeSlots;
         if(!slots || slots.length === 0) continue;
-
-        // Update body slot color (background-color may change on :selected)
-        // Body is the slot after underlay (if exists) — typically slots[0] or slots[1]
         const bodySlot = slots.length > 2 ? slots[1] : slots[0];
         const off = bodySlot * NODE_STRIDE;
 
@@ -601,8 +605,7 @@ export class WebGLRenderLoop {
   }
 
   _getBGColor() {
-    // Return normalized RGBA [0-1] with 4 components for uniform4fv
-    return [1.0, 1.0, 1.0, 1.0];
+    return WHITE_RGBA;
   }
 
   destroy() {
@@ -613,6 +616,9 @@ export class WebGLRenderLoop {
     if(this.glEdge) {
       this.edgeProgram.destroy(this.glEdge);
     }
-    this.texturePageManager.destroy();
+    if(this.glNode) {
+      this.edgeProgram.destroyPicking(this.glNode);
+    }
+    this.texturePageManager.destroy(this.glNode);
   }
 }

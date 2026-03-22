@@ -14,6 +14,7 @@ const _scaleVec = [0, 0];
 const PICK_SIZE = 6;
 const PICK_PIXELS = PICK_SIZE * PICK_SIZE;
 const _pickData = new Uint8Array(PICK_PIXELS * 4);
+const _pickIndexes = new Set(); // reused per pick call
 
 /**
  * Initialize the new WebGL rendering mode after the Canvas renderer has been set up.
@@ -198,29 +199,24 @@ function clearCanvasLayers(r) {
  * Render one frame via the new WebGL render loop.
  */
 function renderWebgl(r, options) {
-  // --- Selection rectangle on its own canvas layer ---
   if(r.data.canvasNeedsRedraw[r.SELECT_BOX]) {
     r.drawSelectionRectangle(options, context => setContextTransform(r, context));
   }
 
-  // --- WebGL ---
+  // Compute pan/zoom once for all render paths (avoids 3 redundant getEffectivePanZoom calls)
+  const { pan, zoom } = util.getEffectivePanZoom(r);
+
   if(r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG] || r.renderLoop.needsProcess) {
     const panZoomMatrix = createPanZoomMatrix(r);
-    const { pan, zoom } = util.getEffectivePanZoom(r);
 
-    // Render edges + nodes via WebGL
     r.renderLoop.render(panZoomMatrix, zoom);
 
     r.data.canvasNeedsRedraw[r.NODE] = false;
     r.data.canvasNeedsRedraw[r.DRAG] = false;
   }
 
-  // --- Labels (Canvas 2D overlay, redrawn every frame) ---
-  // Draw to offscreen buffer first, then blit with 'copy' compositing
-  // to replace the visible canvas atomically (prevents flicker).
   const labelCtx = r.data.contexts[r.LABELS];
   if(labelCtx) {
-    const { pan, zoom } = util.getEffectivePanZoom(r);
 
     if(!r._labelBuffer || r._labelBuffer.width !== r.canvasWidth || r._labelBuffer.height !== r.canvasHeight) {
       r._labelBuffer = r.makeOffscreenCanvas(r.canvasWidth, r.canvasHeight);
@@ -275,12 +271,12 @@ function findNearestElementsWebgl(r, x, y) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
   // Decode pick indices (read directly from buffer, no slice)
-  const indexes = new Set();
+  _pickIndexes.clear();
   for(let i = 0; i < PICK_PIXELS; i++) {
     const off = i * 4;
     const index = (_pickData[off] | (_pickData[off+1] << 8) | (_pickData[off+2] << 16) | (_pickData[off+3] << 24)) - 1;
     if(index >= 0) {
-      indexes.add(index);
+      _pickIndexes.add(index);
     }
   }
 
@@ -288,7 +284,7 @@ function findNearestElementsWebgl(r, x, y) {
   const eles = r.getCachedZSortedEles();
   let node, edge;
 
-  for(const index of indexes) {
+  for(const index of _pickIndexes) {
     const ele = eles[index];
     if(ele) {
       if(!node && ele.isNode()) {

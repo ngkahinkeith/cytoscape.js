@@ -361,7 +361,7 @@ export class EdgeProgram {
    */
   processEdge(startSlot, edge, pickIndex, r) {
     const rs = edge._private.rscratch;
-    if(!rs || rs.badLine || !rs.allpts) return startSlot;
+    if(!rs || !rs.allpts) return startSlot;
 
     const controlPoints = rs.allpts;
     const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
@@ -685,5 +685,14 @@ export class EdgeProgram {
     this.typeBuffer = null;
     this.capacity = 0;
     this.count = 0;
+  }
+
+  /** Clean up picking GL resources (on a DIFFERENT GL context than destroy). */
+  destroyPicking(gl) {
+    if(this._pickVao) { gl.deleteVertexArray(this._pickVao); this._pickVao = null; }
+    if(this._pickGlBuffer) { gl.deleteBuffer(this._pickGlBuffer); this._pickGlBuffer = null; }
+    if(this._pickGlTypeBuffer) { gl.deleteBuffer(this._pickGlTypeBuffer); this._pickGlTypeBuffer = null; }
+    if(this._pickQuadBuffer) { gl.deleteBuffer(this._pickQuadBuffer); this._pickQuadBuffer = null; }
+    if(this._pickProgram) { gl.deleteProgram(this._pickProgram); this._pickProgram = null; }
   }
 }

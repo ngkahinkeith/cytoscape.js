@@ -181,9 +181,14 @@ export class TexturePageManager {
     return this.pages.length * this.maxPageSize * this.maxPageSize * 4;
   }
 
-  /** Clean up all resources. */
-  destroy() {
+  /** Clean up all resources. Pass the GL context to delete GPU textures. */
+  destroy(gl) {
     if(this._rebuildTimer) clearTimeout(this._rebuildTimer);
+    if(gl) {
+      for(const page of this.pages) {
+        if(page.glTexture) { gl.deleteTexture(page.glTexture); }
+      }
+    }
     this.pages = [];
     this.atlas = {};
     this.imageStates = {};
