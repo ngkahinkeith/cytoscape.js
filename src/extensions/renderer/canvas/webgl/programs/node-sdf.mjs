@@ -639,7 +639,8 @@ export class NodeSDFProgram {
     gl.useProgram(program);
     gl.bindVertexArray(this.vao);
     gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
-    gl.uniform1f(program.uZoom, zoom || 1.0);
+    // For picking, disable LOD culling so nodes remain clickable at any zoom
+    gl.uniform1f(program.uZoom, isPicking ? 1e6 : (zoom || 1.0));
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
     gl.bindVertexArray(null);
   }
