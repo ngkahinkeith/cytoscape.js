@@ -145,20 +145,21 @@ function overrideRendererFunctions(r) {
         }
       }
     } else if(eventName === 'add' || eventName === 'remove') {
-      // Structural change — full process() on next render
+      // Structural change — full process() with useCache=false to recompute
+      // ALL edge control points (adding a parallel edge changes existing edges' geometry)
+      r.renderLoop._hasProcessed = false;
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'style') {
-      // Overlay: update immediately via _private.active (O(k) for affected elements)
+      // Incremental color update first (sets styleDirty so pstyle returns fresh values)
+      if(eles && eles.length > 0 && !r.renderLoop.needsProcess) {
+        r.renderLoop.updateStyleIncremental(eles);
+      }
+      // Overlay refresh AFTER style update (reads updated pstyle for :active/:selected)
       r.renderLoop._overlayDirty = true;
       r.renderLoop.refreshOverlayColors();
-      // Style: incrementally update affected elements' colors in the buffer (O(k))
-      // instead of full O(N) process() rebuild
-      if(eles && eles.length > 0) {
-        r.renderLoop.updateStyleIncremental(eles);
-      } else {
-        r.renderLoop.invalidate();
-      }
+      // Schedule full process() for structural changes
+      r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'background') {
       // Background image finished loading — rebuild textures

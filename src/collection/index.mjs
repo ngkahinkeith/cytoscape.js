@@ -540,15 +540,22 @@ elesfn.restore = function( notifyRenderer = true, addToPool = true ){
   if( elements.length > 0 ){
     let restored = elements.length === self.length ? self : new Collection( cy, elements );
 
-    // Invalidate traversal caches for source/target nodes of added edges.
-    // Skip if this is a bulk initial add (no pre-existing edges to invalidate).
-    // Phase 1 (line 392) already clears each element's own cache.
+    // Invalidate traversal caches for added edges AND their existing parallel edges.
+    // Without this, existing parallel edges return stale parallelEdges() results
+    // and get computed as solo straight lines instead of parallel curves.
+    // Skip during bulk initial add (no pre-existing edges to invalidate).
     if( cy_p.elements.length > restored.length ){
       for( let i = 0; i < restored.length; i++ ){
         let ele = restored[i];
         if( ele.isNode() ){ continue; }
+        // Clear source/target node caches
         ele.source().clearTraversalCache();
         ele.target().clearTraversalCache();
+        // Clear existing parallel edges' caches so they re-discover the new edge
+        let srcEdges = ele.source()._private.edges;
+        for( let j = 0; j < srcEdges.length; j++ ){
+          srcEdges[j].clearTraversalCache();
+        }
       }
     }
 

@@ -29,6 +29,9 @@
     button.secondary:hover { background: #6b44a8; }
     button.tier { background: #0a8754; font-weight: bold; }
     button.tier:hover { background: #0b9d62; }
+    button.draw-edge { background: #c27800; }
+    button.draw-edge:hover { background: #e08f00; }
+    button.draw-edge.active { background: #ff5722; box-shadow: 0 0 8px #ff5722; }
     select, input[type="number"] {
       padding: 4px 6px;
       border-radius: 4px;
@@ -96,6 +99,8 @@
   <button class="secondary" onclick="benchmarkPick()">Bench Pick</button>
   <button class="secondary" onclick="cy.fit()">Fit</button>
   <button class="secondary" onclick="exportPng()">PNG</button>
+  <button class="draw-edge" id="drawEdgeBtn" onclick="toggleDrawEdge()">Draw Edge</button>
+  <span id="drawEdgeStatus" style="font-size:11px;color:#ff9800;display:none;"></span>
 
   <div class="sep"></div>
 
@@ -170,7 +175,7 @@ Click "Load Graph" or a Tier button to start.</div>
       nodes.push(node);
     }
 
-    const pairCount = Math.floor(nodeCount * 1.5 / parallelCount);
+    const pairCount = Math.floor(nodeCount * 1.5);
     const seenPairs = new Set();
     let edgeId = 0;
     for (let i = 0; i < pairCount; i++) {
@@ -243,7 +248,7 @@ Click "Load Graph" or a Tier button to start.</div>
       'label': 'data(label)',
       'font-size': 8,
       'color': '#ccc',
-      'text-valign': 'bottom',
+      'text-valign': 'top',
       'text-margin-y': 3,
     };
 
@@ -280,6 +285,20 @@ Click "Load Graph" or a Tier button to start.</div>
           'text-outline-color': '#000',
         }
       },
+      {
+        selector: 'node:selected',
+        style: {
+          'overlay-color': '#00bfff',
+          'overlay-opacity': 0.2,
+        }
+      },
+      {
+        selector: 'edge:selected',
+        style: {
+          'overlay-color': '#00bfff',
+          'overlay-opacity': 0.15,
+        }
+      },
     ];
 
     cy = cytoscape({
@@ -288,6 +307,9 @@ Click "Load Graph" or a Tier button to start.</div>
       style: styles,
       layout: { name: 'preset' },
     });
+
+    setupDrawEdgeListeners();
+    if(drawEdgeMode) toggleDrawEdge(); // reset draw mode on new graph
 
     const t2 = performance.now();
     const totalEles = graph.nodes.length + graph.edges.length;
@@ -414,6 +436,85 @@ Click "Load Graph" or a Tier button to start.</div>
     link.click();
     log('Exported PNG in ' + (t1 - t0).toFixed(0) + 'ms');
   }
+
+  // --- Draw Edge Mode ---
+  let drawEdgeMode = false;
+  let drawEdgeSource = null;
+  let drawEdgeId = 100000;
+
+  function toggleDrawEdge() {
+    drawEdgeMode = !drawEdgeMode;
+    drawEdgeSource = null;
+    const btn = document.getElementById('drawEdgeBtn');
+    const status = document.getElementById('drawEdgeStatus');
+    if(drawEdgeMode) {
+      btn.classList.add('active');
+      status.style.display = 'inline';
+      status.textContent = 'Click source node...';
+      cy.autoungrabify(true); // prevent dragging while drawing
+    } else {
+      btn.classList.remove('active');
+      status.style.display = 'none';
+      cy.autoungrabify(false);
+    }
+  }
+
+  function setupDrawEdgeListeners() {
+    // Use 'tap' for node clicks in draw-edge mode
+    cy.on('tap', function(evt) {
+      if(!drawEdgeMode) return;
+
+      const target = evt.target;
+      // Ignore background taps
+      if(target === cy) return;
+      // Only handle node taps
+      if(!target.isNode || !target.isNode()) return;
+
+      const node = target;
+      const status = document.getElementById('drawEdgeStatus');
+
+      if(!drawEdgeSource) {
+        drawEdgeSource = node;
+        node.style('border-width', 3);
+        node.style('border-color', '#ff5722');
+        status.textContent = 'Source: ' + node.data('label') + ' — click target node...';
+      } else {
+        const src = drawEdgeSource;
+        src.removeStyle('border-width');
+        src.removeStyle('border-color');
+
+        if(src.id() !== node.id()) {
+          cy.add({
+            data: {
+              id: 'drawn_e' + drawEdgeId++,
+              source: src.id(),
+              target: node.id(),
+              label: 'new edge'
+            }
+          });
+          status.textContent = 'Edge created! Click source node...';
+        } else {
+          status.textContent = 'Same node — click a different target...';
+        }
+        drawEdgeSource = null;
+      }
+    });
+
+    cy.on('cxttap', function() {
+      if(drawEdgeMode && drawEdgeSource) {
+        drawEdgeSource.removeStyle('border-width');
+        drawEdgeSource.removeStyle('border-color');
+        drawEdgeSource = null;
+        document.getElementById('drawEdgeStatus').textContent = 'Cancelled. Click source node...';
+      }
+    });
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if(e.key === 'Escape' && drawEdgeMode) {
+      toggleDrawEdge();
+    }
+  });
 
   loadGraph();
 </script>

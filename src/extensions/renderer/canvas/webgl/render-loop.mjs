@@ -252,16 +252,7 @@ export class WebGLRenderLoop {
     const overlayH = node.height() + 2 * nodePadding + padding * 2;
     buf[off + 2] = overlayW;
     buf[off + 3] = overlayH;
-    // Use ele._private.active directly — pstyle('overlay-opacity') may be stale
-    // because updateStyle() defers style.apply().
-    if(prefix === 'overlay') {
-      const isActive = node._private.active;
-      buf[off + 4] = isActive
-        ? packPremulColor(color, opacity > 0 ? opacity : 0.25)
-        : packPremulColor([0, 0, 0], 0);
-    } else {
-      buf[off + 4] = packPremulColor(color, opacity);
-    }
+    buf[off + 4] = packPremulColor(color, opacity);
     buf[off + 5] = packColor(0, 0, 0, 0);
     buf[off + 6] = 0;
     buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
@@ -423,6 +414,14 @@ export class WebGLRenderLoop {
   updateStyleIncremental(eles) {
     if(!this._initialized || !this.nodeSDFProgram.buffer) return;
 
+    // Force style recalculation — updateStyle() sets styleDirty=true AFTER
+    // emitAndNotify('style'), so pstyle() returns stale values in our handler.
+    // Explicitly apply the stylesheet to get :selected/:active styles.
+    const style = this.r.cy.style();
+    for(let i = 0; i < eles.length; i++) {
+      eles[i]._private.styleDirty = true;
+    }
+
     const nodeBuf = this.nodeSDFProgram.buffer;
 
     for(let i = 0; i < eles.length; i++) {
@@ -470,7 +469,7 @@ export class WebGLRenderLoop {
     if(count > 1) this.edgeProgram._markDirty(slot + count - 1);
   }
 
-  /** Refresh overlay colors from live ele._private.active state.
+  /** Refresh overlay colors from pstyle overlay-opacity (supports :active AND :selected).
    *  Gated by _overlayDirty flag to avoid O(N) scan every frame. */
   refreshOverlayColors() {
     if(!this._overlayDirty) return false;
@@ -484,14 +483,21 @@ export class WebGLRenderLoop {
     const eles = this.r.getCachedZSortedEles();
     for(let i = 0; i < eles.length; i++) {
       const ele = eles[i];
+
+      // Force style recalc for elements that just changed state
+      // (styleDirty was set by updateStyleIncremental in the same notify handler)
+      if(ele._private.styleDirty) {
+        ele.pstyle('overlay-opacity'); // triggers lazy style.apply()
+      }
+
       if(ele.isNode()) {
         const overlaySlot = ele._private._webglOverlaySlot;
         if(overlaySlot === undefined) continue;
 
         const off = overlaySlot * NODE_STRIDE;
-        const isActive = ele._private.active;
-        const packed = isActive
-          ? packPremulColor(ele.pstyle('overlay-color').value || [0, 0, 0], 0.25)
+        const opacity = ele.pstyle('overlay-opacity').value;
+        const packed = opacity > 0
+          ? packPremulColor(ele.pstyle('overlay-color').value || [0, 0, 0], opacity)
           : packPremulColor([0, 0, 0], 0);
         if(buf[off + 4] !== packed) {
           buf[off + 4] = packed;
@@ -499,8 +505,9 @@ export class WebGLRenderLoop {
           changed = true;
         }
       } else {
-        // Track active edges for overlay drawing
-        if(ele._private.active) {
+        // Track edges with overlay (active or selected) for overlay drawing
+        const overlayOpacity = ele.pstyle('overlay-opacity').value;
+        if(overlayOpacity > 0) {
           this._activeEdges.push(ele);
           changed = true;
         }
