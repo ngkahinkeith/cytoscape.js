@@ -34075,9 +34075,17 @@ var WebGLRenderLoop = /*#__PURE__*/function () {
     key: "updateStyleIncremental",
     value: function updateStyleIncremental(eles) {
       if (!this._initialized || !this.nodeSDFProgram.buffer) return;
-      var nodeBuf = this.nodeSDFProgram.buffer;
+
+      // Force style recalculation — updateStyle() sets styleDirty=true AFTER
+      // emitAndNotify('style'), so pstyle() returns stale values in our handler.
+      // Explicitly apply the stylesheet to get :selected/:active styles.
+      this.r.cy.style();
       for (var i = 0; i < eles.length; i++) {
-        var ele = eles[i];
+        eles[i]._private.styleDirty = true;
+      }
+      var nodeBuf = this.nodeSDFProgram.buffer;
+      for (var _i2 = 0; _i2 < eles.length; _i2++) {
+        var ele = eles[_i2];
         if (ele.isNode && ele.isNode()) {
           var slots = ele._private._webglNodeSlots;
           if (!slots || slots.length === 0) continue;
@@ -34208,8 +34216,8 @@ var WebGLRenderLoop = /*#__PURE__*/function () {
       this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
 
       // Restore original values
-      for (var _i2 = 0, _saved = saved; _i2 < _saved.length; _i2++) {
-        var s = _saved[_i2];
+      for (var _i3 = 0, _saved = saved; _i3 < _saved.length; _i3++) {
+        var s = _saved[_i3];
         edgeBuf[s.off + 8] = s.color;
         edgeBuf[s.off + 9] = s.width;
       }
@@ -34628,16 +34636,16 @@ function overrideRendererFunctions(r) {
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if (eventName === 'style') {
-      // Overlay: update immediately via _private.active (O(k) for affected elements)
       r.renderLoop._overlayDirty = true;
       r.renderLoop.refreshOverlayColors();
-      // Style: incrementally update affected elements' colors in the buffer (O(k))
-      // instead of full O(N) process() rebuild
-      if (eles && eles.length > 0) {
+      // Incremental color update for affected elements (O(k)) — avoids full O(N) process()
+      if (eles && eles.length > 0 && !r.renderLoop.needsProcess) {
         r.renderLoop.updateStyleIncremental(eles);
-      } else {
-        r.renderLoop.invalidate();
       }
+      // Always schedule a full process() — needed for structural style changes
+      // (curve-style, width, shape, etc.) that can't be handled incrementally.
+      // The incremental update above ensures immediate visual feedback for colors.
+      r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if (eventName === 'background') {
       // Background image finished loading — rebuild textures
