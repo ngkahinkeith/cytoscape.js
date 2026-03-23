@@ -20,146 +20,158 @@
  * SOFTWARE.
  */
 
-function _typeof(obj) {
-  "@babel/helpers - typeof";
-
-  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) {
-    return typeof obj;
-  } : function (obj) {
-    return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-  }, _typeof(obj);
+function _arrayLikeToArray(r, a) {
+  (null == a || a > r.length) && (a = r.length);
+  for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e];
+  return n;
 }
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
+function _arrayWithHoles(r) {
+  if (Array.isArray(r)) return r;
+}
+function _arrayWithoutHoles(r) {
+  if (Array.isArray(r)) return _arrayLikeToArray(r);
+}
+function _classCallCheck(a, n) {
+  if (!(a instanceof n)) throw new TypeError("Cannot call a class as a function");
+}
+function _defineProperties(e, r) {
+  for (var t = 0; t < r.length; t++) {
+    var o = r[t];
+    o.enumerable = o.enumerable || false, o.configurable = true, "value" in o && (o.writable = true), Object.defineProperty(e, _toPropertyKey(o.key), o);
   }
 }
-function _defineProperties(target, props) {
-  for (var i = 0; i < props.length; i++) {
-    var descriptor = props[i];
-    descriptor.enumerable = descriptor.enumerable || false;
-    descriptor.configurable = true;
-    if ("value" in descriptor) descriptor.writable = true;
-    Object.defineProperty(target, descriptor.key, descriptor);
-  }
-}
-function _createClass(Constructor, protoProps, staticProps) {
-  if (protoProps) _defineProperties(Constructor.prototype, protoProps);
-  if (staticProps) _defineProperties(Constructor, staticProps);
-  Object.defineProperty(Constructor, "prototype", {
+function _createClass(e, r, t) {
+  return r && _defineProperties(e.prototype, r), Object.defineProperty(e, "prototype", {
     writable: false
-  });
-  return Constructor;
+  }), e;
 }
-function _defineProperty$1(obj, key, value) {
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-  return obj;
-}
-function _slicedToArray(arr, i) {
-  return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
-}
-function _arrayWithHoles(arr) {
-  if (Array.isArray(arr)) return arr;
-}
-function _iterableToArrayLimit(arr, i) {
-  var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
-  if (_i == null) return;
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-  var _s, _e;
-  try {
-    for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-      if (i && _arr.length === i) break;
-    }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
-    }
-  }
-  return _arr;
-}
-function _unsupportedIterableToArray(o, minLen) {
-  if (!o) return;
-  if (typeof o === "string") return _arrayLikeToArray(o, minLen);
-  var n = Object.prototype.toString.call(o).slice(8, -1);
-  if (n === "Object" && o.constructor) n = o.constructor.name;
-  if (n === "Map" || n === "Set") return Array.from(o);
-  if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
-}
-function _arrayLikeToArray(arr, len) {
-  if (len == null || len > arr.length) len = arr.length;
-  for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-  return arr2;
-}
-function _nonIterableRest() {
-  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-}
-function _createForOfIteratorHelper(o, allowArrayLike) {
-  var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"];
-  if (!it) {
-    if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") {
-      if (it) o = it;
-      var i = 0;
-      var F = function () {};
+function _createForOfIteratorHelper(r, e) {
+  var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+  if (!t) {
+    if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e) {
+      t && (r = t);
+      var n = 0,
+        F = function () {};
       return {
         s: F,
         n: function () {
-          if (i >= o.length) return {
+          return n >= r.length ? {
             done: true
-          };
-          return {
+          } : {
             done: false,
-            value: o[i++]
+            value: r[n++]
           };
         },
-        e: function (e) {
-          throw e;
+        e: function (r) {
+          throw r;
         },
         f: F
       };
     }
     throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
   }
-  var normalCompletion = true,
-    didErr = false,
-    err;
+  var o,
+    a = true,
+    u = false;
   return {
     s: function () {
-      it = it.call(o);
+      t = t.call(r);
     },
     n: function () {
-      var step = it.next();
-      normalCompletion = step.done;
-      return step;
+      var r = t.next();
+      return a = r.done, r;
     },
-    e: function (e) {
-      didErr = true;
-      err = e;
+    e: function (r) {
+      u = true, o = r;
     },
     f: function () {
       try {
-        if (!normalCompletion && it.return != null) it.return();
+        a || null == t.return || t.return();
       } finally {
-        if (didErr) throw err;
+        if (u) throw o;
       }
     }
   };
+}
+function _defineProperty$1(e, r, t) {
+  return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+    value: t,
+    enumerable: true,
+    configurable: true,
+    writable: true
+  }) : e[r] = t, e;
+}
+function _iterableToArray(r) {
+  if ("undefined" != typeof Symbol && null != r[Symbol.iterator] || null != r["@@iterator"]) return Array.from(r);
+}
+function _iterableToArrayLimit(r, l) {
+  var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"];
+  if (null != t) {
+    var e,
+      n,
+      i,
+      u,
+      a = [],
+      f = true,
+      o = false;
+    try {
+      if (i = (t = t.call(r)).next, 0 === l) {
+        if (Object(t) !== t) return;
+        f = !1;
+      } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0);
+    } catch (r) {
+      o = true, n = r;
+    } finally {
+      try {
+        if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return;
+      } finally {
+        if (o) throw n;
+      }
+    }
+    return a;
+  }
+}
+function _nonIterableRest() {
+  throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+function _slicedToArray(r, e) {
+  return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest();
+}
+function _toConsumableArray(r) {
+  return _arrayWithoutHoles(r) || _iterableToArray(r) || _unsupportedIterableToArray(r) || _nonIterableSpread();
+}
+function _toPrimitive(t, r) {
+  if ("object" != typeof t || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (undefined !== e) {
+    var i = e.call(t, r);
+    if ("object" != typeof i) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return (String )(t);
+}
+function _toPropertyKey(t) {
+  var i = _toPrimitive(t, "string");
+  return "symbol" == typeof i ? i : i + "";
+}
+function _typeof(o) {
+  "@babel/helpers - typeof";
+
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, _typeof(o);
+}
+function _unsupportedIterableToArray(r, a) {
+  if (r) {
+    if ("string" == typeof r) return _arrayLikeToArray(r, a);
+    var t = {}.toString.call(r).slice(8, -1);
+    return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : undefined;
+  }
 }
 
 var _window = typeof window === 'undefined' ? null : window; // eslint-disable-line no-undef
@@ -227,7 +239,6 @@ var emptyString = function emptyString(obj) {
   } else if (obj === '' || obj.match(/^\s+$/)) {
     return true; // empty string is empty
   }
-
   return false; // otherwise, we don't know what we've got
 };
 var domElement = function domElement(obj) {
@@ -247,7 +258,7 @@ var ms = function ms() {
   return navigator && navigator.userAgent.match(/msie|trident|edge/i);
 }; // probably a better way to detect this...
 
-var memoize$1 = function memoize(fn, keyFn) {
+var memoize = function memoize(fn, keyFn) {
   if (!keyFn) {
     keyFn = function keyFn() {
       if (arguments.length === 1) {
@@ -262,32 +273,32 @@ var memoize$1 = function memoize(fn, keyFn) {
       return args.join('$');
     };
   }
-  var memoizedFn = function memoizedFn() {
+  var _memoizedFn = function memoizedFn() {
     var self = this;
     var args = arguments;
     var ret;
     var k = keyFn.apply(self, args);
-    var cache = memoizedFn.cache;
+    var cache = _memoizedFn.cache;
     if (!(ret = cache[k])) {
       ret = cache[k] = fn.apply(self, args);
     }
     return ret;
   };
-  memoizedFn.cache = {};
-  return memoizedFn;
+  _memoizedFn.cache = {};
+  return _memoizedFn;
 };
 
-var camel2dash = memoize$1(function (str) {
+var camel2dash = memoize(function (str) {
   return str.replace(/([A-Z])/g, function (v) {
     return '-' + v.toLowerCase();
   });
 });
-var dash2camel = memoize$1(function (str) {
+var dash2camel = memoize(function (str) {
   return str.replace(/(-\w)/g, function (v) {
     return v[1].toUpperCase();
   });
 });
-var prependCamel = memoize$1(function (prefix, str) {
+var prependCamel = memoize(function (prefix, str) {
   return prefix + str[0].toUpperCase() + str.substring(1);
 }, function (prefix, str) {
   return prefix + '$' + str;
@@ -297,6 +308,9 @@ var capitalize = function capitalize(str) {
     return str;
   }
   return str.charAt(0).toUpperCase() + str.substring(1);
+};
+var endsWith = function endsWith(string, suffix) {
+  return string.slice(-1 * suffix.length) === suffix;
 };
 
 var number = '(?:[-+]?(?:(?:\\d+|\\d*\\.\\d+)(?:[Ee][+-]?\\d+)?))';
@@ -431,7 +445,6 @@ var rgb2tuple = function rgb2tuple(rgb) {
       if (isPct[i]) {
         channel = channel / 100 * 255; // normalise to [0, 255]
       }
-
       if (channel < 0 || channel > 255) {
         return;
       } // invalid channel value
@@ -658,6 +671,12 @@ var getMap = function getMap(options) {
   return obj;
 };
 
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+function getDefaultExportFromCjs (x) {
+	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
 /**
  * Checks if `value` is the
  * [language type](http://www.ecma-international.org/ecma-262/7.0/#sec-ecmascript-language-types)
@@ -683,189 +702,281 @@ var getMap = function getMap(options) {
  * _.isObject(null);
  * // => false
  */
-function isObject(value) {
-  var type = typeof value;
-  return value != null && (type == 'object' || type == 'function');
-}
 
-var isObject_1 = isObject;
+var isObject_1;
+var hasRequiredIsObject;
 
-var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+function requireIsObject () {
+	if (hasRequiredIsObject) return isObject_1;
+	hasRequiredIsObject = 1;
+	function isObject(value) {
+	  var type = typeof value;
+	  return value != null && (type == 'object' || type == 'function');
+	}
 
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
+	isObject_1 = isObject;
+	return isObject_1;
 }
 
 /** Detect free variable `global` from Node.js. */
-var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
-var _freeGlobal = freeGlobal;
+var _freeGlobal;
+var hasRequired_freeGlobal;
 
-/** Detect free variable `self`. */
-var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+function require_freeGlobal () {
+	if (hasRequired_freeGlobal) return _freeGlobal;
+	hasRequired_freeGlobal = 1;
+	var freeGlobal = typeof commonjsGlobal == 'object' && commonjsGlobal && commonjsGlobal.Object === Object && commonjsGlobal;
 
-/** Used as a reference to the global object. */
-var root = _freeGlobal || freeSelf || Function('return this')();
+	_freeGlobal = freeGlobal;
+	return _freeGlobal;
+}
 
-var _root = root;
+var _root;
+var hasRequired_root;
 
-/**
- * Gets the timestamp of the number of milliseconds that have elapsed since
- * the Unix epoch (1 January 1970 00:00:00 UTC).
- *
- * @static
- * @memberOf _
- * @since 2.4.0
- * @category Date
- * @returns {number} Returns the timestamp.
- * @example
- *
- * _.defer(function(stamp) {
- *   console.log(_.now() - stamp);
- * }, _.now());
- * // => Logs the number of milliseconds it took for the deferred invocation.
- */
-var now = function() {
-  return _root.Date.now();
-};
+function require_root () {
+	if (hasRequired_root) return _root;
+	hasRequired_root = 1;
+	var freeGlobal = require_freeGlobal();
 
-var now_1 = now;
+	/** Detect free variable `self`. */
+	var freeSelf = typeof self == 'object' && self && self.Object === Object && self;
+
+	/** Used as a reference to the global object. */
+	var root = freeGlobal || freeSelf || Function('return this')();
+
+	_root = root;
+	return _root;
+}
+
+var now_1;
+var hasRequiredNow;
+
+function requireNow () {
+	if (hasRequiredNow) return now_1;
+	hasRequiredNow = 1;
+	var root = require_root();
+
+	/**
+	 * Gets the timestamp of the number of milliseconds that have elapsed since
+	 * the Unix epoch (1 January 1970 00:00:00 UTC).
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 2.4.0
+	 * @category Date
+	 * @returns {number} Returns the timestamp.
+	 * @example
+	 *
+	 * _.defer(function(stamp) {
+	 *   console.log(_.now() - stamp);
+	 * }, _.now());
+	 * // => Logs the number of milliseconds it took for the deferred invocation.
+	 */
+	var now = function() {
+	  return root.Date.now();
+	};
+
+	now_1 = now;
+	return now_1;
+}
 
 /** Used to match a single whitespace character. */
-var reWhitespace = /\s/;
 
-/**
- * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
- * character of `string`.
- *
- * @private
- * @param {string} string The string to inspect.
- * @returns {number} Returns the index of the last non-whitespace character.
- */
-function trimmedEndIndex(string) {
-  var index = string.length;
+var _trimmedEndIndex;
+var hasRequired_trimmedEndIndex;
 
-  while (index-- && reWhitespace.test(string.charAt(index))) {}
-  return index;
+function require_trimmedEndIndex () {
+	if (hasRequired_trimmedEndIndex) return _trimmedEndIndex;
+	hasRequired_trimmedEndIndex = 1;
+	var reWhitespace = /\s/;
+
+	/**
+	 * Used by `_.trim` and `_.trimEnd` to get the index of the last non-whitespace
+	 * character of `string`.
+	 *
+	 * @private
+	 * @param {string} string The string to inspect.
+	 * @returns {number} Returns the index of the last non-whitespace character.
+	 */
+	function trimmedEndIndex(string) {
+	  var index = string.length;
+
+	  while (index-- && reWhitespace.test(string.charAt(index))) {}
+	  return index;
+	}
+
+	_trimmedEndIndex = trimmedEndIndex;
+	return _trimmedEndIndex;
 }
 
-var _trimmedEndIndex = trimmedEndIndex;
+var _baseTrim;
+var hasRequired_baseTrim;
 
-/** Used to match leading whitespace. */
-var reTrimStart = /^\s+/;
+function require_baseTrim () {
+	if (hasRequired_baseTrim) return _baseTrim;
+	hasRequired_baseTrim = 1;
+	var trimmedEndIndex = require_trimmedEndIndex();
 
-/**
- * The base implementation of `_.trim`.
- *
- * @private
- * @param {string} string The string to trim.
- * @returns {string} Returns the trimmed string.
- */
-function baseTrim(string) {
-  return string
-    ? string.slice(0, _trimmedEndIndex(string) + 1).replace(reTrimStart, '')
-    : string;
+	/** Used to match leading whitespace. */
+	var reTrimStart = /^\s+/;
+
+	/**
+	 * The base implementation of `_.trim`.
+	 *
+	 * @private
+	 * @param {string} string The string to trim.
+	 * @returns {string} Returns the trimmed string.
+	 */
+	function baseTrim(string) {
+	  return string
+	    ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, '')
+	    : string;
+	}
+
+	_baseTrim = baseTrim;
+	return _baseTrim;
 }
 
-var _baseTrim = baseTrim;
+var _Symbol;
+var hasRequired_Symbol;
 
-/** Built-in value references. */
-var Symbol$1 = _root.Symbol;
+function require_Symbol () {
+	if (hasRequired_Symbol) return _Symbol;
+	hasRequired_Symbol = 1;
+	var root = require_root();
 
-var _Symbol = Symbol$1;
+	/** Built-in value references. */
+	var Symbol = root.Symbol;
+
+	_Symbol = Symbol;
+	return _Symbol;
+}
+
+var _getRawTag;
+var hasRequired_getRawTag;
+
+function require_getRawTag () {
+	if (hasRequired_getRawTag) return _getRawTag;
+	hasRequired_getRawTag = 1;
+	var Symbol = require_Symbol();
+
+	/** Used for built-in method references. */
+	var objectProto = Object.prototype;
+
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+
+	/**
+	 * Used to resolve the
+	 * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+	 * of values.
+	 */
+	var nativeObjectToString = objectProto.toString;
+
+	/** Built-in value references. */
+	var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+	/**
+	 * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
+	 *
+	 * @private
+	 * @param {*} value The value to query.
+	 * @returns {string} Returns the raw `toStringTag`.
+	 */
+	function getRawTag(value) {
+	  var isOwn = hasOwnProperty.call(value, symToStringTag),
+	      tag = value[symToStringTag];
+
+	  try {
+	    value[symToStringTag] = undefined;
+	    var unmasked = true;
+	  } catch (e) {}
+
+	  var result = nativeObjectToString.call(value);
+	  if (unmasked) {
+	    if (isOwn) {
+	      value[symToStringTag] = tag;
+	    } else {
+	      delete value[symToStringTag];
+	    }
+	  }
+	  return result;
+	}
+
+	_getRawTag = getRawTag;
+	return _getRawTag;
+}
 
 /** Used for built-in method references. */
-var objectProto$5 = Object.prototype;
 
-/** Used to check objects for own properties. */
-var hasOwnProperty$4 = objectProto$5.hasOwnProperty;
+var _objectToString;
+var hasRequired_objectToString;
 
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString$1 = objectProto$5.toString;
+function require_objectToString () {
+	if (hasRequired_objectToString) return _objectToString;
+	hasRequired_objectToString = 1;
+	var objectProto = Object.prototype;
 
-/** Built-in value references. */
-var symToStringTag$1 = _Symbol ? _Symbol.toStringTag : undefined;
+	/**
+	 * Used to resolve the
+	 * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
+	 * of values.
+	 */
+	var nativeObjectToString = objectProto.toString;
 
-/**
- * A specialized version of `baseGetTag` which ignores `Symbol.toStringTag` values.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the raw `toStringTag`.
- */
-function getRawTag(value) {
-  var isOwn = hasOwnProperty$4.call(value, symToStringTag$1),
-      tag = value[symToStringTag$1];
+	/**
+	 * Converts `value` to a string using `Object.prototype.toString`.
+	 *
+	 * @private
+	 * @param {*} value The value to convert.
+	 * @returns {string} Returns the converted string.
+	 */
+	function objectToString(value) {
+	  return nativeObjectToString.call(value);
+	}
 
-  try {
-    value[symToStringTag$1] = undefined;
-    var unmasked = true;
-  } catch (e) {}
-
-  var result = nativeObjectToString$1.call(value);
-  if (unmasked) {
-    if (isOwn) {
-      value[symToStringTag$1] = tag;
-    } else {
-      delete value[symToStringTag$1];
-    }
-  }
-  return result;
+	_objectToString = objectToString;
+	return _objectToString;
 }
 
-var _getRawTag = getRawTag;
+var _baseGetTag;
+var hasRequired_baseGetTag;
 
-/** Used for built-in method references. */
-var objectProto$4 = Object.prototype;
+function require_baseGetTag () {
+	if (hasRequired_baseGetTag) return _baseGetTag;
+	hasRequired_baseGetTag = 1;
+	var Symbol = require_Symbol(),
+	    getRawTag = require_getRawTag(),
+	    objectToString = require_objectToString();
 
-/**
- * Used to resolve the
- * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
- * of values.
- */
-var nativeObjectToString = objectProto$4.toString;
+	/** `Object#toString` result references. */
+	var nullTag = '[object Null]',
+	    undefinedTag = '[object Undefined]';
 
-/**
- * Converts `value` to a string using `Object.prototype.toString`.
- *
- * @private
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- */
-function objectToString(value) {
-  return nativeObjectToString.call(value);
+	/** Built-in value references. */
+	var symToStringTag = Symbol ? Symbol.toStringTag : undefined;
+
+	/**
+	 * The base implementation of `getTag` without fallbacks for buggy environments.
+	 *
+	 * @private
+	 * @param {*} value The value to query.
+	 * @returns {string} Returns the `toStringTag`.
+	 */
+	function baseGetTag(value) {
+	  if (value == null) {
+	    return value === undefined ? undefinedTag : nullTag;
+	  }
+	  return (symToStringTag && symToStringTag in Object(value))
+	    ? getRawTag(value)
+	    : objectToString(value);
+	}
+
+	_baseGetTag = baseGetTag;
+	return _baseGetTag;
 }
-
-var _objectToString = objectToString;
-
-/** `Object#toString` result references. */
-var nullTag = '[object Null]',
-    undefinedTag = '[object Undefined]';
-
-/** Built-in value references. */
-var symToStringTag = _Symbol ? _Symbol.toStringTag : undefined;
-
-/**
- * The base implementation of `getTag` without fallbacks for buggy environments.
- *
- * @private
- * @param {*} value The value to query.
- * @returns {string} Returns the `toStringTag`.
- */
-function baseGetTag(value) {
-  if (value == null) {
-    return value === undefined ? undefinedTag : nullTag;
-  }
-  return (symToStringTag && symToStringTag in Object(value))
-    ? _getRawTag(value)
-    : _objectToString(value);
-}
-
-var _baseGetTag = baseGetTag;
 
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
@@ -891,287 +1002,334 @@ var _baseGetTag = baseGetTag;
  * _.isObjectLike(null);
  * // => false
  */
-function isObjectLike(value) {
-  return value != null && typeof value == 'object';
+
+var isObjectLike_1;
+var hasRequiredIsObjectLike;
+
+function requireIsObjectLike () {
+	if (hasRequiredIsObjectLike) return isObjectLike_1;
+	hasRequiredIsObjectLike = 1;
+	function isObjectLike(value) {
+	  return value != null && typeof value == 'object';
+	}
+
+	isObjectLike_1 = isObjectLike;
+	return isObjectLike_1;
 }
 
-var isObjectLike_1 = isObjectLike;
+var isSymbol_1;
+var hasRequiredIsSymbol;
 
-/** `Object#toString` result references. */
-var symbolTag = '[object Symbol]';
+function requireIsSymbol () {
+	if (hasRequiredIsSymbol) return isSymbol_1;
+	hasRequiredIsSymbol = 1;
+	var baseGetTag = require_baseGetTag(),
+	    isObjectLike = requireIsObjectLike();
 
-/**
- * Checks if `value` is classified as a `Symbol` primitive or object.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
- * @example
- *
- * _.isSymbol(Symbol.iterator);
- * // => true
- *
- * _.isSymbol('abc');
- * // => false
- */
-function isSymbol(value) {
-  return typeof value == 'symbol' ||
-    (isObjectLike_1(value) && _baseGetTag(value) == symbolTag);
+	/** `Object#toString` result references. */
+	var symbolTag = '[object Symbol]';
+
+	/**
+	 * Checks if `value` is classified as a `Symbol` primitive or object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.0.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a symbol, else `false`.
+	 * @example
+	 *
+	 * _.isSymbol(Symbol.iterator);
+	 * // => true
+	 *
+	 * _.isSymbol('abc');
+	 * // => false
+	 */
+	function isSymbol(value) {
+	  return typeof value == 'symbol' ||
+	    (isObjectLike(value) && baseGetTag(value) == symbolTag);
+	}
+
+	isSymbol_1 = isSymbol;
+	return isSymbol_1;
 }
 
-var isSymbol_1 = isSymbol;
+var toNumber_1;
+var hasRequiredToNumber;
 
-/** Used as references for various `Number` constants. */
-var NAN = 0 / 0;
+function requireToNumber () {
+	if (hasRequiredToNumber) return toNumber_1;
+	hasRequiredToNumber = 1;
+	var baseTrim = require_baseTrim(),
+	    isObject = requireIsObject(),
+	    isSymbol = requireIsSymbol();
 
-/** Used to detect bad signed hexadecimal string values. */
-var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+	/** Used as references for various `Number` constants. */
+	var NAN = 0 / 0;
 
-/** Used to detect binary string values. */
-var reIsBinary = /^0b[01]+$/i;
+	/** Used to detect bad signed hexadecimal string values. */
+	var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
 
-/** Used to detect octal string values. */
-var reIsOctal = /^0o[0-7]+$/i;
+	/** Used to detect binary string values. */
+	var reIsBinary = /^0b[01]+$/i;
 
-/** Built-in method references without a dependency on `root`. */
-var freeParseInt = parseInt;
+	/** Used to detect octal string values. */
+	var reIsOctal = /^0o[0-7]+$/i;
 
-/**
- * Converts `value` to a number.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to process.
- * @returns {number} Returns the number.
- * @example
- *
- * _.toNumber(3.2);
- * // => 3.2
- *
- * _.toNumber(Number.MIN_VALUE);
- * // => 5e-324
- *
- * _.toNumber(Infinity);
- * // => Infinity
- *
- * _.toNumber('3.2');
- * // => 3.2
- */
-function toNumber(value) {
-  if (typeof value == 'number') {
-    return value;
-  }
-  if (isSymbol_1(value)) {
-    return NAN;
-  }
-  if (isObject_1(value)) {
-    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
-    value = isObject_1(other) ? (other + '') : other;
-  }
-  if (typeof value != 'string') {
-    return value === 0 ? value : +value;
-  }
-  value = _baseTrim(value);
-  var isBinary = reIsBinary.test(value);
-  return (isBinary || reIsOctal.test(value))
-    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
-    : (reIsBadHex.test(value) ? NAN : +value);
+	/** Built-in method references without a dependency on `root`. */
+	var freeParseInt = parseInt;
+
+	/**
+	 * Converts `value` to a number.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.0.0
+	 * @category Lang
+	 * @param {*} value The value to process.
+	 * @returns {number} Returns the number.
+	 * @example
+	 *
+	 * _.toNumber(3.2);
+	 * // => 3.2
+	 *
+	 * _.toNumber(Number.MIN_VALUE);
+	 * // => 5e-324
+	 *
+	 * _.toNumber(Infinity);
+	 * // => Infinity
+	 *
+	 * _.toNumber('3.2');
+	 * // => 3.2
+	 */
+	function toNumber(value) {
+	  if (typeof value == 'number') {
+	    return value;
+	  }
+	  if (isSymbol(value)) {
+	    return NAN;
+	  }
+	  if (isObject(value)) {
+	    var other = typeof value.valueOf == 'function' ? value.valueOf() : value;
+	    value = isObject(other) ? (other + '') : other;
+	  }
+	  if (typeof value != 'string') {
+	    return value === 0 ? value : +value;
+	  }
+	  value = baseTrim(value);
+	  var isBinary = reIsBinary.test(value);
+	  return (isBinary || reIsOctal.test(value))
+	    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+	    : (reIsBadHex.test(value) ? NAN : +value);
+	}
+
+	toNumber_1 = toNumber;
+	return toNumber_1;
 }
 
-var toNumber_1 = toNumber;
+var debounce_1;
+var hasRequiredDebounce;
 
-/** Error message constants. */
-var FUNC_ERROR_TEXT$1 = 'Expected a function';
+function requireDebounce () {
+	if (hasRequiredDebounce) return debounce_1;
+	hasRequiredDebounce = 1;
+	var isObject = requireIsObject(),
+	    now = requireNow(),
+	    toNumber = requireToNumber();
 
-/* Built-in method references for those with the same name as other `lodash` methods. */
-var nativeMax = Math.max,
-    nativeMin = Math.min;
+	/** Error message constants. */
+	var FUNC_ERROR_TEXT = 'Expected a function';
 
-/**
- * Creates a debounced function that delays invoking `func` until after `wait`
- * milliseconds have elapsed since the last time the debounced function was
- * invoked. The debounced function comes with a `cancel` method to cancel
- * delayed `func` invocations and a `flush` method to immediately invoke them.
- * Provide `options` to indicate whether `func` should be invoked on the
- * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
- * with the last arguments provided to the debounced function. Subsequent
- * calls to the debounced function return the result of the last `func`
- * invocation.
- *
- * **Note:** If `leading` and `trailing` options are `true`, `func` is
- * invoked on the trailing edge of the timeout only if the debounced function
- * is invoked more than once during the `wait` timeout.
- *
- * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
- * until to the next tick, similar to `setTimeout` with a timeout of `0`.
- *
- * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
- * for details over the differences between `_.debounce` and `_.throttle`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to debounce.
- * @param {number} [wait=0] The number of milliseconds to delay.
- * @param {Object} [options={}] The options object.
- * @param {boolean} [options.leading=false]
- *  Specify invoking on the leading edge of the timeout.
- * @param {number} [options.maxWait]
- *  The maximum time `func` is allowed to be delayed before it's invoked.
- * @param {boolean} [options.trailing=true]
- *  Specify invoking on the trailing edge of the timeout.
- * @returns {Function} Returns the new debounced function.
- * @example
- *
- * // Avoid costly calculations while the window size is in flux.
- * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
- *
- * // Invoke `sendMail` when clicked, debouncing subsequent calls.
- * jQuery(element).on('click', _.debounce(sendMail, 300, {
- *   'leading': true,
- *   'trailing': false
- * }));
- *
- * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
- * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
- * var source = new EventSource('/stream');
- * jQuery(source).on('message', debounced);
- *
- * // Cancel the trailing debounced invocation.
- * jQuery(window).on('popstate', debounced.cancel);
- */
-function debounce(func, wait, options) {
-  var lastArgs,
-      lastThis,
-      maxWait,
-      result,
-      timerId,
-      lastCallTime,
-      lastInvokeTime = 0,
-      leading = false,
-      maxing = false,
-      trailing = true;
+	/* Built-in method references for those with the same name as other `lodash` methods. */
+	var nativeMax = Math.max,
+	    nativeMin = Math.min;
 
-  if (typeof func != 'function') {
-    throw new TypeError(FUNC_ERROR_TEXT$1);
-  }
-  wait = toNumber_1(wait) || 0;
-  if (isObject_1(options)) {
-    leading = !!options.leading;
-    maxing = 'maxWait' in options;
-    maxWait = maxing ? nativeMax(toNumber_1(options.maxWait) || 0, wait) : maxWait;
-    trailing = 'trailing' in options ? !!options.trailing : trailing;
-  }
+	/**
+	 * Creates a debounced function that delays invoking `func` until after `wait`
+	 * milliseconds have elapsed since the last time the debounced function was
+	 * invoked. The debounced function comes with a `cancel` method to cancel
+	 * delayed `func` invocations and a `flush` method to immediately invoke them.
+	 * Provide `options` to indicate whether `func` should be invoked on the
+	 * leading and/or trailing edge of the `wait` timeout. The `func` is invoked
+	 * with the last arguments provided to the debounced function. Subsequent
+	 * calls to the debounced function return the result of the last `func`
+	 * invocation.
+	 *
+	 * **Note:** If `leading` and `trailing` options are `true`, `func` is
+	 * invoked on the trailing edge of the timeout only if the debounced function
+	 * is invoked more than once during the `wait` timeout.
+	 *
+	 * If `wait` is `0` and `leading` is `false`, `func` invocation is deferred
+	 * until to the next tick, similar to `setTimeout` with a timeout of `0`.
+	 *
+	 * See [David Corbacho's article](https://css-tricks.com/debouncing-throttling-explained-examples/)
+	 * for details over the differences between `_.debounce` and `_.throttle`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Function
+	 * @param {Function} func The function to debounce.
+	 * @param {number} [wait=0] The number of milliseconds to delay.
+	 * @param {Object} [options={}] The options object.
+	 * @param {boolean} [options.leading=false]
+	 *  Specify invoking on the leading edge of the timeout.
+	 * @param {number} [options.maxWait]
+	 *  The maximum time `func` is allowed to be delayed before it's invoked.
+	 * @param {boolean} [options.trailing=true]
+	 *  Specify invoking on the trailing edge of the timeout.
+	 * @returns {Function} Returns the new debounced function.
+	 * @example
+	 *
+	 * // Avoid costly calculations while the window size is in flux.
+	 * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
+	 *
+	 * // Invoke `sendMail` when clicked, debouncing subsequent calls.
+	 * jQuery(element).on('click', _.debounce(sendMail, 300, {
+	 *   'leading': true,
+	 *   'trailing': false
+	 * }));
+	 *
+	 * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
+	 * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
+	 * var source = new EventSource('/stream');
+	 * jQuery(source).on('message', debounced);
+	 *
+	 * // Cancel the trailing debounced invocation.
+	 * jQuery(window).on('popstate', debounced.cancel);
+	 */
+	function debounce(func, wait, options) {
+	  var lastArgs,
+	      lastThis,
+	      maxWait,
+	      result,
+	      timerId,
+	      lastCallTime,
+	      lastInvokeTime = 0,
+	      leading = false,
+	      maxing = false,
+	      trailing = true;
 
-  function invokeFunc(time) {
-    var args = lastArgs,
-        thisArg = lastThis;
+	  if (typeof func != 'function') {
+	    throw new TypeError(FUNC_ERROR_TEXT);
+	  }
+	  wait = toNumber(wait) || 0;
+	  if (isObject(options)) {
+	    leading = !!options.leading;
+	    maxing = 'maxWait' in options;
+	    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+	    trailing = 'trailing' in options ? !!options.trailing : trailing;
+	  }
 
-    lastArgs = lastThis = undefined;
-    lastInvokeTime = time;
-    result = func.apply(thisArg, args);
-    return result;
-  }
+	  function invokeFunc(time) {
+	    var args = lastArgs,
+	        thisArg = lastThis;
 
-  function leadingEdge(time) {
-    // Reset any `maxWait` timer.
-    lastInvokeTime = time;
-    // Start the timer for the trailing edge.
-    timerId = setTimeout(timerExpired, wait);
-    // Invoke the leading edge.
-    return leading ? invokeFunc(time) : result;
-  }
+	    lastArgs = lastThis = undefined;
+	    lastInvokeTime = time;
+	    result = func.apply(thisArg, args);
+	    return result;
+	  }
 
-  function remainingWait(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime,
-        timeWaiting = wait - timeSinceLastCall;
+	  function leadingEdge(time) {
+	    // Reset any `maxWait` timer.
+	    lastInvokeTime = time;
+	    // Start the timer for the trailing edge.
+	    timerId = setTimeout(timerExpired, wait);
+	    // Invoke the leading edge.
+	    return leading ? invokeFunc(time) : result;
+	  }
 
-    return maxing
-      ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
-      : timeWaiting;
-  }
+	  function remainingWait(time) {
+	    var timeSinceLastCall = time - lastCallTime,
+	        timeSinceLastInvoke = time - lastInvokeTime,
+	        timeWaiting = wait - timeSinceLastCall;
 
-  function shouldInvoke(time) {
-    var timeSinceLastCall = time - lastCallTime,
-        timeSinceLastInvoke = time - lastInvokeTime;
+	    return maxing
+	      ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke)
+	      : timeWaiting;
+	  }
 
-    // Either this is the first call, activity has stopped and we're at the
-    // trailing edge, the system time has gone backwards and we're treating
-    // it as the trailing edge, or we've hit the `maxWait` limit.
-    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
-      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
-  }
+	  function shouldInvoke(time) {
+	    var timeSinceLastCall = time - lastCallTime,
+	        timeSinceLastInvoke = time - lastInvokeTime;
 
-  function timerExpired() {
-    var time = now_1();
-    if (shouldInvoke(time)) {
-      return trailingEdge(time);
-    }
-    // Restart the timer.
-    timerId = setTimeout(timerExpired, remainingWait(time));
-  }
+	    // Either this is the first call, activity has stopped and we're at the
+	    // trailing edge, the system time has gone backwards and we're treating
+	    // it as the trailing edge, or we've hit the `maxWait` limit.
+	    return (lastCallTime === undefined || (timeSinceLastCall >= wait) ||
+	      (timeSinceLastCall < 0) || (maxing && timeSinceLastInvoke >= maxWait));
+	  }
 
-  function trailingEdge(time) {
-    timerId = undefined;
+	  function timerExpired() {
+	    var time = now();
+	    if (shouldInvoke(time)) {
+	      return trailingEdge(time);
+	    }
+	    // Restart the timer.
+	    timerId = setTimeout(timerExpired, remainingWait(time));
+	  }
 
-    // Only invoke if we have `lastArgs` which means `func` has been
-    // debounced at least once.
-    if (trailing && lastArgs) {
-      return invokeFunc(time);
-    }
-    lastArgs = lastThis = undefined;
-    return result;
-  }
+	  function trailingEdge(time) {
+	    timerId = undefined;
 
-  function cancel() {
-    if (timerId !== undefined) {
-      clearTimeout(timerId);
-    }
-    lastInvokeTime = 0;
-    lastArgs = lastCallTime = lastThis = timerId = undefined;
-  }
+	    // Only invoke if we have `lastArgs` which means `func` has been
+	    // debounced at least once.
+	    if (trailing && lastArgs) {
+	      return invokeFunc(time);
+	    }
+	    lastArgs = lastThis = undefined;
+	    return result;
+	  }
 
-  function flush() {
-    return timerId === undefined ? result : trailingEdge(now_1());
-  }
+	  function cancel() {
+	    if (timerId !== undefined) {
+	      clearTimeout(timerId);
+	    }
+	    lastInvokeTime = 0;
+	    lastArgs = lastCallTime = lastThis = timerId = undefined;
+	  }
 
-  function debounced() {
-    var time = now_1(),
-        isInvoking = shouldInvoke(time);
+	  function flush() {
+	    return timerId === undefined ? result : trailingEdge(now());
+	  }
 
-    lastArgs = arguments;
-    lastThis = this;
-    lastCallTime = time;
+	  function debounced() {
+	    var time = now(),
+	        isInvoking = shouldInvoke(time);
 
-    if (isInvoking) {
-      if (timerId === undefined) {
-        return leadingEdge(lastCallTime);
-      }
-      if (maxing) {
-        // Handle invocations in a tight loop.
-        clearTimeout(timerId);
-        timerId = setTimeout(timerExpired, wait);
-        return invokeFunc(lastCallTime);
-      }
-    }
-    if (timerId === undefined) {
-      timerId = setTimeout(timerExpired, wait);
-    }
-    return result;
-  }
-  debounced.cancel = cancel;
-  debounced.flush = flush;
-  return debounced;
+	    lastArgs = arguments;
+	    lastThis = this;
+	    lastCallTime = time;
+
+	    if (isInvoking) {
+	      if (timerId === undefined) {
+	        return leadingEdge(lastCallTime);
+	      }
+	      if (maxing) {
+	        // Handle invocations in a tight loop.
+	        clearTimeout(timerId);
+	        timerId = setTimeout(timerExpired, wait);
+	        return invokeFunc(lastCallTime);
+	      }
+	    }
+	    if (timerId === undefined) {
+	      timerId = setTimeout(timerExpired, wait);
+	    }
+	    return result;
+	  }
+	  debounced.cancel = cancel;
+	  debounced.flush = flush;
+	  return debounced;
+	}
+
+	debounce_1 = debounce;
+	return debounce_1;
 }
 
-var debounce_1 = debounce;
+var debounceExports = requireDebounce();
+var debounce = /*@__PURE__*/getDefaultExportFromCjs(debounceExports);
 
 var performance = _window ? _window.performance : null;
 var pnow = performance && performance.now ? function () {
@@ -1302,11 +1460,38 @@ var hashStringsArray = function hashStringsArray(strs) {
   return hash;
 };
 
-/*global console */
-var warningsEnabled = true;
-var warnSupported = console.warn != null; // eslint-disable-line no-console
-var traceSupported = console.trace != null; // eslint-disable-line no-console
+function rotatePoint(x, y, centerX, centerY, angleDegrees) {
+  var angleRadians = angleDegrees * Math.PI / 180;
+  var rotatedX = Math.cos(angleRadians) * (x - centerX) - Math.sin(angleRadians) * (y - centerY) + centerX;
+  var rotatedY = Math.sin(angleRadians) * (x - centerX) + Math.cos(angleRadians) * (y - centerY) + centerY;
+  return {
+    x: rotatedX,
+    y: rotatedY
+  };
+}
+var movePointByBoxAspect = function movePointByBoxAspect(x, y, boxX, boxY, skewX, skewY) {
+  return {
+    x: (x - boxX) * skewX + boxX,
+    y: (y - boxY) * skewY + boxY
+  };
+};
+function rotatePosAndSkewByBox(pos, box, angleDegrees) {
+  if (angleDegrees === 0) return pos;
+  var centerX = (box.x1 + box.x2) / 2;
+  var centerY = (box.y1 + box.y2) / 2;
+  var skewX = box.w / box.h;
+  var skewY = 1 / skewX;
+  var rotated = rotatePoint(pos.x, pos.y, centerX, centerY, angleDegrees);
+  var skewed = movePointByBoxAspect(rotated.x, rotated.y, centerX, centerY, skewX, skewY);
+  return {
+    x: skewed.x,
+    y: skewed.y
+  };
+}
 
+var warningsEnabled = true;
+var warnSupported = console.warn != null;
+var traceSupported = console.trace != null;
 var MAX_INT$1 = Number.MAX_SAFE_INTEGER || 9007199254740991;
 var trueify = function trueify() {
   return true;
@@ -1329,7 +1514,6 @@ var warnings = function warnings(enabled) {
   }
 };
 var warn = function warn(msg) {
-  /* eslint-disable no-console */
   if (!warnings()) {
     return;
   }
@@ -1341,8 +1525,7 @@ var warn = function warn(msg) {
       console.trace();
     }
   }
-}; /* eslint-enable */
-
+};
 var clone = function clone(obj) {
   return extend({}, obj);
 };
@@ -1360,7 +1543,7 @@ var copy = function copy(obj) {
     return obj;
   }
 };
-var copyArray$1 = function copyArray(arr) {
+var copyArray = function copyArray(arr) {
   return arr.slice();
 };
 var uuid = function uuid(a, b /* placeholders */) {
@@ -1379,8 +1562,7 @@ var uuid = function uuid(a, b /* placeholders */) {
   8 ^ Math.random() * (a ^ 20 ? 16 : 4) // unless "a" is 20, in which case a random number from 8 to 11
   : 4 //  otherwise 4
   ).toString(16) : '-' //  in other cases (if "a" is 9,14,19,24) insert "-"
-  ) {
-  }
+  );
   return b;
 };
 var _staticEmptyObject = {};
@@ -1403,9 +1585,6 @@ var removeFromArray = function removeFromArray(arr, ele, oneCopy) {
   for (var i = arr.length - 1; i >= 0; i--) {
     if (arr[i] === ele) {
       arr.splice(i, 1);
-      if (oneCopy) {
-        break;
-      }
     }
   }
 };
@@ -1422,14 +1601,12 @@ var getPrefixedProperty = function getPrefixedProperty(obj, propName, prefix) {
   if (prefix) {
     propName = prependCamel(prefix, propName); // e.g. (labelWidth, source) => sourceLabelWidth
   }
-
   return obj[propName];
 };
 var setPrefixedProperty = function setPrefixedProperty(obj, propName, prefix, value) {
   if (prefix) {
     propName = prependCamel(prefix, propName); // e.g. (labelWidth, source) => sourceLabelWidth
   }
-
   obj[propName] = value;
 };
 
@@ -1439,7 +1616,7 @@ var ObjectMap = /*#__PURE__*/function () {
     _classCallCheck(this, ObjectMap);
     this._obj = {};
   }
-  _createClass(ObjectMap, [{
+  return _createClass(ObjectMap, [{
     key: "set",
     value: function set(key, val) {
       this._obj[key] = val;
@@ -1467,9 +1644,8 @@ var ObjectMap = /*#__PURE__*/function () {
       return this._obj[key];
     }
   }]);
-  return ObjectMap;
 }();
-var Map$2 = typeof Map !== 'undefined' ? Map : ObjectMap;
+var Map$1 = typeof Map !== 'undefined' ? Map : ObjectMap;
 
 /* global Set */
 
@@ -1491,7 +1667,7 @@ var ObjectSet = /*#__PURE__*/function () {
       }
     }
   }
-  _createClass(ObjectSet, [{
+  return _createClass(ObjectSet, [{
     key: "instanceString",
     value: function instanceString() {
       return 'set';
@@ -1538,7 +1714,6 @@ var ObjectSet = /*#__PURE__*/function () {
       return this.toArray().forEach(callback, thisArg);
     }
   }]);
-  return ObjectSet;
 }();
 var Set$1 = (typeof Set === "undefined" ? "undefined" : _typeof(Set)) !== undef ? Set : ObjectSet;
 
@@ -1694,13 +1869,13 @@ var Element = function Element(cy, params) {
     _p.classes.add(cls);
   }
   this.createEmitter();
+  if (restore === undefined || restore) {
+    this.restore();
+  }
   var bypass = params.style || params.css;
   if (bypass) {
     warn('Setting a `style` bypass at element creation should be done only when absolutely necessary.  Try to use the stylesheet instead.');
     this.style(bypass);
-  }
-  if (restore === undefined || restore) {
-    this.restore();
   }
 };
 
@@ -1748,54 +1923,55 @@ var defineSearch = function defineSearch(params) {
       }
     }
     var _loop = function _loop() {
-      var v = params.bfs ? Q.shift() : Q.pop();
-      var vId = v.id();
-      if (params.dfs) {
-        if (V[vId]) {
-          return "continue";
-        }
-        V[vId] = true;
-        connectedNodes.push(v);
-      }
-      var depth = id2depth[vId];
-      var prevEdge = connectedBy[vId];
-      var src = prevEdge != null ? prevEdge.source() : null;
-      var tgt = prevEdge != null ? prevEdge.target() : null;
-      var prevNode = prevEdge == null ? undefined : v.same(src) ? tgt[0] : src[0];
-      var ret = void 0;
-      ret = fn(v, prevEdge, prevNode, j++, depth);
-      if (ret === true) {
-        found = v;
-        return "break";
-      }
-      if (ret === false) {
-        return "break";
-      }
-      var vwEdges = v.connectedEdges().filter(function (e) {
-        return (!directed || e.source().same(v)) && edges.has(e);
-      });
-      for (var _i2 = 0; _i2 < vwEdges.length; _i2++) {
-        var e = vwEdges[_i2];
-        var w = e.connectedNodes().filter(function (n) {
-          return !n.same(v) && nodes.has(n);
-        });
-        var wId = w.id();
-        if (w.length !== 0 && !V[wId]) {
-          w = w[0];
-          Q.push(w);
-          if (params.bfs) {
-            V[wId] = true;
-            connectedNodes.push(w);
+        var v = params.bfs ? Q.shift() : Q.pop();
+        var vId = v.id();
+        if (params.dfs) {
+          if (V[vId]) {
+            return 0; // continue
           }
-          connectedBy[wId] = e;
-          id2depth[wId] = id2depth[vId] + 1;
+          V[vId] = true;
+          connectedNodes.push(v);
         }
-      }
-    };
+        var depth = id2depth[vId];
+        var prevEdge = connectedBy[vId];
+        var src = prevEdge != null ? prevEdge.source() : null;
+        var tgt = prevEdge != null ? prevEdge.target() : null;
+        var prevNode = prevEdge == null ? undefined : v.same(src) ? tgt[0] : src[0];
+        var ret;
+        ret = fn(v, prevEdge, prevNode, j++, depth);
+        if (ret === true) {
+          found = v;
+          return 1; // break
+        }
+        if (ret === false) {
+          return 1; // break
+        }
+        var vwEdges = v.connectedEdges().filter(function (e) {
+          return (!directed || e.source().same(v)) && edges.has(e);
+        });
+        for (var _i2 = 0; _i2 < vwEdges.length; _i2++) {
+          var e = vwEdges[_i2];
+          var w = e.connectedNodes().filter(function (n) {
+            return !n.same(v) && nodes.has(n);
+          });
+          var wId = w.id();
+          if (w.length !== 0 && !V[wId]) {
+            w = w[0];
+            Q.push(w);
+            if (params.bfs) {
+              V[wId] = true;
+              connectedNodes.push(w);
+            }
+            connectedBy[wId] = e;
+            id2depth[wId] = id2depth[vId] + 1;
+          }
+        }
+      },
+      _ret;
     while (Q.length !== 0) {
-      var _ret = _loop();
-      if (_ret === "continue") continue;
-      if (_ret === "break") break;
+      _ret = _loop();
+      if (_ret === 0) continue;
+      if (_ret === 1) break;
     }
     var connectedEles = cy.collection();
     for (var _i = 0; _i < connectedNodes.length; _i++) {
@@ -1827,381 +2003,403 @@ var elesfn$v = {
 elesfn$v.bfs = elesfn$v.breadthFirstSearch;
 elesfn$v.dfs = elesfn$v.depthFirstSearch;
 
-var heap$1 = createCommonjsModule(function (module, exports) {
-// Generated by CoffeeScript 1.8.0
-(function() {
-  var Heap, defaultCmp, floor, heapify, heappop, heappush, heappushpop, heapreplace, insort, min, nlargest, nsmallest, updateItem, _siftdown, _siftup;
-
-  floor = Math.floor, min = Math.min;
-
-
-  /*
-  Default comparison function to be used
-   */
-
-  defaultCmp = function(x, y) {
-    if (x < y) {
-      return -1;
-    }
-    if (x > y) {
-      return 1;
-    }
-    return 0;
-  };
-
-
-  /*
-  Insert item x in list a, and keep it sorted assuming a is sorted.
-  
-  If x is already in a, insert it to the right of the rightmost x.
-  
-  Optional args lo (default 0) and hi (default a.length) bound the slice
-  of a to be searched.
-   */
-
-  insort = function(a, x, lo, hi, cmp) {
-    var mid;
-    if (lo == null) {
-      lo = 0;
-    }
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    if (lo < 0) {
-      throw new Error('lo must be non-negative');
-    }
-    if (hi == null) {
-      hi = a.length;
-    }
-    while (lo < hi) {
-      mid = floor((lo + hi) / 2);
-      if (cmp(x, a[mid]) < 0) {
-        hi = mid;
-      } else {
-        lo = mid + 1;
-      }
-    }
-    return ([].splice.apply(a, [lo, lo - lo].concat(x)), x);
-  };
-
-
-  /*
-  Push item onto heap, maintaining the heap invariant.
-   */
-
-  heappush = function(array, item, cmp) {
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    array.push(item);
-    return _siftdown(array, 0, array.length - 1, cmp);
-  };
-
-
-  /*
-  Pop the smallest item off the heap, maintaining the heap invariant.
-   */
-
-  heappop = function(array, cmp) {
-    var lastelt, returnitem;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    lastelt = array.pop();
-    if (array.length) {
-      returnitem = array[0];
-      array[0] = lastelt;
-      _siftup(array, 0, cmp);
-    } else {
-      returnitem = lastelt;
-    }
-    return returnitem;
-  };
-
-
-  /*
-  Pop and return the current smallest value, and add the new item.
-  
-  This is more efficient than heappop() followed by heappush(), and can be
-  more appropriate when using a fixed size heap. Note that the value
-  returned may be larger than item! That constrains reasonable use of
-  this routine unless written as part of a conditional replacement:
-      if item > array[0]
-        item = heapreplace(array, item)
-   */
-
-  heapreplace = function(array, item, cmp) {
-    var returnitem;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    returnitem = array[0];
-    array[0] = item;
-    _siftup(array, 0, cmp);
-    return returnitem;
-  };
-
-
-  /*
-  Fast version of a heappush followed by a heappop.
-   */
-
-  heappushpop = function(array, item, cmp) {
-    var _ref;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    if (array.length && cmp(array[0], item) < 0) {
-      _ref = [array[0], item], item = _ref[0], array[0] = _ref[1];
-      _siftup(array, 0, cmp);
-    }
-    return item;
-  };
-
-
-  /*
-  Transform list into a heap, in-place, in O(array.length) time.
-   */
-
-  heapify = function(array, cmp) {
-    var i, _i, _len, _ref1, _results, _results1;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    _ref1 = (function() {
-      _results1 = [];
-      for (var _j = 0, _ref = floor(array.length / 2); 0 <= _ref ? _j < _ref : _j > _ref; 0 <= _ref ? _j++ : _j--){ _results1.push(_j); }
-      return _results1;
-    }).apply(this).reverse();
-    _results = [];
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      i = _ref1[_i];
-      _results.push(_siftup(array, i, cmp));
-    }
-    return _results;
-  };
-
-
-  /*
-  Update the position of the given item in the heap.
-  This function should be called every time the item is being modified.
-   */
-
-  updateItem = function(array, item, cmp) {
-    var pos;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    pos = array.indexOf(item);
-    if (pos === -1) {
-      return;
-    }
-    _siftdown(array, 0, pos, cmp);
-    return _siftup(array, pos, cmp);
-  };
-
-
-  /*
-  Find the n largest elements in a dataset.
-   */
-
-  nlargest = function(array, n, cmp) {
-    var elem, result, _i, _len, _ref;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    result = array.slice(0, n);
-    if (!result.length) {
-      return result;
-    }
-    heapify(result, cmp);
-    _ref = array.slice(n);
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      elem = _ref[_i];
-      heappushpop(result, elem, cmp);
-    }
-    return result.sort(cmp).reverse();
-  };
-
-
-  /*
-  Find the n smallest elements in a dataset.
-   */
-
-  nsmallest = function(array, n, cmp) {
-    var elem, los, result, _i, _j, _len, _ref, _ref1, _results;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    if (n * 10 <= array.length) {
-      result = array.slice(0, n).sort(cmp);
-      if (!result.length) {
-        return result;
-      }
-      los = result[result.length - 1];
-      _ref = array.slice(n);
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        elem = _ref[_i];
-        if (cmp(elem, los) < 0) {
-          insort(result, elem, 0, null, cmp);
-          result.pop();
-          los = result[result.length - 1];
-        }
-      }
-      return result;
-    }
-    heapify(array, cmp);
-    _results = [];
-    for (_j = 0, _ref1 = min(n, array.length); 0 <= _ref1 ? _j < _ref1 : _j > _ref1; 0 <= _ref1 ? ++_j : --_j) {
-      _results.push(heappop(array, cmp));
-    }
-    return _results;
-  };
-
-  _siftdown = function(array, startpos, pos, cmp) {
-    var newitem, parent, parentpos;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    newitem = array[pos];
-    while (pos > startpos) {
-      parentpos = (pos - 1) >> 1;
-      parent = array[parentpos];
-      if (cmp(newitem, parent) < 0) {
-        array[pos] = parent;
-        pos = parentpos;
-        continue;
-      }
-      break;
-    }
-    return array[pos] = newitem;
-  };
-
-  _siftup = function(array, pos, cmp) {
-    var childpos, endpos, newitem, rightpos, startpos;
-    if (cmp == null) {
-      cmp = defaultCmp;
-    }
-    endpos = array.length;
-    startpos = pos;
-    newitem = array[pos];
-    childpos = 2 * pos + 1;
-    while (childpos < endpos) {
-      rightpos = childpos + 1;
-      if (rightpos < endpos && !(cmp(array[childpos], array[rightpos]) < 0)) {
-        childpos = rightpos;
-      }
-      array[pos] = array[childpos];
-      pos = childpos;
-      childpos = 2 * pos + 1;
-    }
-    array[pos] = newitem;
-    return _siftdown(array, startpos, pos, cmp);
-  };
-
-  Heap = (function() {
-    Heap.push = heappush;
-
-    Heap.pop = heappop;
-
-    Heap.replace = heapreplace;
-
-    Heap.pushpop = heappushpop;
-
-    Heap.heapify = heapify;
-
-    Heap.updateItem = updateItem;
-
-    Heap.nlargest = nlargest;
-
-    Heap.nsmallest = nsmallest;
-
-    function Heap(cmp) {
-      this.cmp = cmp != null ? cmp : defaultCmp;
-      this.nodes = [];
-    }
-
-    Heap.prototype.push = function(x) {
-      return heappush(this.nodes, x, this.cmp);
-    };
-
-    Heap.prototype.pop = function() {
-      return heappop(this.nodes, this.cmp);
-    };
-
-    Heap.prototype.peek = function() {
-      return this.nodes[0];
-    };
-
-    Heap.prototype.contains = function(x) {
-      return this.nodes.indexOf(x) !== -1;
-    };
-
-    Heap.prototype.replace = function(x) {
-      return heapreplace(this.nodes, x, this.cmp);
-    };
-
-    Heap.prototype.pushpop = function(x) {
-      return heappushpop(this.nodes, x, this.cmp);
-    };
-
-    Heap.prototype.heapify = function() {
-      return heapify(this.nodes, this.cmp);
-    };
-
-    Heap.prototype.updateItem = function(x) {
-      return updateItem(this.nodes, x, this.cmp);
-    };
-
-    Heap.prototype.clear = function() {
-      return this.nodes = [];
-    };
-
-    Heap.prototype.empty = function() {
-      return this.nodes.length === 0;
-    };
-
-    Heap.prototype.size = function() {
-      return this.nodes.length;
-    };
-
-    Heap.prototype.clone = function() {
-      var heap;
-      heap = new Heap();
-      heap.nodes = this.nodes.slice(0);
-      return heap;
-    };
-
-    Heap.prototype.toArray = function() {
-      return this.nodes.slice(0);
-    };
-
-    Heap.prototype.insert = Heap.prototype.push;
-
-    Heap.prototype.top = Heap.prototype.peek;
-
-    Heap.prototype.front = Heap.prototype.peek;
-
-    Heap.prototype.has = Heap.prototype.contains;
-
-    Heap.prototype.copy = Heap.prototype.clone;
-
-    return Heap;
-
-  })();
-
-  (function(root, factory) {
-    {
-      return module.exports = factory();
-    }
-  })(this, function() {
-    return Heap;
-  });
-
-}).call(commonjsGlobal);
-});
-
-var heap = heap$1;
+var heap$2 = {exports: {}};
+
+var heap$1 = heap$2.exports;
+
+var hasRequiredHeap$1;
+
+function requireHeap$1 () {
+	if (hasRequiredHeap$1) return heap$2.exports;
+	hasRequiredHeap$1 = 1;
+	(function (module, exports) {
+		// Generated by CoffeeScript 1.8.0
+		(function() {
+		  var Heap, defaultCmp, floor, heapify, heappop, heappush, heappushpop, heapreplace, insort, min, nlargest, nsmallest, updateItem, _siftdown, _siftup;
+
+		  floor = Math.floor, min = Math.min;
+
+
+		  /*
+		  Default comparison function to be used
+		   */
+
+		  defaultCmp = function(x, y) {
+		    if (x < y) {
+		      return -1;
+		    }
+		    if (x > y) {
+		      return 1;
+		    }
+		    return 0;
+		  };
+
+
+		  /*
+		  Insert item x in list a, and keep it sorted assuming a is sorted.
+		  
+		  If x is already in a, insert it to the right of the rightmost x.
+		  
+		  Optional args lo (default 0) and hi (default a.length) bound the slice
+		  of a to be searched.
+		   */
+
+		  insort = function(a, x, lo, hi, cmp) {
+		    var mid;
+		    if (lo == null) {
+		      lo = 0;
+		    }
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    if (lo < 0) {
+		      throw new Error('lo must be non-negative');
+		    }
+		    if (hi == null) {
+		      hi = a.length;
+		    }
+		    while (lo < hi) {
+		      mid = floor((lo + hi) / 2);
+		      if (cmp(x, a[mid]) < 0) {
+		        hi = mid;
+		      } else {
+		        lo = mid + 1;
+		      }
+		    }
+		    return ([].splice.apply(a, [lo, lo - lo].concat(x)), x);
+		  };
+
+
+		  /*
+		  Push item onto heap, maintaining the heap invariant.
+		   */
+
+		  heappush = function(array, item, cmp) {
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    array.push(item);
+		    return _siftdown(array, 0, array.length - 1, cmp);
+		  };
+
+
+		  /*
+		  Pop the smallest item off the heap, maintaining the heap invariant.
+		   */
+
+		  heappop = function(array, cmp) {
+		    var lastelt, returnitem;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    lastelt = array.pop();
+		    if (array.length) {
+		      returnitem = array[0];
+		      array[0] = lastelt;
+		      _siftup(array, 0, cmp);
+		    } else {
+		      returnitem = lastelt;
+		    }
+		    return returnitem;
+		  };
+
+
+		  /*
+		  Pop and return the current smallest value, and add the new item.
+		  
+		  This is more efficient than heappop() followed by heappush(), and can be
+		  more appropriate when using a fixed size heap. Note that the value
+		  returned may be larger than item! That constrains reasonable use of
+		  this routine unless written as part of a conditional replacement:
+		      if item > array[0]
+		        item = heapreplace(array, item)
+		   */
+
+		  heapreplace = function(array, item, cmp) {
+		    var returnitem;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    returnitem = array[0];
+		    array[0] = item;
+		    _siftup(array, 0, cmp);
+		    return returnitem;
+		  };
+
+
+		  /*
+		  Fast version of a heappush followed by a heappop.
+		   */
+
+		  heappushpop = function(array, item, cmp) {
+		    var _ref;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    if (array.length && cmp(array[0], item) < 0) {
+		      _ref = [array[0], item], item = _ref[0], array[0] = _ref[1];
+		      _siftup(array, 0, cmp);
+		    }
+		    return item;
+		  };
+
+
+		  /*
+		  Transform list into a heap, in-place, in O(array.length) time.
+		   */
+
+		  heapify = function(array, cmp) {
+		    var i, _i, _len, _ref1, _results, _results1;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    _ref1 = (function() {
+		      _results1 = [];
+		      for (var _j = 0, _ref = floor(array.length / 2); 0 <= _ref ? _j < _ref : _j > _ref; 0 <= _ref ? _j++ : _j--){ _results1.push(_j); }
+		      return _results1;
+		    }).apply(this).reverse();
+		    _results = [];
+		    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+		      i = _ref1[_i];
+		      _results.push(_siftup(array, i, cmp));
+		    }
+		    return _results;
+		  };
+
+
+		  /*
+		  Update the position of the given item in the heap.
+		  This function should be called every time the item is being modified.
+		   */
+
+		  updateItem = function(array, item, cmp) {
+		    var pos;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    pos = array.indexOf(item);
+		    if (pos === -1) {
+		      return;
+		    }
+		    _siftdown(array, 0, pos, cmp);
+		    return _siftup(array, pos, cmp);
+		  };
+
+
+		  /*
+		  Find the n largest elements in a dataset.
+		   */
+
+		  nlargest = function(array, n, cmp) {
+		    var elem, result, _i, _len, _ref;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    result = array.slice(0, n);
+		    if (!result.length) {
+		      return result;
+		    }
+		    heapify(result, cmp);
+		    _ref = array.slice(n);
+		    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+		      elem = _ref[_i];
+		      heappushpop(result, elem, cmp);
+		    }
+		    return result.sort(cmp).reverse();
+		  };
+
+
+		  /*
+		  Find the n smallest elements in a dataset.
+		   */
+
+		  nsmallest = function(array, n, cmp) {
+		    var elem, los, result, _i, _j, _len, _ref, _ref1, _results;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    if (n * 10 <= array.length) {
+		      result = array.slice(0, n).sort(cmp);
+		      if (!result.length) {
+		        return result;
+		      }
+		      los = result[result.length - 1];
+		      _ref = array.slice(n);
+		      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+		        elem = _ref[_i];
+		        if (cmp(elem, los) < 0) {
+		          insort(result, elem, 0, null, cmp);
+		          result.pop();
+		          los = result[result.length - 1];
+		        }
+		      }
+		      return result;
+		    }
+		    heapify(array, cmp);
+		    _results = [];
+		    for (_j = 0, _ref1 = min(n, array.length); 0 <= _ref1 ? _j < _ref1 : _j > _ref1; 0 <= _ref1 ? ++_j : --_j) {
+		      _results.push(heappop(array, cmp));
+		    }
+		    return _results;
+		  };
+
+		  _siftdown = function(array, startpos, pos, cmp) {
+		    var newitem, parent, parentpos;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    newitem = array[pos];
+		    while (pos > startpos) {
+		      parentpos = (pos - 1) >> 1;
+		      parent = array[parentpos];
+		      if (cmp(newitem, parent) < 0) {
+		        array[pos] = parent;
+		        pos = parentpos;
+		        continue;
+		      }
+		      break;
+		    }
+		    return array[pos] = newitem;
+		  };
+
+		  _siftup = function(array, pos, cmp) {
+		    var childpos, endpos, newitem, rightpos, startpos;
+		    if (cmp == null) {
+		      cmp = defaultCmp;
+		    }
+		    endpos = array.length;
+		    startpos = pos;
+		    newitem = array[pos];
+		    childpos = 2 * pos + 1;
+		    while (childpos < endpos) {
+		      rightpos = childpos + 1;
+		      if (rightpos < endpos && !(cmp(array[childpos], array[rightpos]) < 0)) {
+		        childpos = rightpos;
+		      }
+		      array[pos] = array[childpos];
+		      pos = childpos;
+		      childpos = 2 * pos + 1;
+		    }
+		    array[pos] = newitem;
+		    return _siftdown(array, startpos, pos, cmp);
+		  };
+
+		  Heap = (function() {
+		    Heap.push = heappush;
+
+		    Heap.pop = heappop;
+
+		    Heap.replace = heapreplace;
+
+		    Heap.pushpop = heappushpop;
+
+		    Heap.heapify = heapify;
+
+		    Heap.updateItem = updateItem;
+
+		    Heap.nlargest = nlargest;
+
+		    Heap.nsmallest = nsmallest;
+
+		    function Heap(cmp) {
+		      this.cmp = cmp != null ? cmp : defaultCmp;
+		      this.nodes = [];
+		    }
+
+		    Heap.prototype.push = function(x) {
+		      return heappush(this.nodes, x, this.cmp);
+		    };
+
+		    Heap.prototype.pop = function() {
+		      return heappop(this.nodes, this.cmp);
+		    };
+
+		    Heap.prototype.peek = function() {
+		      return this.nodes[0];
+		    };
+
+		    Heap.prototype.contains = function(x) {
+		      return this.nodes.indexOf(x) !== -1;
+		    };
+
+		    Heap.prototype.replace = function(x) {
+		      return heapreplace(this.nodes, x, this.cmp);
+		    };
+
+		    Heap.prototype.pushpop = function(x) {
+		      return heappushpop(this.nodes, x, this.cmp);
+		    };
+
+		    Heap.prototype.heapify = function() {
+		      return heapify(this.nodes, this.cmp);
+		    };
+
+		    Heap.prototype.updateItem = function(x) {
+		      return updateItem(this.nodes, x, this.cmp);
+		    };
+
+		    Heap.prototype.clear = function() {
+		      return this.nodes = [];
+		    };
+
+		    Heap.prototype.empty = function() {
+		      return this.nodes.length === 0;
+		    };
+
+		    Heap.prototype.size = function() {
+		      return this.nodes.length;
+		    };
+
+		    Heap.prototype.clone = function() {
+		      var heap;
+		      heap = new Heap();
+		      heap.nodes = this.nodes.slice(0);
+		      return heap;
+		    };
+
+		    Heap.prototype.toArray = function() {
+		      return this.nodes.slice(0);
+		    };
+
+		    Heap.prototype.insert = Heap.prototype.push;
+
+		    Heap.prototype.top = Heap.prototype.peek;
+
+		    Heap.prototype.front = Heap.prototype.peek;
+
+		    Heap.prototype.has = Heap.prototype.contains;
+
+		    Heap.prototype.copy = Heap.prototype.clone;
+
+		    return Heap;
+
+		  })();
+
+		  (function(root, factory) {
+		    {
+		      return module.exports = factory();
+		    }
+		  })(this, function() {
+		    return Heap;
+		  });
+
+		}).call(heap$1); 
+	} (heap$2));
+	return heap$2.exports;
+}
+
+var heap;
+var hasRequiredHeap;
+
+function requireHeap () {
+	if (hasRequiredHeap) return heap;
+	hasRequiredHeap = 1;
+	heap = requireHeap$1();
+	return heap;
+}
+
+var heapExports = requireHeap();
+var Heap = /*@__PURE__*/getDefaultExportFromCjs(heapExports);
 
 var dijkstraDefaults = defaults$g({
   root: null,
@@ -2243,7 +2441,7 @@ var elesfn$u = {
       dist[node.id()] = d;
       Q.updateItem(node);
     };
-    var Q = new heap(function (a, b) {
+    var Q = new Heap(function (a, b) {
       return getDist(a) - getDist(b);
     });
     for (var i = 0; i < nodes.length; i++) {
@@ -2396,7 +2594,7 @@ var elesfn$s = {
     var gScore = {};
     var fScore = {};
     var closedSetIds = {};
-    var openSet = new heap(function (a, b) {
+    var openSet = new Heap(function (a, b) {
       return fScore[a.id()] - fScore[b.id()];
     });
     var openSetIds = new Set$1();
@@ -2676,7 +2874,7 @@ var elesfn$q = {
       edges = _this$byGroup.edges,
       nodes = _this$byGroup.nodes;
     var numNodes = nodes.length;
-    var infoMap = new Map$2();
+    var infoMap = new Map$1();
     var hasNegativeWeightCycle = false;
     var negativeWeightCycles = [];
     root = cy.collection(root)[0]; // in case selector passed
@@ -3014,13 +3212,14 @@ var elesfn$p = {
   }
 }; // elesfn
 
+var _Math$hypot;
 var copyPosition = function copyPosition(p) {
   return {
     x: p.x,
     y: p.y
   };
 };
-var modelToRenderedPosition = function modelToRenderedPosition(p, zoom, pan) {
+var modelToRenderedPosition$1 = function modelToRenderedPosition(p, zoom, pan) {
   return {
     x: p.x * zoom + pan.x,
     y: p.y * zoom + pan.y
@@ -3112,7 +3311,6 @@ var median = function median(arr) {
       return a - b;
     }); // requires copy = true if you don't want to change the orig
   }
-
   var len = arr.length;
   var mid = Math.floor(len / 2);
   if (len % 2 !== 0) {
@@ -3245,16 +3443,6 @@ var clearBoundingBox = function clearBoundingBox(bb) {
   bb.w = 0;
   bb.h = 0;
 };
-var shiftBoundingBox = function shiftBoundingBox(bb, dx, dy) {
-  return {
-    x1: bb.x1 + dx,
-    x2: bb.x2 + dx,
-    y1: bb.y1 + dy,
-    y2: bb.y2 + dy,
-    w: bb.w,
-    h: bb.h
-  };
-};
 var updateBoundingBox = function updateBoundingBox(bb1, bb2) {
   // update bb1 with bb2 bounds
 
@@ -3361,6 +3549,121 @@ var pointInBoundingBox = function pointInBoundingBox(bb, pt) {
 var boundingBoxInBoundingBox = function boundingBoxInBoundingBox(bb1, bb2) {
   return inBoundingBox(bb1, bb2.x1, bb2.y1) && inBoundingBox(bb1, bb2.x2, bb2.y2);
 };
+var hypot = (_Math$hypot = Math.hypot) !== null && _Math$hypot !== undefined ? _Math$hypot : function (x, y) {
+  return Math.sqrt(x * x + y * y);
+};
+function inflatePolygon(polygon, d) {
+  if (polygon.length < 3) {
+    throw new Error('Need at least 3 vertices');
+  }
+  // Helpers
+  var add = function add(a, b) {
+    return {
+      x: a.x + b.x,
+      y: a.y + b.y
+    };
+  };
+  var sub = function sub(a, b) {
+    return {
+      x: a.x - b.x,
+      y: a.y - b.y
+    };
+  };
+  var scale = function scale(v, s) {
+    return {
+      x: v.x * s,
+      y: v.y * s
+    };
+  };
+  var cross = function cross(u, v) {
+    return u.x * v.y - u.y * v.x;
+  };
+  var normalize = function normalize(v) {
+    var len = hypot(v.x, v.y);
+    return len === 0 ? {
+      x: 0,
+      y: 0
+    } : {
+      x: v.x / len,
+      y: v.y / len
+    };
+  };
+  // Signed area (positive = CCW)
+  var signedArea = function signedArea(pts) {
+    var A = 0;
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i],
+        q = pts[(i + 1) % pts.length];
+      A += p.x * q.y - q.x * p.y;
+    }
+    return A / 2;
+  };
+  // Line–line intersection (infinite lines)
+  var intersectLines = function intersectLines(p1, p2, p3, p4) {
+    var r = sub(p2, p1);
+    var s = sub(p4, p3);
+    var denom = cross(r, s);
+    if (Math.abs(denom) < 1e-9) {
+      // Parallel or nearly so — fallback to midpoint
+      return add(p1, scale(r, 0.5));
+    }
+    var t = cross(sub(p3, p1), s) / denom;
+    return add(p1, scale(r, t));
+  };
+
+  // Make a shallow copy and enforce CCW
+  var pts = polygon.map(function (p) {
+    return {
+      x: p.x,
+      y: p.y
+    };
+  });
+  if (signedArea(pts) < 0) pts.reverse();
+  var n = pts.length;
+  // Compute outward normals for each edge
+  var normals = [];
+  for (var i = 0; i < n; i++) {
+    var p = pts[i],
+      q = pts[(i + 1) % n];
+    var edge = sub(q, p);
+    // For CCW polygon, inward normal = (-edge.y, edge.x)
+    // so outward normal = (edge.y, -edge.x)
+    var out = normalize({
+      x: edge.y,
+      y: -edge.x
+    });
+    normals.push(out);
+  }
+
+  // Build offset edges
+  var offsetEdges = normals.map(function (nrm, i) {
+    var p1 = add(pts[i], scale(nrm, d));
+    var p2 = add(pts[(i + 1) % n], scale(nrm, d));
+    return {
+      p1: p1,
+      p2: p2
+    };
+  });
+
+  // Intersect consecutive offset edges
+  var inflated = [];
+  for (var _i2 = 0; _i2 < n; _i2++) {
+    var prevEdge = offsetEdges[(_i2 - 1 + n) % n];
+    var currEdge = offsetEdges[_i2];
+    var ip = intersectLines(prevEdge.p1, prevEdge.p2, currEdge.p1, currEdge.p2);
+    inflated.push(ip);
+  }
+  return inflated;
+}
+function miterBox(pts, centerX, centerY, width, height, strokeWidth) {
+  var tpts = transformPoints(pts, centerX, centerY, width, height);
+  var offsetPoints = inflatePolygon(tpts, strokeWidth);
+  var bb = makeBoundingBox();
+  offsetPoints.forEach(function (pt) {
+    return expandBoundingBoxByPoint(bb, pt.x, pt.y);
+  });
+  return bb;
+}
 var roundRectangleIntersectLine = function roundRectangleIntersectLine(x, y, nodeX, nodeY, width, height, padding) {
   var radius = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 'auto';
   var cornerRadius = radius === 'auto' ? getRoundRectangleRadius(width, height) : radius;
@@ -3473,7 +3776,6 @@ var roundRectangleIntersectLine = function roundRectangleIntersectLine(x, y, nod
   }
   return []; // if nothing
 };
-
 var inLineVicinity = function inLineVicinity(x, y, lx1, ly1, lx2, ly2, tolerance) {
   var t = tolerance;
   var x1 = Math.min(lx1, lx2);
@@ -3888,6 +4190,24 @@ var finiteLinesIntersect = function finiteLinesIntersect(x1, y1, x2, y2, x3, y3,
     }
   }
 };
+var transformPoints = function transformPoints(points, centerX, centerY, width, height) {
+  var ret = [];
+  var halfW = width / 2;
+  var halfH = height / 2;
+  var x = centerX;
+  var y = centerY;
+  ret.push({
+    x: x + halfW * points[0],
+    y: y + halfH * points[1]
+  });
+  for (var i = 1; i < points.length / 2; i++) {
+    ret.push({
+      x: x + halfW * points[i * 2],
+      y: y + halfH * points[i * 2 + 1]
+    });
+  }
+  return ret;
+};
 
 // math.polygonIntersectLine( x, y, basePoints, centerX, centerY, width, height, padding )
 // intersect a node polygon (pts transformed)
@@ -3918,12 +4238,12 @@ var polygonIntersectLine = function polygonIntersectLine(x, y, basePoints, cente
     points = basePoints;
   }
   var currentX, currentY, nextX, nextY;
-  for (var _i2 = 0; _i2 < points.length / 2; _i2++) {
-    currentX = points[_i2 * 2];
-    currentY = points[_i2 * 2 + 1];
-    if (_i2 < points.length / 2 - 1) {
-      nextX = points[(_i2 + 1) * 2];
-      nextY = points[(_i2 + 1) * 2 + 1];
+  for (var _i3 = 0; _i3 < points.length / 2; _i3++) {
+    currentX = points[_i3 * 2];
+    currentY = points[_i3 * 2 + 1];
+    if (_i3 < points.length / 2 - 1) {
+      nextX = points[(_i3 + 1) * 2];
+      nextY = points[(_i3 + 1) * 2 + 1];
     } else {
       nextX = points[0];
       nextY = points[1];
@@ -3963,11 +4283,11 @@ var roundPolygonIntersectLine = function roundPolygonIntersectLine(x, y, basePoi
   if (intersections.length > 2) {
     var lowestIntersection = [intersections[0], intersections[1]];
     var lowestSquaredDistance = Math.pow(lowestIntersection[0] - x, 2) + Math.pow(lowestIntersection[1] - y, 2);
-    for (var _i3 = 1; _i3 < intersections.length / 2; _i3++) {
-      var squaredDistance = Math.pow(intersections[_i3 * 2] - x, 2) + Math.pow(intersections[_i3 * 2 + 1] - y, 2);
+    for (var _i4 = 1; _i4 < intersections.length / 2; _i4++) {
+      var squaredDistance = Math.pow(intersections[_i4 * 2] - x, 2) + Math.pow(intersections[_i4 * 2 + 1] - y, 2);
       if (squaredDistance <= lowestSquaredDistance) {
-        lowestIntersection[0] = intersections[_i3 * 2];
-        lowestIntersection[1] = intersections[_i3 * 2 + 1];
+        lowestIntersection[0] = intersections[_i4 * 2];
+        lowestIntersection[1] = intersections[_i4 * 2 + 1];
         lowestSquaredDistance = squaredDistance;
       }
     }
@@ -4008,17 +4328,17 @@ var fitPolygonToSquare = function fitPolygonToSquare(points) {
   // stretch factors
   var sx = 2 / (maxX - minX);
   var sy = 2 / (maxY - minY);
-  for (var _i4 = 0; _i4 < sides; _i4++) {
-    x = points[2 * _i4] = points[2 * _i4] * sx;
-    y = points[2 * _i4 + 1] = points[2 * _i4 + 1] * sy;
+  for (var _i5 = 0; _i5 < sides; _i5++) {
+    x = points[2 * _i5] = points[2 * _i5] * sx;
+    y = points[2 * _i5 + 1] = points[2 * _i5 + 1] * sy;
     minX = Math.min(minX, x);
     maxX = Math.max(maxX, x);
     minY = Math.min(minY, y);
     maxY = Math.max(maxY, y);
   }
   if (minY < -1) {
-    for (var _i5 = 0; _i5 < sides; _i5++) {
-      y = points[2 * _i5 + 1] = points[2 * _i5 + 1] + (-1 - minY);
+    for (var _i6 = 0; _i6 < sides; _i6++) {
+      y = points[2 * _i6 + 1] = points[2 * _i6 + 1] + (-1 - minY);
     }
   }
   return points;
@@ -4034,7 +4354,6 @@ var generateUnitNgonPoints = function generateUnitNgonPoints(sides, rotationRadi
     points[2 * i] = Math.cos(currentAngle); // x
     points[2 * i + 1] = Math.sin(-currentAngle); // y
   }
-
   return points;
 };
 
@@ -4062,6 +4381,76 @@ var getBarrelCurveConstants = function getBarrelCurveConstants(width, height) {
     ctrlPtOffsetPct: 0.05
   };
 };
+
+// Separating Axis Theorem (SAT) to determine if two polygons intersect. 
+// The function takes two polygons as input and returns a boolean value indicating 
+// whether the two polygons intersect.
+function satPolygonIntersection(poly1, poly2) {
+  function getAxes(polygon) {
+    var axes = [];
+    for (var i = 0; i < polygon.length; i++) {
+      var p1 = polygon[i];
+      var p2 = polygon[(i + 1) % polygon.length];
+      var edge = {
+        x: p2.x - p1.x,
+        y: p2.y - p1.y
+      };
+      var normal = {
+        x: -edge.y,
+        y: edge.x
+      };
+      var length = Math.sqrt(normal.x * normal.x + normal.y * normal.y);
+      axes.push({
+        x: normal.x / length,
+        y: normal.y / length
+      });
+    }
+    return axes;
+  }
+  function project(polygon, axis) {
+    var min = Infinity;
+    var max = -Infinity;
+    var _iterator = _createForOfIteratorHelper(polygon),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var point = _step.value;
+        var projection = point.x * axis.x + point.y * axis.y;
+        min = Math.min(min, projection);
+        max = Math.max(max, projection);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+    return {
+      min: min,
+      max: max
+    };
+  }
+  function overlaps(proj1, proj2) {
+    return !(proj1.max < proj2.min || proj2.max < proj1.min);
+  }
+  var axes = [].concat(_toConsumableArray(getAxes(poly1)), _toConsumableArray(getAxes(poly2)));
+  var _iterator2 = _createForOfIteratorHelper(axes),
+    _step2;
+  try {
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var axis = _step2.value;
+      var proj1 = project(poly1, axis);
+      var proj2 = project(poly2, axis);
+      if (!overlaps(proj1, proj2)) {
+        return false; // No overlap, so the polygons do not intersect
+      }
+    }
+  } catch (err) {
+    _iterator2.e(err);
+  } finally {
+    _iterator2.f();
+  }
+  return true; // polygons intersect
+}
 
 var pageRankDefaults = defaults$g({
   dampingFactor: 0.8,
@@ -4474,16 +4863,15 @@ var elesfn$l = {
       } else {
         A[vid] = v.openNeighborhood().nodes(); // get neighbors of every node
       }
-
       C.set(vid, 0);
     }
-    var _loop = function _loop(s) {
+    var _loop = function _loop() {
       var sid = V[s].id();
       var S = []; // stack
       var P = {};
       var g = {};
       var d = {};
-      var Q = new heap(function (a, b) {
+      var Q = new Heap(function (a, b) {
         return d[a] - d[b];
       }); // queue
 
@@ -4505,7 +4893,7 @@ var elesfn$l = {
           for (var j = 0; j < A[_v].length; j++) {
             var w = A[_v][j];
             var vEle = cy.getElementById(_v);
-            var edge = void 0;
+            var edge = undefined;
             if (vEle.edgesTo(w).length > 0) {
               edge = vEle.edgesTo(w)[0];
             } else {
@@ -4560,7 +4948,7 @@ var elesfn$l = {
       }
     };
     for (var s = 0; s < V.length; s++) {
-      _loop(s);
+      _loop();
     }
     var ret = {
       betweenness: function betweenness(node) {
@@ -4586,6 +4974,8 @@ var elesfn$l = {
 elesfn$l.bc = elesfn$l.betweennessCentrality;
 
 // Implemented by Zoe Xi @zoexi for GSOC 2016
+// https://github.com/cytoscape/cytoscape.js-markov-cluster
+
 
 /* eslint-disable no-unused-vars */
 var defaults$c = defaults$g({
@@ -4781,7 +5171,9 @@ var markovClustering$1 = {
 };
 
 // Common distance metrics for clustering algorithms
-var identity = function identity(x) {
+// https://en.wikipedia.org/wiki/Hierarchical_clustering#Metric
+
+var identity$1 = function identity(x) {
   return x;
 };
 var absDiff = function absDiff(p, q) {
@@ -4800,7 +5192,7 @@ var maxAbsDiff = function maxAbsDiff(currentMax, p, q) {
   return Math.max(currentMax, absDiff(p, q));
 };
 var getDistance = function getDistance(length, getP, getQ, init, visit) {
-  var post = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : identity;
+  var post = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : identity$1;
   var ret = init;
   var p, q;
   for (var dim = 0; dim < length; dim++) {
@@ -4894,7 +5286,6 @@ var randomCentroids = function randomCentroids(nodes, k, attributes) {
     for (var _i = 0; _i < ndim; _i++) {
       centroid[_i] = Math.random() * (max[_i] - min[_i]) + min[_i]; // random initial value
     }
-
     centroids[c] = centroid;
   }
   return centroids;
@@ -5249,6 +5640,8 @@ var kClustering = {
 };
 
 // Implemented by Zoe Xi @zoexi for GSOC 2016
+// https://github.com/cytoscape/cytoscape.js-hierarchical
+
 var defaults$a = defaults$g({
   distance: 'euclidean',
   // distance metric to compare nodes
@@ -5265,7 +5658,6 @@ var defaults$a = defaults$g({
   // depth at which dendrogram branches are merged into the returned clusters
   attributes: [] // array of attr functions
 });
-
 var linkageAliases = {
   'single': 'min',
   'complete': 'max'
@@ -5366,20 +5758,20 @@ var mergeClosest = function mergeClosest(clusters, index, dists, mins, opts) {
   c1.key = c2.key = c1.index = c2.index = null;
   return true;
 };
-var getAllChildren = function getAllChildren(root, arr, cy) {
+var _getAllChildren = function getAllChildren(root, arr, cy) {
   if (!root) return;
   if (root.value) {
     arr.push(root.value);
   } else {
-    if (root.left) getAllChildren(root.left, arr);
-    if (root.right) getAllChildren(root.right, arr);
+    if (root.left) _getAllChildren(root.left, arr);
+    if (root.right) _getAllChildren(root.right, arr);
   }
 };
-var buildDendrogram = function buildDendrogram(root, cy) {
+var _buildDendrogram = function buildDendrogram(root, cy) {
   if (!root) return '';
   if (root.left && root.right) {
-    var leftStr = buildDendrogram(root.left, cy);
-    var rightStr = buildDendrogram(root.right, cy);
+    var leftStr = _buildDendrogram(root.left, cy);
+    var rightStr = _buildDendrogram(root.right, cy);
     var node = cy.add({
       group: 'nodes',
       data: {
@@ -5405,15 +5797,15 @@ var buildDendrogram = function buildDendrogram(root, cy) {
     return root.value.id();
   }
 };
-var buildClustersFromTree = function buildClustersFromTree(root, k, cy) {
+var _buildClustersFromTree = function buildClustersFromTree(root, k, cy) {
   if (!root) return [];
   var left = [],
     right = [],
     leaves = [];
   if (k === 0) {
     // don't cut tree, simply return all nodes as 1 single cluster
-    if (root.left) getAllChildren(root.left, left);
-    if (root.right) getAllChildren(root.right, right);
+    if (root.left) _getAllChildren(root.left, left);
+    if (root.right) _getAllChildren(root.right, right);
     leaves = left.concat(right);
     return [cy.collection(leaves)];
   } else if (k === 1) {
@@ -5423,16 +5815,16 @@ var buildClustersFromTree = function buildClustersFromTree(root, k, cy) {
       // leaf node
       return [cy.collection(root.value)];
     } else {
-      if (root.left) getAllChildren(root.left, left);
-      if (root.right) getAllChildren(root.right, right);
+      if (root.left) _getAllChildren(root.left, left);
+      if (root.right) _getAllChildren(root.right, right);
       return [cy.collection(left), cy.collection(right)];
     }
   } else {
     if (root.value) {
       return [cy.collection(root.value)];
     } else {
-      if (root.left) left = buildClustersFromTree(root.left, k - 1, cy);
-      if (root.right) right = buildClustersFromTree(root.right, k - 1, cy);
+      if (root.left) left = _buildClustersFromTree(root.left, k - 1, cy);
+      if (root.right) right = _buildClustersFromTree(root.right, k - 1, cy);
       return left.concat(right);
     }
   }
@@ -5475,7 +5867,7 @@ var hierarchicalClustering = function hierarchicalClustering(options) {
   // Calculate the distance between each pair of clusters
   for (var i = 0; i < clusters.length; i++) {
     for (var j = 0; j <= i; j++) {
-      var dist = void 0;
+      var dist = undefined;
       if (opts.mode === 'dendrogram') {
         // modes store cluster values differently
         dist = i === j ? Infinity : getDist(clusters[i].value, clusters[j].value);
@@ -5501,8 +5893,8 @@ var hierarchicalClustering = function hierarchicalClustering(options) {
   // Dendrogram mode builds the hierarchy and adds intermediary nodes + edges
   // in addition to returning the clusters.
   if (opts.mode === 'dendrogram') {
-    retClusters = buildClustersFromTree(clusters[0], opts.dendrogramDepth, cy);
-    if (opts.addDendrogram) buildDendrogram(clusters[0], cy);
+    retClusters = _buildClustersFromTree(clusters[0], opts.dendrogramDepth, cy);
+    if (opts.addDendrogram) _buildDendrogram(clusters[0], cy);
   } else {
     // Regular mode simply returns the clusters
 
@@ -5521,6 +5913,8 @@ var hierarchicalClustering$1 = {
 };
 
 // Implemented by Zoe Xi @zoexi for GSOC 2016
+// https://github.com/cytoscape/cytoscape.js-affinity-propagation
+
 var defaults$9 = defaults$g({
   distance: 'euclidean',
   // distance metric to compare attributes between two nodes
@@ -5666,7 +6060,6 @@ var affinityPropagation = function affinityPropagation(options) {
   for (var _i = 0; _i < n2; _i++) {
     S[_i] = -Infinity; // for cases where two data points shouldn't be linked together
   }
-
   for (var _i2 = 0; _i2 < n; _i2++) {
     for (var j = 0; j < n; j++) {
       if (_i2 !== j) {
@@ -5968,7 +6361,7 @@ var hopcroftTarjanBiconnected = function hopcroftTarjanBiconnected() {
     });
     components.push(component);
   };
-  var biconnectedSearch = function biconnectedSearch(root, currentNode, parent) {
+  var _biconnectedSearch = function biconnectedSearch(root, currentNode, parent) {
     if (root === parent) edgeCount += 1;
     nodes[currentNode] = {
       id: id,
@@ -5995,7 +6388,7 @@ var hopcroftTarjanBiconnected = function hopcroftTarjanBiconnected() {
             });
           }
           if (!(otherNodeId in nodes)) {
-            biconnectedSearch(root, otherNodeId, currentNode);
+            _biconnectedSearch(root, otherNodeId, currentNode);
             nodes[currentNode].low = Math.min(nodes[currentNode].low, nodes[otherNodeId].low);
             if (nodes[currentNode].id <= nodes[otherNodeId].low) {
               nodes[currentNode].cutVertex = true;
@@ -6013,7 +6406,7 @@ var hopcroftTarjanBiconnected = function hopcroftTarjanBiconnected() {
       var nodeId = ele.id();
       if (!(nodeId in nodes)) {
         edgeCount = 0;
-        biconnectedSearch(nodeId, nodeId);
+        _biconnectedSearch(nodeId, nodeId);
         nodes[nodeId].cutVertex = edgeCount > 1;
       }
     }
@@ -6042,7 +6435,7 @@ var tarjanStronglyConnected = function tarjanStronglyConnected() {
   var components = [];
   var stack = [];
   var cut = eles.spawn(eles);
-  var stronglyConnectedSearch = function stronglyConnectedSearch(sourceNodeId) {
+  var _stronglyConnectedSearch = function stronglyConnectedSearch(sourceNodeId) {
     stack.push(sourceNodeId);
     nodes[sourceNodeId] = {
       index: index,
@@ -6054,7 +6447,7 @@ var tarjanStronglyConnected = function tarjanStronglyConnected() {
       var targetNodeId = edge.target().id();
       if (targetNodeId !== sourceNodeId) {
         if (!(targetNodeId in nodes)) {
-          stronglyConnectedSearch(targetNodeId);
+          _stronglyConnectedSearch(targetNodeId);
         }
         if (!nodes[targetNodeId].explored) {
           nodes[sourceNodeId].low = Math.min(nodes[sourceNodeId].low, nodes[targetNodeId].low);
@@ -6082,7 +6475,7 @@ var tarjanStronglyConnected = function tarjanStronglyConnected() {
     if (ele.isNode()) {
       var nodeId = ele.id();
       if (!(nodeId in nodes)) {
-        stronglyConnectedSearch(nodeId);
+        _stronglyConnectedSearch(nodeId);
       }
     }
   });
@@ -6115,9 +6508,9 @@ var STATE_FULFILLED = 1; /*  [Promises/A+ 2.1.2]  */
 var STATE_REJECTED = 2; /*  [Promises/A+ 2.1.3]  */
 
 /*  promise object constructor  */
-var api = function api(executor) {
+var _api = function api(executor) {
   /*  optionally support non-constructor/plain-function call  */
-  if (!(this instanceof api)) return new api(executor);
+  if (!(this instanceof _api)) return new _api(executor);
 
   /*  initialize object  */
   this.id = 'Thenable/1.0.7';
@@ -6137,7 +6530,7 @@ var api = function api(executor) {
 };
 
 /*  promise API methods  */
-api.prototype = {
+_api.prototype = {
   /*  promise resolving methods  */
   fulfill: function fulfill(value) {
     return deliver(this, STATE_FULFILLED, 'fulfillValue', value);
@@ -6148,7 +6541,7 @@ api.prototype = {
   /*  "The then Method" [Promises/A+ 1.1, 1.2, 2.2]  */
   then: function then(onFulfilled, onRejected) {
     var curr = this;
-    var next = new api(); /*  [Promises/A+ 2.2.7]  */
+    var next = new _api(); /*  [Promises/A+ 2.2.7]  */
     curr.onFulfilled.push(resolver(onFulfilled, next, 'fulfill')); /*  [Promises/A+ 2.2.2/2.2.6]  */
     curr.onRejected.push(resolver(onRejected, next, 'reject')); /*  [Promises/A+ 2.2.3/2.2.6]  */
     execute(curr);
@@ -6183,9 +6576,7 @@ var execute_handlers = function execute_handlers(curr, name, value) {
   var handlers = curr[name];
   curr[name] = []; /*  [Promises/A+ 2.2.2.3, 2.2.3.3]  */
   var func = function func() {
-    for (var i = 0; i < handlers.length; i++) {
-      handlers[i](value);
-    } /*  [Promises/A+ 2.2.5]  */
+    for (var i = 0; i < handlers.length; i++) handlers[i](value); /*  [Promises/A+ 2.2.5]  */
   };
 
   /*  execute procedure asynchronously  */ /*  [Promises/A+ 2.2.4, 3.1]  */
@@ -6204,13 +6595,13 @@ var resolver = function resolver(cb, next, method) {
         next.reject(e); /*  [Promises/A+ 2.2.7.2]  */
         return;
       }
-      resolve(next, result); /*  [Promises/A+ 2.2.7.1]  */
+      _resolve(next, result); /*  [Promises/A+ 2.2.7.1]  */
     }
   };
 };
 
 /*  "Promise Resolution Procedure"  */ /*  [Promises/A+ 2.3]  */
-var resolve = function resolve(promise, x) {
+var _resolve = function resolve(promise, x) {
   /*  sanity check arguments  */ /*  [Promises/A+ 2.3.1]  */
   if (promise === x || promise.proxy === x) {
     promise.reject(new TypeError('cannot resolve promise with itself'));
@@ -6240,7 +6631,7 @@ var resolve = function resolve(promise, x) {
         if (resolved) return;
         resolved = true; /*  [Promises/A+ 2.3.3.3.3]  */
         if (y === x) /*  [Promises/A+ 3.6]  */
-          promise.reject(new TypeError('circular thenable chain'));else resolve(promise, y);
+          promise.reject(new TypeError('circular thenable chain'));else _resolve(promise, y);
       }, /*  rejectPromise  */ /*  [Promises/A+ 2.3.3.3.2]  */
       function (r) {
         if (resolved) return;
@@ -6251,7 +6642,6 @@ var resolve = function resolve(promise, x) {
       if (!resolved) /*  [Promises/A+ 2.3.3.3.3]  */
         promise.reject(e); /*  [Promises/A+ 2.3.3.3.4]  */
     }
-
     return;
   }
 
@@ -6260,8 +6650,8 @@ var resolve = function resolve(promise, x) {
 };
 
 // so we always have Promise.all()
-api.all = function (ps) {
-  return new api(function (resolveAll, rejectAll) {
+_api.all = function (ps) {
+  return new _api(function (resolveAll, rejectAll) {
     var vals = new Array(ps.length);
     var doneCount = 0;
     var fulfill = function fulfill(i, val) {
@@ -6289,17 +6679,17 @@ api.all = function (ps) {
     }
   });
 };
-api.resolve = function (val) {
-  return new api(function (resolve, reject) {
+_api.resolve = function (val) {
+  return new _api(function (resolve, reject) {
     resolve(val);
   });
 };
-api.reject = function (val) {
-  return new api(function (resolve, reject) {
+_api.reject = function (val) {
+  return new _api(function (resolve, reject) {
     reject(val);
   });
 };
-var Promise$1 = typeof Promise !== 'undefined' ? Promise : api; // eslint-disable-line no-undef
+var Promise$1 = typeof Promise !== 'undefined' ? Promise : _api; // eslint-disable-line no-undef
 
 var Animation = function Animation(target, opts, opts2) {
   var isCore = core(target);
@@ -6588,7 +6978,6 @@ var define$3 = {
       if (propertiesEmpty) {
         return new Animation(all[0], properties); // nothing to animate
       }
-
       if (properties.duration === undefined) {
         properties.duration = 400;
       }
@@ -6654,7 +7043,6 @@ var define$3 = {
           properties.zoom = null; // an inavalid zoom (e.g. no delta) gets automatically destroyed
         }
       }
-
       return new Animation(all[0], properties);
     };
   },
@@ -6685,7 +7073,6 @@ var define$3 = {
       return this; // chaining
     };
   },
-
   // animate
 
   stop: function stop() {
@@ -6750,165 +7137,238 @@ var define$3 = {
  * _.isArray(_.noop);
  * // => false
  */
-var isArray = Array.isArray;
 
-var isArray_1 = isArray;
+var isArray_1;
+var hasRequiredIsArray;
 
-/** Used to match property names within property paths. */
-var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
-    reIsPlainProp = /^\w*$/;
+function requireIsArray () {
+	if (hasRequiredIsArray) return isArray_1;
+	hasRequiredIsArray = 1;
+	var isArray = Array.isArray;
 
-/**
- * Checks if `value` is a property name and not a property path.
- *
- * @private
- * @param {*} value The value to check.
- * @param {Object} [object] The object to query keys on.
- * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
- */
-function isKey(value, object) {
-  if (isArray_1(value)) {
-    return false;
-  }
-  var type = typeof value;
-  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
-      value == null || isSymbol_1(value)) {
-    return true;
-  }
-  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
-    (object != null && value in Object(object));
+	isArray_1 = isArray;
+	return isArray_1;
 }
 
-var _isKey = isKey;
+var _isKey;
+var hasRequired_isKey;
 
-/** `Object#toString` result references. */
-var asyncTag = '[object AsyncFunction]',
-    funcTag = '[object Function]',
-    genTag = '[object GeneratorFunction]',
-    proxyTag = '[object Proxy]';
+function require_isKey () {
+	if (hasRequired_isKey) return _isKey;
+	hasRequired_isKey = 1;
+	var isArray = requireIsArray(),
+	    isSymbol = requireIsSymbol();
 
-/**
- * Checks if `value` is classified as a `Function` object.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Lang
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a function, else `false`.
- * @example
- *
- * _.isFunction(_);
- * // => true
- *
- * _.isFunction(/abc/);
- * // => false
- */
-function isFunction(value) {
-  if (!isObject_1(value)) {
-    return false;
-  }
-  // The use of `Object#toString` avoids issues with the `typeof` operator
-  // in Safari 9 which returns 'object' for typed arrays and other constructors.
-  var tag = _baseGetTag(value);
-  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+	/** Used to match property names within property paths. */
+	var reIsDeepProp = /\.|\[(?:[^[\]]*|(["'])(?:(?!\1)[^\\]|\\.)*?\1)\]/,
+	    reIsPlainProp = /^\w*$/;
+
+	/**
+	 * Checks if `value` is a property name and not a property path.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @param {Object} [object] The object to query keys on.
+	 * @returns {boolean} Returns `true` if `value` is a property name, else `false`.
+	 */
+	function isKey(value, object) {
+	  if (isArray(value)) {
+	    return false;
+	  }
+	  var type = typeof value;
+	  if (type == 'number' || type == 'symbol' || type == 'boolean' ||
+	      value == null || isSymbol(value)) {
+	    return true;
+	  }
+	  return reIsPlainProp.test(value) || !reIsDeepProp.test(value) ||
+	    (object != null && value in Object(object));
+	}
+
+	_isKey = isKey;
+	return _isKey;
 }
 
-var isFunction_1 = isFunction;
+var isFunction_1;
+var hasRequiredIsFunction;
 
-/** Used to detect overreaching core-js shims. */
-var coreJsData = _root['__core-js_shared__'];
+function requireIsFunction () {
+	if (hasRequiredIsFunction) return isFunction_1;
+	hasRequiredIsFunction = 1;
+	var baseGetTag = require_baseGetTag(),
+	    isObject = requireIsObject();
 
-var _coreJsData = coreJsData;
+	/** `Object#toString` result references. */
+	var asyncTag = '[object AsyncFunction]',
+	    funcTag = '[object Function]',
+	    genTag = '[object GeneratorFunction]',
+	    proxyTag = '[object Proxy]';
 
-/** Used to detect methods masquerading as native. */
-var maskSrcKey = (function() {
-  var uid = /[^.]+$/.exec(_coreJsData && _coreJsData.keys && _coreJsData.keys.IE_PROTO || '');
-  return uid ? ('Symbol(src)_1.' + uid) : '';
-}());
+	/**
+	 * Checks if `value` is classified as a `Function` object.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Lang
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a function, else `false`.
+	 * @example
+	 *
+	 * _.isFunction(_);
+	 * // => true
+	 *
+	 * _.isFunction(/abc/);
+	 * // => false
+	 */
+	function isFunction(value) {
+	  if (!isObject(value)) {
+	    return false;
+	  }
+	  // The use of `Object#toString` avoids issues with the `typeof` operator
+	  // in Safari 9 which returns 'object' for typed arrays and other constructors.
+	  var tag = baseGetTag(value);
+	  return tag == funcTag || tag == genTag || tag == asyncTag || tag == proxyTag;
+	}
 
-/**
- * Checks if `func` has its source masked.
- *
- * @private
- * @param {Function} func The function to check.
- * @returns {boolean} Returns `true` if `func` is masked, else `false`.
- */
-function isMasked(func) {
-  return !!maskSrcKey && (maskSrcKey in func);
+	isFunction_1 = isFunction;
+	return isFunction_1;
 }
 
-var _isMasked = isMasked;
+var _coreJsData;
+var hasRequired_coreJsData;
+
+function require_coreJsData () {
+	if (hasRequired_coreJsData) return _coreJsData;
+	hasRequired_coreJsData = 1;
+	var root = require_root();
+
+	/** Used to detect overreaching core-js shims. */
+	var coreJsData = root['__core-js_shared__'];
+
+	_coreJsData = coreJsData;
+	return _coreJsData;
+}
+
+var _isMasked;
+var hasRequired_isMasked;
+
+function require_isMasked () {
+	if (hasRequired_isMasked) return _isMasked;
+	hasRequired_isMasked = 1;
+	var coreJsData = require_coreJsData();
+
+	/** Used to detect methods masquerading as native. */
+	var maskSrcKey = (function() {
+	  var uid = /[^.]+$/.exec(coreJsData && coreJsData.keys && coreJsData.keys.IE_PROTO || '');
+	  return uid ? ('Symbol(src)_1.' + uid) : '';
+	}());
+
+	/**
+	 * Checks if `func` has its source masked.
+	 *
+	 * @private
+	 * @param {Function} func The function to check.
+	 * @returns {boolean} Returns `true` if `func` is masked, else `false`.
+	 */
+	function isMasked(func) {
+	  return !!maskSrcKey && (maskSrcKey in func);
+	}
+
+	_isMasked = isMasked;
+	return _isMasked;
+}
 
 /** Used for built-in method references. */
-var funcProto$1 = Function.prototype;
 
-/** Used to resolve the decompiled source of functions. */
-var funcToString$1 = funcProto$1.toString;
+var _toSource;
+var hasRequired_toSource;
 
-/**
- * Converts `func` to its source code.
- *
- * @private
- * @param {Function} func The function to convert.
- * @returns {string} Returns the source code.
- */
-function toSource(func) {
-  if (func != null) {
-    try {
-      return funcToString$1.call(func);
-    } catch (e) {}
-    try {
-      return (func + '');
-    } catch (e) {}
-  }
-  return '';
+function require_toSource () {
+	if (hasRequired_toSource) return _toSource;
+	hasRequired_toSource = 1;
+	var funcProto = Function.prototype;
+
+	/** Used to resolve the decompiled source of functions. */
+	var funcToString = funcProto.toString;
+
+	/**
+	 * Converts `func` to its source code.
+	 *
+	 * @private
+	 * @param {Function} func The function to convert.
+	 * @returns {string} Returns the source code.
+	 */
+	function toSource(func) {
+	  if (func != null) {
+	    try {
+	      return funcToString.call(func);
+	    } catch (e) {}
+	    try {
+	      return (func + '');
+	    } catch (e) {}
+	  }
+	  return '';
+	}
+
+	_toSource = toSource;
+	return _toSource;
 }
 
-var _toSource = toSource;
+var _baseIsNative;
+var hasRequired_baseIsNative;
 
-/**
- * Used to match `RegExp`
- * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
- */
-var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
+function require_baseIsNative () {
+	if (hasRequired_baseIsNative) return _baseIsNative;
+	hasRequired_baseIsNative = 1;
+	var isFunction = requireIsFunction(),
+	    isMasked = require_isMasked(),
+	    isObject = requireIsObject(),
+	    toSource = require_toSource();
 
-/** Used to detect host constructors (Safari). */
-var reIsHostCtor = /^\[object .+?Constructor\]$/;
+	/**
+	 * Used to match `RegExp`
+	 * [syntax characters](http://ecma-international.org/ecma-262/7.0/#sec-patterns).
+	 */
+	var reRegExpChar = /[\\^$.*+?()[\]{}|]/g;
 
-/** Used for built-in method references. */
-var funcProto = Function.prototype,
-    objectProto$3 = Object.prototype;
+	/** Used to detect host constructors (Safari). */
+	var reIsHostCtor = /^\[object .+?Constructor\]$/;
 
-/** Used to resolve the decompiled source of functions. */
-var funcToString = funcProto.toString;
+	/** Used for built-in method references. */
+	var funcProto = Function.prototype,
+	    objectProto = Object.prototype;
 
-/** Used to check objects for own properties. */
-var hasOwnProperty$3 = objectProto$3.hasOwnProperty;
+	/** Used to resolve the decompiled source of functions. */
+	var funcToString = funcProto.toString;
 
-/** Used to detect if a method is native. */
-var reIsNative = RegExp('^' +
-  funcToString.call(hasOwnProperty$3).replace(reRegExpChar, '\\$&')
-  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
-);
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
 
-/**
- * The base implementation of `_.isNative` without bad shim checks.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a native function,
- *  else `false`.
- */
-function baseIsNative(value) {
-  if (!isObject_1(value) || _isMasked(value)) {
-    return false;
-  }
-  var pattern = isFunction_1(value) ? reIsNative : reIsHostCtor;
-  return pattern.test(_toSource(value));
+	/** Used to detect if a method is native. */
+	var reIsNative = RegExp('^' +
+	  funcToString.call(hasOwnProperty).replace(reRegExpChar, '\\$&')
+	  .replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, '$1.*?') + '$'
+	);
+
+	/**
+	 * The base implementation of `_.isNative` without bad shim checks.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @returns {boolean} Returns `true` if `value` is a native function,
+	 *  else `false`.
+	 */
+	function baseIsNative(value) {
+	  if (!isObject(value) || isMasked(value)) {
+	    return false;
+	  }
+	  var pattern = isFunction(value) ? reIsNative : reIsHostCtor;
+	  return pattern.test(toSource(value));
+	}
+
+	_baseIsNative = baseIsNative;
+	return _baseIsNative;
 }
-
-var _baseIsNative = baseIsNative;
 
 /**
  * Gets the value at `key` of `object`.
@@ -6918,45 +7378,85 @@ var _baseIsNative = baseIsNative;
  * @param {string} key The key of the property to get.
  * @returns {*} Returns the property value.
  */
-function getValue$1(object, key) {
-  return object == null ? undefined : object[key];
+
+var _getValue;
+var hasRequired_getValue;
+
+function require_getValue () {
+	if (hasRequired_getValue) return _getValue;
+	hasRequired_getValue = 1;
+	function getValue(object, key) {
+	  return object == null ? undefined : object[key];
+	}
+
+	_getValue = getValue;
+	return _getValue;
 }
 
-var _getValue = getValue$1;
+var _getNative;
+var hasRequired_getNative;
 
-/**
- * Gets the native function at `key` of `object`.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {string} key The key of the method to get.
- * @returns {*} Returns the function if it's native, else `undefined`.
- */
-function getNative(object, key) {
-  var value = _getValue(object, key);
-  return _baseIsNative(value) ? value : undefined;
+function require_getNative () {
+	if (hasRequired_getNative) return _getNative;
+	hasRequired_getNative = 1;
+	var baseIsNative = require_baseIsNative(),
+	    getValue = require_getValue();
+
+	/**
+	 * Gets the native function at `key` of `object`.
+	 *
+	 * @private
+	 * @param {Object} object The object to query.
+	 * @param {string} key The key of the method to get.
+	 * @returns {*} Returns the function if it's native, else `undefined`.
+	 */
+	function getNative(object, key) {
+	  var value = getValue(object, key);
+	  return baseIsNative(value) ? value : undefined;
+	}
+
+	_getNative = getNative;
+	return _getNative;
 }
 
-var _getNative = getNative;
+var _nativeCreate;
+var hasRequired_nativeCreate;
 
-/* Built-in method references that are verified to be native. */
-var nativeCreate = _getNative(Object, 'create');
+function require_nativeCreate () {
+	if (hasRequired_nativeCreate) return _nativeCreate;
+	hasRequired_nativeCreate = 1;
+	var getNative = require_getNative();
 
-var _nativeCreate = nativeCreate;
+	/* Built-in method references that are verified to be native. */
+	var nativeCreate = getNative(Object, 'create');
 
-/**
- * Removes all key-value entries from the hash.
- *
- * @private
- * @name clear
- * @memberOf Hash
- */
-function hashClear() {
-  this.__data__ = _nativeCreate ? _nativeCreate(null) : {};
-  this.size = 0;
+	_nativeCreate = nativeCreate;
+	return _nativeCreate;
 }
 
-var _hashClear = hashClear;
+var _hashClear;
+var hasRequired_hashClear;
+
+function require_hashClear () {
+	if (hasRequired_hashClear) return _hashClear;
+	hasRequired_hashClear = 1;
+	var nativeCreate = require_nativeCreate();
+
+	/**
+	 * Removes all key-value entries from the hash.
+	 *
+	 * @private
+	 * @name clear
+	 * @memberOf Hash
+	 */
+	function hashClear() {
+	  this.__data__ = nativeCreate ? nativeCreate(null) : {};
+	  this.size = 0;
+	}
+
+	_hashClear = hashClear;
+	return _hashClear;
+}
 
 /**
  * Removes `key` and its value from the hash.
@@ -6968,113 +7468,166 @@ var _hashClear = hashClear;
  * @param {string} key The key of the value to remove.
  * @returns {boolean} Returns `true` if the entry was removed, else `false`.
  */
-function hashDelete(key) {
-  var result = this.has(key) && delete this.__data__[key];
-  this.size -= result ? 1 : 0;
-  return result;
+
+var _hashDelete;
+var hasRequired_hashDelete;
+
+function require_hashDelete () {
+	if (hasRequired_hashDelete) return _hashDelete;
+	hasRequired_hashDelete = 1;
+	function hashDelete(key) {
+	  var result = this.has(key) && delete this.__data__[key];
+	  this.size -= result ? 1 : 0;
+	  return result;
+	}
+
+	_hashDelete = hashDelete;
+	return _hashDelete;
 }
 
-var _hashDelete = hashDelete;
+var _hashGet;
+var hasRequired_hashGet;
 
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED$1 = '__lodash_hash_undefined__';
+function require_hashGet () {
+	if (hasRequired_hashGet) return _hashGet;
+	hasRequired_hashGet = 1;
+	var nativeCreate = require_nativeCreate();
 
-/** Used for built-in method references. */
-var objectProto$2 = Object.prototype;
+	/** Used to stand-in for `undefined` hash values. */
+	var HASH_UNDEFINED = '__lodash_hash_undefined__';
 
-/** Used to check objects for own properties. */
-var hasOwnProperty$2 = objectProto$2.hasOwnProperty;
+	/** Used for built-in method references. */
+	var objectProto = Object.prototype;
 
-/**
- * Gets the hash value for `key`.
- *
- * @private
- * @name get
- * @memberOf Hash
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function hashGet(key) {
-  var data = this.__data__;
-  if (_nativeCreate) {
-    var result = data[key];
-    return result === HASH_UNDEFINED$1 ? undefined : result;
-  }
-  return hasOwnProperty$2.call(data, key) ? data[key] : undefined;
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+
+	/**
+	 * Gets the hash value for `key`.
+	 *
+	 * @private
+	 * @name get
+	 * @memberOf Hash
+	 * @param {string} key The key of the value to get.
+	 * @returns {*} Returns the entry value.
+	 */
+	function hashGet(key) {
+	  var data = this.__data__;
+	  if (nativeCreate) {
+	    var result = data[key];
+	    return result === HASH_UNDEFINED ? undefined : result;
+	  }
+	  return hasOwnProperty.call(data, key) ? data[key] : undefined;
+	}
+
+	_hashGet = hashGet;
+	return _hashGet;
 }
 
-var _hashGet = hashGet;
+var _hashHas;
+var hasRequired_hashHas;
 
-/** Used for built-in method references. */
-var objectProto$1 = Object.prototype;
+function require_hashHas () {
+	if (hasRequired_hashHas) return _hashHas;
+	hasRequired_hashHas = 1;
+	var nativeCreate = require_nativeCreate();
 
-/** Used to check objects for own properties. */
-var hasOwnProperty$1 = objectProto$1.hasOwnProperty;
+	/** Used for built-in method references. */
+	var objectProto = Object.prototype;
 
-/**
- * Checks if a hash value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf Hash
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function hashHas(key) {
-  var data = this.__data__;
-  return _nativeCreate ? (data[key] !== undefined) : hasOwnProperty$1.call(data, key);
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+
+	/**
+	 * Checks if a hash value for `key` exists.
+	 *
+	 * @private
+	 * @name has
+	 * @memberOf Hash
+	 * @param {string} key The key of the entry to check.
+	 * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+	 */
+	function hashHas(key) {
+	  var data = this.__data__;
+	  return nativeCreate ? (data[key] !== undefined) : hasOwnProperty.call(data, key);
+	}
+
+	_hashHas = hashHas;
+	return _hashHas;
 }
 
-var _hashHas = hashHas;
+var _hashSet;
+var hasRequired_hashSet;
 
-/** Used to stand-in for `undefined` hash values. */
-var HASH_UNDEFINED = '__lodash_hash_undefined__';
+function require_hashSet () {
+	if (hasRequired_hashSet) return _hashSet;
+	hasRequired_hashSet = 1;
+	var nativeCreate = require_nativeCreate();
 
-/**
- * Sets the hash `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf Hash
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the hash instance.
- */
-function hashSet(key, value) {
-  var data = this.__data__;
-  this.size += this.has(key) ? 0 : 1;
-  data[key] = (_nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
-  return this;
+	/** Used to stand-in for `undefined` hash values. */
+	var HASH_UNDEFINED = '__lodash_hash_undefined__';
+
+	/**
+	 * Sets the hash `key` to `value`.
+	 *
+	 * @private
+	 * @name set
+	 * @memberOf Hash
+	 * @param {string} key The key of the value to set.
+	 * @param {*} value The value to set.
+	 * @returns {Object} Returns the hash instance.
+	 */
+	function hashSet(key, value) {
+	  var data = this.__data__;
+	  this.size += this.has(key) ? 0 : 1;
+	  data[key] = (nativeCreate && value === undefined) ? HASH_UNDEFINED : value;
+	  return this;
+	}
+
+	_hashSet = hashSet;
+	return _hashSet;
 }
 
-var _hashSet = hashSet;
+var _Hash;
+var hasRequired_Hash;
 
-/**
- * Creates a hash object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function Hash(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
+function require_Hash () {
+	if (hasRequired_Hash) return _Hash;
+	hasRequired_Hash = 1;
+	var hashClear = require_hashClear(),
+	    hashDelete = require_hashDelete(),
+	    hashGet = require_hashGet(),
+	    hashHas = require_hashHas(),
+	    hashSet = require_hashSet();
 
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
+	/**
+	 * Creates a hash object.
+	 *
+	 * @private
+	 * @constructor
+	 * @param {Array} [entries] The key-value pairs to cache.
+	 */
+	function Hash(entries) {
+	  var index = -1,
+	      length = entries == null ? 0 : entries.length;
+
+	  this.clear();
+	  while (++index < length) {
+	    var entry = entries[index];
+	    this.set(entry[0], entry[1]);
+	  }
+	}
+
+	// Add methods to `Hash`.
+	Hash.prototype.clear = hashClear;
+	Hash.prototype['delete'] = hashDelete;
+	Hash.prototype.get = hashGet;
+	Hash.prototype.has = hashHas;
+	Hash.prototype.set = hashSet;
+
+	_Hash = Hash;
+	return _Hash;
 }
-
-// Add methods to `Hash`.
-Hash.prototype.clear = _hashClear;
-Hash.prototype['delete'] = _hashDelete;
-Hash.prototype.get = _hashGet;
-Hash.prototype.has = _hashHas;
-Hash.prototype.set = _hashSet;
-
-var _Hash = Hash;
 
 /**
  * Removes all key-value entries from the list cache.
@@ -7083,12 +7636,21 @@ var _Hash = Hash;
  * @name clear
  * @memberOf ListCache
  */
-function listCacheClear() {
-  this.__data__ = [];
-  this.size = 0;
-}
 
-var _listCacheClear = listCacheClear;
+var _listCacheClear;
+var hasRequired_listCacheClear;
+
+function require_listCacheClear () {
+	if (hasRequired_listCacheClear) return _listCacheClear;
+	hasRequired_listCacheClear = 1;
+	function listCacheClear() {
+	  this.__data__ = [];
+	  this.size = 0;
+	}
+
+	_listCacheClear = listCacheClear;
+	return _listCacheClear;
+}
 
 /**
  * Performs a
@@ -7122,173 +7684,269 @@ var _listCacheClear = listCacheClear;
  * _.eq(NaN, NaN);
  * // => true
  */
-function eq(value, other) {
-  return value === other || (value !== value && other !== other);
+
+var eq_1;
+var hasRequiredEq;
+
+function requireEq () {
+	if (hasRequiredEq) return eq_1;
+	hasRequiredEq = 1;
+	function eq(value, other) {
+	  return value === other || (value !== value && other !== other);
+	}
+
+	eq_1 = eq;
+	return eq_1;
 }
 
-var eq_1 = eq;
+var _assocIndexOf;
+var hasRequired_assocIndexOf;
 
-/**
- * Gets the index at which the `key` is found in `array` of key-value pairs.
- *
- * @private
- * @param {Array} array The array to inspect.
- * @param {*} key The key to search for.
- * @returns {number} Returns the index of the matched value, else `-1`.
- */
-function assocIndexOf(array, key) {
-  var length = array.length;
-  while (length--) {
-    if (eq_1(array[length][0], key)) {
-      return length;
-    }
-  }
-  return -1;
+function require_assocIndexOf () {
+	if (hasRequired_assocIndexOf) return _assocIndexOf;
+	hasRequired_assocIndexOf = 1;
+	var eq = requireEq();
+
+	/**
+	 * Gets the index at which the `key` is found in `array` of key-value pairs.
+	 *
+	 * @private
+	 * @param {Array} array The array to inspect.
+	 * @param {*} key The key to search for.
+	 * @returns {number} Returns the index of the matched value, else `-1`.
+	 */
+	function assocIndexOf(array, key) {
+	  var length = array.length;
+	  while (length--) {
+	    if (eq(array[length][0], key)) {
+	      return length;
+	    }
+	  }
+	  return -1;
+	}
+
+	_assocIndexOf = assocIndexOf;
+	return _assocIndexOf;
 }
 
-var _assocIndexOf = assocIndexOf;
+var _listCacheDelete;
+var hasRequired_listCacheDelete;
 
-/** Used for built-in method references. */
-var arrayProto = Array.prototype;
+function require_listCacheDelete () {
+	if (hasRequired_listCacheDelete) return _listCacheDelete;
+	hasRequired_listCacheDelete = 1;
+	var assocIndexOf = require_assocIndexOf();
 
-/** Built-in value references. */
-var splice = arrayProto.splice;
+	/** Used for built-in method references. */
+	var arrayProto = Array.prototype;
 
-/**
- * Removes `key` and its value from the list cache.
- *
- * @private
- * @name delete
- * @memberOf ListCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function listCacheDelete(key) {
-  var data = this.__data__,
-      index = _assocIndexOf(data, key);
+	/** Built-in value references. */
+	var splice = arrayProto.splice;
 
-  if (index < 0) {
-    return false;
-  }
-  var lastIndex = data.length - 1;
-  if (index == lastIndex) {
-    data.pop();
-  } else {
-    splice.call(data, index, 1);
-  }
-  --this.size;
-  return true;
+	/**
+	 * Removes `key` and its value from the list cache.
+	 *
+	 * @private
+	 * @name delete
+	 * @memberOf ListCache
+	 * @param {string} key The key of the value to remove.
+	 * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+	 */
+	function listCacheDelete(key) {
+	  var data = this.__data__,
+	      index = assocIndexOf(data, key);
+
+	  if (index < 0) {
+	    return false;
+	  }
+	  var lastIndex = data.length - 1;
+	  if (index == lastIndex) {
+	    data.pop();
+	  } else {
+	    splice.call(data, index, 1);
+	  }
+	  --this.size;
+	  return true;
+	}
+
+	_listCacheDelete = listCacheDelete;
+	return _listCacheDelete;
 }
 
-var _listCacheDelete = listCacheDelete;
+var _listCacheGet;
+var hasRequired_listCacheGet;
 
-/**
- * Gets the list cache value for `key`.
- *
- * @private
- * @name get
- * @memberOf ListCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function listCacheGet(key) {
-  var data = this.__data__,
-      index = _assocIndexOf(data, key);
+function require_listCacheGet () {
+	if (hasRequired_listCacheGet) return _listCacheGet;
+	hasRequired_listCacheGet = 1;
+	var assocIndexOf = require_assocIndexOf();
 
-  return index < 0 ? undefined : data[index][1];
+	/**
+	 * Gets the list cache value for `key`.
+	 *
+	 * @private
+	 * @name get
+	 * @memberOf ListCache
+	 * @param {string} key The key of the value to get.
+	 * @returns {*} Returns the entry value.
+	 */
+	function listCacheGet(key) {
+	  var data = this.__data__,
+	      index = assocIndexOf(data, key);
+
+	  return index < 0 ? undefined : data[index][1];
+	}
+
+	_listCacheGet = listCacheGet;
+	return _listCacheGet;
 }
 
-var _listCacheGet = listCacheGet;
+var _listCacheHas;
+var hasRequired_listCacheHas;
 
-/**
- * Checks if a list cache value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf ListCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function listCacheHas(key) {
-  return _assocIndexOf(this.__data__, key) > -1;
+function require_listCacheHas () {
+	if (hasRequired_listCacheHas) return _listCacheHas;
+	hasRequired_listCacheHas = 1;
+	var assocIndexOf = require_assocIndexOf();
+
+	/**
+	 * Checks if a list cache value for `key` exists.
+	 *
+	 * @private
+	 * @name has
+	 * @memberOf ListCache
+	 * @param {string} key The key of the entry to check.
+	 * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+	 */
+	function listCacheHas(key) {
+	  return assocIndexOf(this.__data__, key) > -1;
+	}
+
+	_listCacheHas = listCacheHas;
+	return _listCacheHas;
 }
 
-var _listCacheHas = listCacheHas;
+var _listCacheSet;
+var hasRequired_listCacheSet;
 
-/**
- * Sets the list cache `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf ListCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the list cache instance.
- */
-function listCacheSet(key, value) {
-  var data = this.__data__,
-      index = _assocIndexOf(data, key);
+function require_listCacheSet () {
+	if (hasRequired_listCacheSet) return _listCacheSet;
+	hasRequired_listCacheSet = 1;
+	var assocIndexOf = require_assocIndexOf();
 
-  if (index < 0) {
-    ++this.size;
-    data.push([key, value]);
-  } else {
-    data[index][1] = value;
-  }
-  return this;
+	/**
+	 * Sets the list cache `key` to `value`.
+	 *
+	 * @private
+	 * @name set
+	 * @memberOf ListCache
+	 * @param {string} key The key of the value to set.
+	 * @param {*} value The value to set.
+	 * @returns {Object} Returns the list cache instance.
+	 */
+	function listCacheSet(key, value) {
+	  var data = this.__data__,
+	      index = assocIndexOf(data, key);
+
+	  if (index < 0) {
+	    ++this.size;
+	    data.push([key, value]);
+	  } else {
+	    data[index][1] = value;
+	  }
+	  return this;
+	}
+
+	_listCacheSet = listCacheSet;
+	return _listCacheSet;
 }
 
-var _listCacheSet = listCacheSet;
+var _ListCache;
+var hasRequired_ListCache;
 
-/**
- * Creates an list cache object.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function ListCache(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
+function require_ListCache () {
+	if (hasRequired_ListCache) return _ListCache;
+	hasRequired_ListCache = 1;
+	var listCacheClear = require_listCacheClear(),
+	    listCacheDelete = require_listCacheDelete(),
+	    listCacheGet = require_listCacheGet(),
+	    listCacheHas = require_listCacheHas(),
+	    listCacheSet = require_listCacheSet();
 
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
+	/**
+	 * Creates an list cache object.
+	 *
+	 * @private
+	 * @constructor
+	 * @param {Array} [entries] The key-value pairs to cache.
+	 */
+	function ListCache(entries) {
+	  var index = -1,
+	      length = entries == null ? 0 : entries.length;
+
+	  this.clear();
+	  while (++index < length) {
+	    var entry = entries[index];
+	    this.set(entry[0], entry[1]);
+	  }
+	}
+
+	// Add methods to `ListCache`.
+	ListCache.prototype.clear = listCacheClear;
+	ListCache.prototype['delete'] = listCacheDelete;
+	ListCache.prototype.get = listCacheGet;
+	ListCache.prototype.has = listCacheHas;
+	ListCache.prototype.set = listCacheSet;
+
+	_ListCache = ListCache;
+	return _ListCache;
 }
 
-// Add methods to `ListCache`.
-ListCache.prototype.clear = _listCacheClear;
-ListCache.prototype['delete'] = _listCacheDelete;
-ListCache.prototype.get = _listCacheGet;
-ListCache.prototype.has = _listCacheHas;
-ListCache.prototype.set = _listCacheSet;
+var _Map;
+var hasRequired_Map;
 
-var _ListCache = ListCache;
+function require_Map () {
+	if (hasRequired_Map) return _Map;
+	hasRequired_Map = 1;
+	var getNative = require_getNative(),
+	    root = require_root();
 
-/* Built-in method references that are verified to be native. */
-var Map$1 = _getNative(_root, 'Map');
+	/* Built-in method references that are verified to be native. */
+	var Map = getNative(root, 'Map');
 
-var _Map = Map$1;
-
-/**
- * Removes all key-value entries from the map.
- *
- * @private
- * @name clear
- * @memberOf MapCache
- */
-function mapCacheClear() {
-  this.size = 0;
-  this.__data__ = {
-    'hash': new _Hash,
-    'map': new (_Map || _ListCache),
-    'string': new _Hash
-  };
+	_Map = Map;
+	return _Map;
 }
 
-var _mapCacheClear = mapCacheClear;
+var _mapCacheClear;
+var hasRequired_mapCacheClear;
+
+function require_mapCacheClear () {
+	if (hasRequired_mapCacheClear) return _mapCacheClear;
+	hasRequired_mapCacheClear = 1;
+	var Hash = require_Hash(),
+	    ListCache = require_ListCache(),
+	    Map = require_Map();
+
+	/**
+	 * Removes all key-value entries from the map.
+	 *
+	 * @private
+	 * @name clear
+	 * @memberOf MapCache
+	 */
+	function mapCacheClear() {
+	  this.size = 0;
+	  this.__data__ = {
+	    'hash': new Hash,
+	    'map': new (Map || ListCache),
+	    'string': new Hash
+	  };
+	}
+
+	_mapCacheClear = mapCacheClear;
+	return _mapCacheClear;
+}
 
 /**
  * Checks if `value` is suitable for use as unique object key.
@@ -7297,249 +7955,352 @@ var _mapCacheClear = mapCacheClear;
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is suitable, else `false`.
  */
-function isKeyable(value) {
-  var type = typeof value;
-  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
-    ? (value !== '__proto__')
-    : (value === null);
+
+var _isKeyable;
+var hasRequired_isKeyable;
+
+function require_isKeyable () {
+	if (hasRequired_isKeyable) return _isKeyable;
+	hasRequired_isKeyable = 1;
+	function isKeyable(value) {
+	  var type = typeof value;
+	  return (type == 'string' || type == 'number' || type == 'symbol' || type == 'boolean')
+	    ? (value !== '__proto__')
+	    : (value === null);
+	}
+
+	_isKeyable = isKeyable;
+	return _isKeyable;
 }
 
-var _isKeyable = isKeyable;
+var _getMapData;
+var hasRequired_getMapData;
 
-/**
- * Gets the data for `map`.
- *
- * @private
- * @param {Object} map The map to query.
- * @param {string} key The reference key.
- * @returns {*} Returns the map data.
- */
-function getMapData(map, key) {
-  var data = map.__data__;
-  return _isKeyable(key)
-    ? data[typeof key == 'string' ? 'string' : 'hash']
-    : data.map;
+function require_getMapData () {
+	if (hasRequired_getMapData) return _getMapData;
+	hasRequired_getMapData = 1;
+	var isKeyable = require_isKeyable();
+
+	/**
+	 * Gets the data for `map`.
+	 *
+	 * @private
+	 * @param {Object} map The map to query.
+	 * @param {string} key The reference key.
+	 * @returns {*} Returns the map data.
+	 */
+	function getMapData(map, key) {
+	  var data = map.__data__;
+	  return isKeyable(key)
+	    ? data[typeof key == 'string' ? 'string' : 'hash']
+	    : data.map;
+	}
+
+	_getMapData = getMapData;
+	return _getMapData;
 }
 
-var _getMapData = getMapData;
+var _mapCacheDelete;
+var hasRequired_mapCacheDelete;
 
-/**
- * Removes `key` and its value from the map.
- *
- * @private
- * @name delete
- * @memberOf MapCache
- * @param {string} key The key of the value to remove.
- * @returns {boolean} Returns `true` if the entry was removed, else `false`.
- */
-function mapCacheDelete(key) {
-  var result = _getMapData(this, key)['delete'](key);
-  this.size -= result ? 1 : 0;
-  return result;
+function require_mapCacheDelete () {
+	if (hasRequired_mapCacheDelete) return _mapCacheDelete;
+	hasRequired_mapCacheDelete = 1;
+	var getMapData = require_getMapData();
+
+	/**
+	 * Removes `key` and its value from the map.
+	 *
+	 * @private
+	 * @name delete
+	 * @memberOf MapCache
+	 * @param {string} key The key of the value to remove.
+	 * @returns {boolean} Returns `true` if the entry was removed, else `false`.
+	 */
+	function mapCacheDelete(key) {
+	  var result = getMapData(this, key)['delete'](key);
+	  this.size -= result ? 1 : 0;
+	  return result;
+	}
+
+	_mapCacheDelete = mapCacheDelete;
+	return _mapCacheDelete;
 }
 
-var _mapCacheDelete = mapCacheDelete;
+var _mapCacheGet;
+var hasRequired_mapCacheGet;
 
-/**
- * Gets the map value for `key`.
- *
- * @private
- * @name get
- * @memberOf MapCache
- * @param {string} key The key of the value to get.
- * @returns {*} Returns the entry value.
- */
-function mapCacheGet(key) {
-  return _getMapData(this, key).get(key);
+function require_mapCacheGet () {
+	if (hasRequired_mapCacheGet) return _mapCacheGet;
+	hasRequired_mapCacheGet = 1;
+	var getMapData = require_getMapData();
+
+	/**
+	 * Gets the map value for `key`.
+	 *
+	 * @private
+	 * @name get
+	 * @memberOf MapCache
+	 * @param {string} key The key of the value to get.
+	 * @returns {*} Returns the entry value.
+	 */
+	function mapCacheGet(key) {
+	  return getMapData(this, key).get(key);
+	}
+
+	_mapCacheGet = mapCacheGet;
+	return _mapCacheGet;
 }
 
-var _mapCacheGet = mapCacheGet;
+var _mapCacheHas;
+var hasRequired_mapCacheHas;
 
-/**
- * Checks if a map value for `key` exists.
- *
- * @private
- * @name has
- * @memberOf MapCache
- * @param {string} key The key of the entry to check.
- * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
- */
-function mapCacheHas(key) {
-  return _getMapData(this, key).has(key);
+function require_mapCacheHas () {
+	if (hasRequired_mapCacheHas) return _mapCacheHas;
+	hasRequired_mapCacheHas = 1;
+	var getMapData = require_getMapData();
+
+	/**
+	 * Checks if a map value for `key` exists.
+	 *
+	 * @private
+	 * @name has
+	 * @memberOf MapCache
+	 * @param {string} key The key of the entry to check.
+	 * @returns {boolean} Returns `true` if an entry for `key` exists, else `false`.
+	 */
+	function mapCacheHas(key) {
+	  return getMapData(this, key).has(key);
+	}
+
+	_mapCacheHas = mapCacheHas;
+	return _mapCacheHas;
 }
 
-var _mapCacheHas = mapCacheHas;
+var _mapCacheSet;
+var hasRequired_mapCacheSet;
 
-/**
- * Sets the map `key` to `value`.
- *
- * @private
- * @name set
- * @memberOf MapCache
- * @param {string} key The key of the value to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns the map cache instance.
- */
-function mapCacheSet(key, value) {
-  var data = _getMapData(this, key),
-      size = data.size;
+function require_mapCacheSet () {
+	if (hasRequired_mapCacheSet) return _mapCacheSet;
+	hasRequired_mapCacheSet = 1;
+	var getMapData = require_getMapData();
 
-  data.set(key, value);
-  this.size += data.size == size ? 0 : 1;
-  return this;
+	/**
+	 * Sets the map `key` to `value`.
+	 *
+	 * @private
+	 * @name set
+	 * @memberOf MapCache
+	 * @param {string} key The key of the value to set.
+	 * @param {*} value The value to set.
+	 * @returns {Object} Returns the map cache instance.
+	 */
+	function mapCacheSet(key, value) {
+	  var data = getMapData(this, key),
+	      size = data.size;
+
+	  data.set(key, value);
+	  this.size += data.size == size ? 0 : 1;
+	  return this;
+	}
+
+	_mapCacheSet = mapCacheSet;
+	return _mapCacheSet;
 }
 
-var _mapCacheSet = mapCacheSet;
+var _MapCache;
+var hasRequired_MapCache;
 
-/**
- * Creates a map cache object to store key-value pairs.
- *
- * @private
- * @constructor
- * @param {Array} [entries] The key-value pairs to cache.
- */
-function MapCache(entries) {
-  var index = -1,
-      length = entries == null ? 0 : entries.length;
+function require_MapCache () {
+	if (hasRequired_MapCache) return _MapCache;
+	hasRequired_MapCache = 1;
+	var mapCacheClear = require_mapCacheClear(),
+	    mapCacheDelete = require_mapCacheDelete(),
+	    mapCacheGet = require_mapCacheGet(),
+	    mapCacheHas = require_mapCacheHas(),
+	    mapCacheSet = require_mapCacheSet();
 
-  this.clear();
-  while (++index < length) {
-    var entry = entries[index];
-    this.set(entry[0], entry[1]);
-  }
+	/**
+	 * Creates a map cache object to store key-value pairs.
+	 *
+	 * @private
+	 * @constructor
+	 * @param {Array} [entries] The key-value pairs to cache.
+	 */
+	function MapCache(entries) {
+	  var index = -1,
+	      length = entries == null ? 0 : entries.length;
+
+	  this.clear();
+	  while (++index < length) {
+	    var entry = entries[index];
+	    this.set(entry[0], entry[1]);
+	  }
+	}
+
+	// Add methods to `MapCache`.
+	MapCache.prototype.clear = mapCacheClear;
+	MapCache.prototype['delete'] = mapCacheDelete;
+	MapCache.prototype.get = mapCacheGet;
+	MapCache.prototype.has = mapCacheHas;
+	MapCache.prototype.set = mapCacheSet;
+
+	_MapCache = MapCache;
+	return _MapCache;
 }
 
-// Add methods to `MapCache`.
-MapCache.prototype.clear = _mapCacheClear;
-MapCache.prototype['delete'] = _mapCacheDelete;
-MapCache.prototype.get = _mapCacheGet;
-MapCache.prototype.has = _mapCacheHas;
-MapCache.prototype.set = _mapCacheSet;
+var memoize_1;
+var hasRequiredMemoize;
 
-var _MapCache = MapCache;
+function requireMemoize () {
+	if (hasRequiredMemoize) return memoize_1;
+	hasRequiredMemoize = 1;
+	var MapCache = require_MapCache();
 
-/** Error message constants. */
-var FUNC_ERROR_TEXT = 'Expected a function';
+	/** Error message constants. */
+	var FUNC_ERROR_TEXT = 'Expected a function';
 
-/**
- * Creates a function that memoizes the result of `func`. If `resolver` is
- * provided, it determines the cache key for storing the result based on the
- * arguments provided to the memoized function. By default, the first argument
- * provided to the memoized function is used as the map cache key. The `func`
- * is invoked with the `this` binding of the memoized function.
- *
- * **Note:** The cache is exposed as the `cache` property on the memoized
- * function. Its creation may be customized by replacing the `_.memoize.Cache`
- * constructor with one whose instances implement the
- * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
- * method interface of `clear`, `delete`, `get`, `has`, and `set`.
- *
- * @static
- * @memberOf _
- * @since 0.1.0
- * @category Function
- * @param {Function} func The function to have its output memoized.
- * @param {Function} [resolver] The function to resolve the cache key.
- * @returns {Function} Returns the new memoized function.
- * @example
- *
- * var object = { 'a': 1, 'b': 2 };
- * var other = { 'c': 3, 'd': 4 };
- *
- * var values = _.memoize(_.values);
- * values(object);
- * // => [1, 2]
- *
- * values(other);
- * // => [3, 4]
- *
- * object.a = 2;
- * values(object);
- * // => [1, 2]
- *
- * // Modify the result cache.
- * values.cache.set(object, ['a', 'b']);
- * values(object);
- * // => ['a', 'b']
- *
- * // Replace `_.memoize.Cache`.
- * _.memoize.Cache = WeakMap;
- */
-function memoize(func, resolver) {
-  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
-    throw new TypeError(FUNC_ERROR_TEXT);
-  }
-  var memoized = function() {
-    var args = arguments,
-        key = resolver ? resolver.apply(this, args) : args[0],
-        cache = memoized.cache;
+	/**
+	 * Creates a function that memoizes the result of `func`. If `resolver` is
+	 * provided, it determines the cache key for storing the result based on the
+	 * arguments provided to the memoized function. By default, the first argument
+	 * provided to the memoized function is used as the map cache key. The `func`
+	 * is invoked with the `this` binding of the memoized function.
+	 *
+	 * **Note:** The cache is exposed as the `cache` property on the memoized
+	 * function. Its creation may be customized by replacing the `_.memoize.Cache`
+	 * constructor with one whose instances implement the
+	 * [`Map`](http://ecma-international.org/ecma-262/7.0/#sec-properties-of-the-map-prototype-object)
+	 * method interface of `clear`, `delete`, `get`, `has`, and `set`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 0.1.0
+	 * @category Function
+	 * @param {Function} func The function to have its output memoized.
+	 * @param {Function} [resolver] The function to resolve the cache key.
+	 * @returns {Function} Returns the new memoized function.
+	 * @example
+	 *
+	 * var object = { 'a': 1, 'b': 2 };
+	 * var other = { 'c': 3, 'd': 4 };
+	 *
+	 * var values = _.memoize(_.values);
+	 * values(object);
+	 * // => [1, 2]
+	 *
+	 * values(other);
+	 * // => [3, 4]
+	 *
+	 * object.a = 2;
+	 * values(object);
+	 * // => [1, 2]
+	 *
+	 * // Modify the result cache.
+	 * values.cache.set(object, ['a', 'b']);
+	 * values(object);
+	 * // => ['a', 'b']
+	 *
+	 * // Replace `_.memoize.Cache`.
+	 * _.memoize.Cache = WeakMap;
+	 */
+	function memoize(func, resolver) {
+	  if (typeof func != 'function' || (resolver != null && typeof resolver != 'function')) {
+	    throw new TypeError(FUNC_ERROR_TEXT);
+	  }
+	  var memoized = function() {
+	    var args = arguments,
+	        key = resolver ? resolver.apply(this, args) : args[0],
+	        cache = memoized.cache;
 
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    var result = func.apply(this, args);
-    memoized.cache = cache.set(key, result) || cache;
-    return result;
-  };
-  memoized.cache = new (memoize.Cache || _MapCache);
-  return memoized;
+	    if (cache.has(key)) {
+	      return cache.get(key);
+	    }
+	    var result = func.apply(this, args);
+	    memoized.cache = cache.set(key, result) || cache;
+	    return result;
+	  };
+	  memoized.cache = new (memoize.Cache || MapCache);
+	  return memoized;
+	}
+
+	// Expose `MapCache`.
+	memoize.Cache = MapCache;
+
+	memoize_1 = memoize;
+	return memoize_1;
 }
 
-// Expose `MapCache`.
-memoize.Cache = _MapCache;
+var _memoizeCapped;
+var hasRequired_memoizeCapped;
 
-var memoize_1 = memoize;
+function require_memoizeCapped () {
+	if (hasRequired_memoizeCapped) return _memoizeCapped;
+	hasRequired_memoizeCapped = 1;
+	var memoize = requireMemoize();
 
-/** Used as the maximum memoize cache size. */
-var MAX_MEMOIZE_SIZE = 500;
+	/** Used as the maximum memoize cache size. */
+	var MAX_MEMOIZE_SIZE = 500;
 
-/**
- * A specialized version of `_.memoize` which clears the memoized function's
- * cache when it exceeds `MAX_MEMOIZE_SIZE`.
- *
- * @private
- * @param {Function} func The function to have its output memoized.
- * @returns {Function} Returns the new memoized function.
- */
-function memoizeCapped(func) {
-  var result = memoize_1(func, function(key) {
-    if (cache.size === MAX_MEMOIZE_SIZE) {
-      cache.clear();
-    }
-    return key;
-  });
+	/**
+	 * A specialized version of `_.memoize` which clears the memoized function's
+	 * cache when it exceeds `MAX_MEMOIZE_SIZE`.
+	 *
+	 * @private
+	 * @param {Function} func The function to have its output memoized.
+	 * @returns {Function} Returns the new memoized function.
+	 */
+	function memoizeCapped(func) {
+	  var result = memoize(func, function(key) {
+	    if (cache.size === MAX_MEMOIZE_SIZE) {
+	      cache.clear();
+	    }
+	    return key;
+	  });
 
-  var cache = result.cache;
-  return result;
+	  var cache = result.cache;
+	  return result;
+	}
+
+	_memoizeCapped = memoizeCapped;
+	return _memoizeCapped;
 }
 
-var _memoizeCapped = memoizeCapped;
+var _stringToPath;
+var hasRequired_stringToPath;
 
-/** Used to match property names within property paths. */
-var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
+function require_stringToPath () {
+	if (hasRequired_stringToPath) return _stringToPath;
+	hasRequired_stringToPath = 1;
+	var memoizeCapped = require_memoizeCapped();
 
-/** Used to match backslashes in property paths. */
-var reEscapeChar = /\\(\\)?/g;
+	/** Used to match property names within property paths. */
+	var rePropName = /[^.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|$))/g;
 
-/**
- * Converts `string` to a property path array.
- *
- * @private
- * @param {string} string The string to convert.
- * @returns {Array} Returns the property path array.
- */
-var stringToPath = _memoizeCapped(function(string) {
-  var result = [];
-  if (string.charCodeAt(0) === 46 /* . */) {
-    result.push('');
-  }
-  string.replace(rePropName, function(match, number, quote, subString) {
-    result.push(quote ? subString.replace(reEscapeChar, '$1') : (number || match));
-  });
-  return result;
-});
+	/** Used to match backslashes in property paths. */
+	var reEscapeChar = /\\(\\)?/g;
 
-var _stringToPath = stringToPath;
+	/**
+	 * Converts `string` to a property path array.
+	 *
+	 * @private
+	 * @param {string} string The string to convert.
+	 * @returns {Array} Returns the property path array.
+	 */
+	var stringToPath = memoizeCapped(function(string) {
+	  var result = [];
+	  if (string.charCodeAt(0) === 46 /* . */) {
+	    result.push('');
+	  }
+	  string.replace(rePropName, function(match, number, quote, subString) {
+	    result.push(quote ? subString.replace(reEscapeChar, '$1') : (number || match));
+	  });
+	  return result;
+	});
+
+	_stringToPath = stringToPath;
+	return _stringToPath;
+}
 
 /**
  * A specialized version of `_.map` for arrays without support for iteratee
@@ -7550,335 +8311,475 @@ var _stringToPath = stringToPath;
  * @param {Function} iteratee The function invoked per iteration.
  * @returns {Array} Returns the new mapped array.
  */
-function arrayMap(array, iteratee) {
-  var index = -1,
-      length = array == null ? 0 : array.length,
-      result = Array(length);
 
-  while (++index < length) {
-    result[index] = iteratee(array[index], index, array);
-  }
-  return result;
+var _arrayMap;
+var hasRequired_arrayMap;
+
+function require_arrayMap () {
+	if (hasRequired_arrayMap) return _arrayMap;
+	hasRequired_arrayMap = 1;
+	function arrayMap(array, iteratee) {
+	  var index = -1,
+	      length = array == null ? 0 : array.length,
+	      result = Array(length);
+
+	  while (++index < length) {
+	    result[index] = iteratee(array[index], index, array);
+	  }
+	  return result;
+	}
+
+	_arrayMap = arrayMap;
+	return _arrayMap;
 }
 
-var _arrayMap = arrayMap;
+var _baseToString;
+var hasRequired_baseToString;
+
+function require_baseToString () {
+	if (hasRequired_baseToString) return _baseToString;
+	hasRequired_baseToString = 1;
+	var Symbol = require_Symbol(),
+	    arrayMap = require_arrayMap(),
+	    isArray = requireIsArray(),
+	    isSymbol = requireIsSymbol();
+
+	/** Used to convert symbols to primitives and strings. */
+	var symbolProto = Symbol ? Symbol.prototype : undefined,
+	    symbolToString = symbolProto ? symbolProto.toString : undefined;
+
+	/**
+	 * The base implementation of `_.toString` which doesn't convert nullish
+	 * values to empty strings.
+	 *
+	 * @private
+	 * @param {*} value The value to process.
+	 * @returns {string} Returns the string.
+	 */
+	function baseToString(value) {
+	  // Exit early for strings to avoid a performance hit in some environments.
+	  if (typeof value == 'string') {
+	    return value;
+	  }
+	  if (isArray(value)) {
+	    // Recursively convert values (susceptible to call stack limits).
+	    return arrayMap(value, baseToString) + '';
+	  }
+	  if (isSymbol(value)) {
+	    return symbolToString ? symbolToString.call(value) : '';
+	  }
+	  var result = (value + '');
+	  return (result == '0' && (1 / value) == -Infinity) ? '-0' : result;
+	}
+
+	_baseToString = baseToString;
+	return _baseToString;
+}
+
+var toString_1;
+var hasRequiredToString;
+
+function requireToString () {
+	if (hasRequiredToString) return toString_1;
+	hasRequiredToString = 1;
+	var baseToString = require_baseToString();
+
+	/**
+	 * Converts `value` to a string. An empty string is returned for `null`
+	 * and `undefined` values. The sign of `-0` is preserved.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.0.0
+	 * @category Lang
+	 * @param {*} value The value to convert.
+	 * @returns {string} Returns the converted string.
+	 * @example
+	 *
+	 * _.toString(null);
+	 * // => ''
+	 *
+	 * _.toString(-0);
+	 * // => '-0'
+	 *
+	 * _.toString([1, 2, 3]);
+	 * // => '1,2,3'
+	 */
+	function toString(value) {
+	  return value == null ? '' : baseToString(value);
+	}
+
+	toString_1 = toString;
+	return toString_1;
+}
+
+var _castPath;
+var hasRequired_castPath;
+
+function require_castPath () {
+	if (hasRequired_castPath) return _castPath;
+	hasRequired_castPath = 1;
+	var isArray = requireIsArray(),
+	    isKey = require_isKey(),
+	    stringToPath = require_stringToPath(),
+	    toString = requireToString();
+
+	/**
+	 * Casts `value` to a path array if it's not one.
+	 *
+	 * @private
+	 * @param {*} value The value to inspect.
+	 * @param {Object} [object] The object to query keys on.
+	 * @returns {Array} Returns the cast property path array.
+	 */
+	function castPath(value, object) {
+	  if (isArray(value)) {
+	    return value;
+	  }
+	  return isKey(value, object) ? [value] : stringToPath(toString(value));
+	}
+
+	_castPath = castPath;
+	return _castPath;
+}
+
+var _toKey;
+var hasRequired_toKey;
+
+function require_toKey () {
+	if (hasRequired_toKey) return _toKey;
+	hasRequired_toKey = 1;
+	var isSymbol = requireIsSymbol();
+
+	/**
+	 * Converts `value` to a string key if it's not a string or symbol.
+	 *
+	 * @private
+	 * @param {*} value The value to inspect.
+	 * @returns {string|symbol} Returns the key.
+	 */
+	function toKey(value) {
+	  if (typeof value == 'string' || isSymbol(value)) {
+	    return value;
+	  }
+	  var result = (value + '');
+	  return (result == '0' && (1 / value) == -Infinity) ? '-0' : result;
+	}
+
+	_toKey = toKey;
+	return _toKey;
+}
+
+var _baseGet;
+var hasRequired_baseGet;
+
+function require_baseGet () {
+	if (hasRequired_baseGet) return _baseGet;
+	hasRequired_baseGet = 1;
+	var castPath = require_castPath(),
+	    toKey = require_toKey();
+
+	/**
+	 * The base implementation of `_.get` without support for default values.
+	 *
+	 * @private
+	 * @param {Object} object The object to query.
+	 * @param {Array|string} path The path of the property to get.
+	 * @returns {*} Returns the resolved value.
+	 */
+	function baseGet(object, path) {
+	  path = castPath(path, object);
+
+	  var index = 0,
+	      length = path.length;
+
+	  while (object != null && index < length) {
+	    object = object[toKey(path[index++])];
+	  }
+	  return (index && index == length) ? object : undefined;
+	}
+
+	_baseGet = baseGet;
+	return _baseGet;
+}
+
+var get_1;
+var hasRequiredGet;
+
+function requireGet () {
+	if (hasRequiredGet) return get_1;
+	hasRequiredGet = 1;
+	var baseGet = require_baseGet();
+
+	/**
+	 * Gets the value at `path` of `object`. If the resolved value is
+	 * `undefined`, the `defaultValue` is returned in its place.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 3.7.0
+	 * @category Object
+	 * @param {Object} object The object to query.
+	 * @param {Array|string} path The path of the property to get.
+	 * @param {*} [defaultValue] The value returned for `undefined` resolved values.
+	 * @returns {*} Returns the resolved value.
+	 * @example
+	 *
+	 * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+	 *
+	 * _.get(object, 'a[0].b.c');
+	 * // => 3
+	 *
+	 * _.get(object, ['a', '0', 'b', 'c']);
+	 * // => 3
+	 *
+	 * _.get(object, 'a.b.c', 'default');
+	 * // => 'default'
+	 */
+	function get(object, path, defaultValue) {
+	  var result = object == null ? undefined : baseGet(object, path);
+	  return result === undefined ? defaultValue : result;
+	}
+
+	get_1 = get;
+	return get_1;
+}
+
+var getExports = requireGet();
+var get = /*@__PURE__*/getDefaultExportFromCjs(getExports);
+
+var _defineProperty;
+var hasRequired_defineProperty;
+
+function require_defineProperty () {
+	if (hasRequired_defineProperty) return _defineProperty;
+	hasRequired_defineProperty = 1;
+	var getNative = require_getNative();
+
+	var defineProperty = (function() {
+	  try {
+	    var func = getNative(Object, 'defineProperty');
+	    func({}, '', {});
+	    return func;
+	  } catch (e) {}
+	}());
+
+	_defineProperty = defineProperty;
+	return _defineProperty;
+}
+
+var _baseAssignValue;
+var hasRequired_baseAssignValue;
+
+function require_baseAssignValue () {
+	if (hasRequired_baseAssignValue) return _baseAssignValue;
+	hasRequired_baseAssignValue = 1;
+	var defineProperty = require_defineProperty();
+
+	/**
+	 * The base implementation of `assignValue` and `assignMergeValue` without
+	 * value checks.
+	 *
+	 * @private
+	 * @param {Object} object The object to modify.
+	 * @param {string} key The key of the property to assign.
+	 * @param {*} value The value to assign.
+	 */
+	function baseAssignValue(object, key, value) {
+	  if (key == '__proto__' && defineProperty) {
+	    defineProperty(object, key, {
+	      'configurable': true,
+	      'enumerable': true,
+	      'value': value,
+	      'writable': true
+	    });
+	  } else {
+	    object[key] = value;
+	  }
+	}
+
+	_baseAssignValue = baseAssignValue;
+	return _baseAssignValue;
+}
+
+var _assignValue;
+var hasRequired_assignValue;
+
+function require_assignValue () {
+	if (hasRequired_assignValue) return _assignValue;
+	hasRequired_assignValue = 1;
+	var baseAssignValue = require_baseAssignValue(),
+	    eq = requireEq();
+
+	/** Used for built-in method references. */
+	var objectProto = Object.prototype;
+
+	/** Used to check objects for own properties. */
+	var hasOwnProperty = objectProto.hasOwnProperty;
+
+	/**
+	 * Assigns `value` to `key` of `object` if the existing value is not equivalent
+	 * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
+	 * for equality comparisons.
+	 *
+	 * @private
+	 * @param {Object} object The object to modify.
+	 * @param {string} key The key of the property to assign.
+	 * @param {*} value The value to assign.
+	 */
+	function assignValue(object, key, value) {
+	  var objValue = object[key];
+	  if (!(hasOwnProperty.call(object, key) && eq(objValue, value)) ||
+	      (value === undefined && !(key in object))) {
+	    baseAssignValue(object, key, value);
+	  }
+	}
+
+	_assignValue = assignValue;
+	return _assignValue;
+}
 
 /** Used as references for various `Number` constants. */
-var INFINITY$1 = 1 / 0;
 
-/** Used to convert symbols to primitives and strings. */
-var symbolProto = _Symbol ? _Symbol.prototype : undefined,
-    symbolToString = symbolProto ? symbolProto.toString : undefined;
+var _isIndex;
+var hasRequired_isIndex;
 
-/**
- * The base implementation of `_.toString` which doesn't convert nullish
- * values to empty strings.
- *
- * @private
- * @param {*} value The value to process.
- * @returns {string} Returns the string.
- */
-function baseToString(value) {
-  // Exit early for strings to avoid a performance hit in some environments.
-  if (typeof value == 'string') {
-    return value;
-  }
-  if (isArray_1(value)) {
-    // Recursively convert values (susceptible to call stack limits).
-    return _arrayMap(value, baseToString) + '';
-  }
-  if (isSymbol_1(value)) {
-    return symbolToString ? symbolToString.call(value) : '';
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY$1) ? '-0' : result;
+function require_isIndex () {
+	if (hasRequired_isIndex) return _isIndex;
+	hasRequired_isIndex = 1;
+	var MAX_SAFE_INTEGER = 9007199254740991;
+
+	/** Used to detect unsigned integer values. */
+	var reIsUint = /^(?:0|[1-9]\d*)$/;
+
+	/**
+	 * Checks if `value` is a valid array-like index.
+	 *
+	 * @private
+	 * @param {*} value The value to check.
+	 * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
+	 * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
+	 */
+	function isIndex(value, length) {
+	  var type = typeof value;
+	  length = length == null ? MAX_SAFE_INTEGER : length;
+
+	  return !!length &&
+	    (type == 'number' ||
+	      (type != 'symbol' && reIsUint.test(value))) &&
+	        (value > -1 && value % 1 == 0 && value < length);
+	}
+
+	_isIndex = isIndex;
+	return _isIndex;
 }
 
-var _baseToString = baseToString;
+var _baseSet;
+var hasRequired_baseSet;
 
-/**
- * Converts `value` to a string. An empty string is returned for `null`
- * and `undefined` values. The sign of `-0` is preserved.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Lang
- * @param {*} value The value to convert.
- * @returns {string} Returns the converted string.
- * @example
- *
- * _.toString(null);
- * // => ''
- *
- * _.toString(-0);
- * // => '-0'
- *
- * _.toString([1, 2, 3]);
- * // => '1,2,3'
- */
-function toString$1(value) {
-  return value == null ? '' : _baseToString(value);
+function require_baseSet () {
+	if (hasRequired_baseSet) return _baseSet;
+	hasRequired_baseSet = 1;
+	var assignValue = require_assignValue(),
+	    castPath = require_castPath(),
+	    isIndex = require_isIndex(),
+	    isObject = requireIsObject(),
+	    toKey = require_toKey();
+
+	/**
+	 * The base implementation of `_.set`.
+	 *
+	 * @private
+	 * @param {Object} object The object to modify.
+	 * @param {Array|string} path The path of the property to set.
+	 * @param {*} value The value to set.
+	 * @param {Function} [customizer] The function to customize path creation.
+	 * @returns {Object} Returns `object`.
+	 */
+	function baseSet(object, path, value, customizer) {
+	  if (!isObject(object)) {
+	    return object;
+	  }
+	  path = castPath(path, object);
+
+	  var index = -1,
+	      length = path.length,
+	      lastIndex = length - 1,
+	      nested = object;
+
+	  while (nested != null && ++index < length) {
+	    var key = toKey(path[index]),
+	        newValue = value;
+
+	    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+	      return object;
+	    }
+
+	    if (index != lastIndex) {
+	      var objValue = nested[key];
+	      newValue = customizer ? customizer(objValue, key, nested) : undefined;
+	      if (newValue === undefined) {
+	        newValue = isObject(objValue)
+	          ? objValue
+	          : (isIndex(path[index + 1]) ? [] : {});
+	      }
+	    }
+	    assignValue(nested, key, newValue);
+	    nested = nested[key];
+	  }
+	  return object;
+	}
+
+	_baseSet = baseSet;
+	return _baseSet;
 }
 
-var toString_1 = toString$1;
+var set_1;
+var hasRequiredSet;
 
-/**
- * Casts `value` to a path array if it's not one.
- *
- * @private
- * @param {*} value The value to inspect.
- * @param {Object} [object] The object to query keys on.
- * @returns {Array} Returns the cast property path array.
- */
-function castPath(value, object) {
-  if (isArray_1(value)) {
-    return value;
-  }
-  return _isKey(value, object) ? [value] : _stringToPath(toString_1(value));
+function requireSet () {
+	if (hasRequiredSet) return set_1;
+	hasRequiredSet = 1;
+	var baseSet = require_baseSet();
+
+	/**
+	 * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
+	 * it's created. Arrays are created for missing index properties while objects
+	 * are created for all other missing properties. Use `_.setWith` to customize
+	 * `path` creation.
+	 *
+	 * **Note:** This method mutates `object`.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 3.7.0
+	 * @category Object
+	 * @param {Object} object The object to modify.
+	 * @param {Array|string} path The path of the property to set.
+	 * @param {*} value The value to set.
+	 * @returns {Object} Returns `object`.
+	 * @example
+	 *
+	 * var object = { 'a': [{ 'b': { 'c': 3 } }] };
+	 *
+	 * _.set(object, 'a[0].b.c', 4);
+	 * console.log(object.a[0].b.c);
+	 * // => 4
+	 *
+	 * _.set(object, ['x', '0', 'y', 'z'], 5);
+	 * console.log(object.x[0].y.z);
+	 * // => 5
+	 */
+	function set(object, path, value) {
+	  return object == null ? object : baseSet(object, path, value);
+	}
+
+	set_1 = set;
+	return set_1;
 }
 
-var _castPath = castPath;
-
-/** Used as references for various `Number` constants. */
-var INFINITY = 1 / 0;
-
-/**
- * Converts `value` to a string key if it's not a string or symbol.
- *
- * @private
- * @param {*} value The value to inspect.
- * @returns {string|symbol} Returns the key.
- */
-function toKey(value) {
-  if (typeof value == 'string' || isSymbol_1(value)) {
-    return value;
-  }
-  var result = (value + '');
-  return (result == '0' && (1 / value) == -INFINITY) ? '-0' : result;
-}
-
-var _toKey = toKey;
-
-/**
- * The base implementation of `_.get` without support for default values.
- *
- * @private
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @returns {*} Returns the resolved value.
- */
-function baseGet(object, path) {
-  path = _castPath(path, object);
-
-  var index = 0,
-      length = path.length;
-
-  while (object != null && index < length) {
-    object = object[_toKey(path[index++])];
-  }
-  return (index && index == length) ? object : undefined;
-}
-
-var _baseGet = baseGet;
-
-/**
- * Gets the value at `path` of `object`. If the resolved value is
- * `undefined`, the `defaultValue` is returned in its place.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to query.
- * @param {Array|string} path The path of the property to get.
- * @param {*} [defaultValue] The value returned for `undefined` resolved values.
- * @returns {*} Returns the resolved value.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.get(object, 'a[0].b.c');
- * // => 3
- *
- * _.get(object, ['a', '0', 'b', 'c']);
- * // => 3
- *
- * _.get(object, 'a.b.c', 'default');
- * // => 'default'
- */
-function get(object, path, defaultValue) {
-  var result = object == null ? undefined : _baseGet(object, path);
-  return result === undefined ? defaultValue : result;
-}
-
-var get_1 = get;
-
-var defineProperty = (function() {
-  try {
-    var func = _getNative(Object, 'defineProperty');
-    func({}, '', {});
-    return func;
-  } catch (e) {}
-}());
-
-var _defineProperty = defineProperty;
-
-/**
- * The base implementation of `assignValue` and `assignMergeValue` without
- * value checks.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
-function baseAssignValue(object, key, value) {
-  if (key == '__proto__' && _defineProperty) {
-    _defineProperty(object, key, {
-      'configurable': true,
-      'enumerable': true,
-      'value': value,
-      'writable': true
-    });
-  } else {
-    object[key] = value;
-  }
-}
-
-var _baseAssignValue = baseAssignValue;
-
-/** Used for built-in method references. */
-var objectProto = Object.prototype;
-
-/** Used to check objects for own properties. */
-var hasOwnProperty = objectProto.hasOwnProperty;
-
-/**
- * Assigns `value` to `key` of `object` if the existing value is not equivalent
- * using [`SameValueZero`](http://ecma-international.org/ecma-262/7.0/#sec-samevaluezero)
- * for equality comparisons.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {string} key The key of the property to assign.
- * @param {*} value The value to assign.
- */
-function assignValue(object, key, value) {
-  var objValue = object[key];
-  if (!(hasOwnProperty.call(object, key) && eq_1(objValue, value)) ||
-      (value === undefined && !(key in object))) {
-    _baseAssignValue(object, key, value);
-  }
-}
-
-var _assignValue = assignValue;
-
-/** Used as references for various `Number` constants. */
-var MAX_SAFE_INTEGER = 9007199254740991;
-
-/** Used to detect unsigned integer values. */
-var reIsUint = /^(?:0|[1-9]\d*)$/;
-
-/**
- * Checks if `value` is a valid array-like index.
- *
- * @private
- * @param {*} value The value to check.
- * @param {number} [length=MAX_SAFE_INTEGER] The upper bounds of a valid index.
- * @returns {boolean} Returns `true` if `value` is a valid index, else `false`.
- */
-function isIndex(value, length) {
-  var type = typeof value;
-  length = length == null ? MAX_SAFE_INTEGER : length;
-
-  return !!length &&
-    (type == 'number' ||
-      (type != 'symbol' && reIsUint.test(value))) &&
-        (value > -1 && value % 1 == 0 && value < length);
-}
-
-var _isIndex = isIndex;
-
-/**
- * The base implementation of `_.set`.
- *
- * @private
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @param {Function} [customizer] The function to customize path creation.
- * @returns {Object} Returns `object`.
- */
-function baseSet(object, path, value, customizer) {
-  if (!isObject_1(object)) {
-    return object;
-  }
-  path = _castPath(path, object);
-
-  var index = -1,
-      length = path.length,
-      lastIndex = length - 1,
-      nested = object;
-
-  while (nested != null && ++index < length) {
-    var key = _toKey(path[index]),
-        newValue = value;
-
-    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
-      return object;
-    }
-
-    if (index != lastIndex) {
-      var objValue = nested[key];
-      newValue = customizer ? customizer(objValue, key, nested) : undefined;
-      if (newValue === undefined) {
-        newValue = isObject_1(objValue)
-          ? objValue
-          : (_isIndex(path[index + 1]) ? [] : {});
-      }
-    }
-    _assignValue(nested, key, newValue);
-    nested = nested[key];
-  }
-  return object;
-}
-
-var _baseSet = baseSet;
-
-/**
- * Sets the value at `path` of `object`. If a portion of `path` doesn't exist,
- * it's created. Arrays are created for missing index properties while objects
- * are created for all other missing properties. Use `_.setWith` to customize
- * `path` creation.
- *
- * **Note:** This method mutates `object`.
- *
- * @static
- * @memberOf _
- * @since 3.7.0
- * @category Object
- * @param {Object} object The object to modify.
- * @param {Array|string} path The path of the property to set.
- * @param {*} value The value to set.
- * @returns {Object} Returns `object`.
- * @example
- *
- * var object = { 'a': [{ 'b': { 'c': 3 } }] };
- *
- * _.set(object, 'a[0].b.c', 4);
- * console.log(object.a[0].b.c);
- * // => 4
- *
- * _.set(object, ['x', '0', 'y', 'z'], 5);
- * console.log(object.x[0].y.z);
- * // => 5
- */
-function set(object, path, value) {
-  return object == null ? object : _baseSet(object, path, value);
-}
-
-var set_1 = set;
+var setExports = requireSet();
+var set = /*@__PURE__*/getDefaultExportFromCjs(setExports);
 
 /**
  * Copies the values of `source` to `array`.
@@ -7888,44 +8789,72 @@ var set_1 = set;
  * @param {Array} [array=[]] The array to copy values to.
  * @returns {Array} Returns `array`.
  */
-function copyArray(source, array) {
-  var index = -1,
-      length = source.length;
 
-  array || (array = Array(length));
-  while (++index < length) {
-    array[index] = source[index];
-  }
-  return array;
+var _copyArray;
+var hasRequired_copyArray;
+
+function require_copyArray () {
+	if (hasRequired_copyArray) return _copyArray;
+	hasRequired_copyArray = 1;
+	function copyArray(source, array) {
+	  var index = -1,
+	      length = source.length;
+
+	  array || (array = Array(length));
+	  while (++index < length) {
+	    array[index] = source[index];
+	  }
+	  return array;
+	}
+
+	_copyArray = copyArray;
+	return _copyArray;
 }
 
-var _copyArray = copyArray;
+var toPath_1;
+var hasRequiredToPath;
 
-/**
- * Converts `value` to a property path array.
- *
- * @static
- * @memberOf _
- * @since 4.0.0
- * @category Util
- * @param {*} value The value to convert.
- * @returns {Array} Returns the new property path array.
- * @example
- *
- * _.toPath('a.b.c');
- * // => ['a', 'b', 'c']
- *
- * _.toPath('a[0].b.c');
- * // => ['a', '0', 'b', 'c']
- */
-function toPath(value) {
-  if (isArray_1(value)) {
-    return _arrayMap(value, _toKey);
-  }
-  return isSymbol_1(value) ? [value] : _copyArray(_stringToPath(toString_1(value)));
+function requireToPath () {
+	if (hasRequiredToPath) return toPath_1;
+	hasRequiredToPath = 1;
+	var arrayMap = require_arrayMap(),
+	    copyArray = require_copyArray(),
+	    isArray = requireIsArray(),
+	    isSymbol = requireIsSymbol(),
+	    stringToPath = require_stringToPath(),
+	    toKey = require_toKey(),
+	    toString = requireToString();
+
+	/**
+	 * Converts `value` to a property path array.
+	 *
+	 * @static
+	 * @memberOf _
+	 * @since 4.0.0
+	 * @category Util
+	 * @param {*} value The value to convert.
+	 * @returns {Array} Returns the new property path array.
+	 * @example
+	 *
+	 * _.toPath('a.b.c');
+	 * // => ['a', 'b', 'c']
+	 *
+	 * _.toPath('a[0].b.c');
+	 * // => ['a', '0', 'b', 'c']
+	 */
+	function toPath(value) {
+	  if (isArray(value)) {
+	    return arrayMap(value, toKey);
+	  }
+	  return isSymbol(value) ? [value] : copyArray(stringToPath(toString(value)));
+	}
+
+	toPath_1 = toPath;
+	return toPath_1;
 }
 
-var toPath_1 = toPath;
+var toPathExports = requireToPath();
+var toPath = /*@__PURE__*/getDefaultExportFromCjs(toPathExports);
 
 var define$2 = {
   // access data field
@@ -7961,7 +8890,7 @@ var define$2 = {
       if (string(name)) {
         // set or get property
         var isPathLike = name.indexOf('.') !== -1; // there might be a normal field with a dot 
-        var path = isPathLike && toPath_1(name);
+        var path = isPathLike && toPath(name);
 
         // .data('foo')
         if (p.allowGetting && value === undefined) {
@@ -7973,7 +8902,7 @@ var define$2 = {
 
             // check if it's path and a field with the same name doesn't exist
             if (path && single._private[p.field][name] === undefined) {
-              ret = get_1(single._private[p.field], path);
+              ret = get(single._private[p.field], path);
             } else {
               ret = single._private[p.field][name];
             }
@@ -7991,7 +8920,7 @@ var define$2 = {
               var ele = all[i];
               if (p.canSet(ele)) {
                 if (path && single._private[p.field][name] === undefined) {
-                  set_1(ele._private[p.field], path, value);
+                  set(ele._private[p.field], path, value);
                 } else {
                   ele._private[p.field][name] = value;
                 }
@@ -8062,7 +8991,6 @@ var define$2 = {
       return self; // maintain chainability
     }; // function
   },
-
   // data
 
   // remove data field
@@ -8074,7 +9002,6 @@ var define$2 = {
       triggerEvent: false,
       immutableKeys: {} // key => true if immutable
     };
-
     params = extend({}, defaults, params);
     return function removeDataImpl(names) {
       var p = params;
@@ -8153,6 +9080,8 @@ var define$1 = {
 }; // define
 
 // use this module to cherry pick functions into your prototype
+// (useful for functions shared between the core and collections, for example)
+
 var define = {};
 [define$3, define$2, define$1].forEach(function (m) {
   extend(define, m);
@@ -8271,7 +9200,6 @@ var elesfn$h = {
     } else if (duration === 0) {
       return self; // nothing to do really
     }
-
     self.addClass(classes);
     setTimeout(function () {
       self.removeClass(classes);
@@ -8845,7 +9773,6 @@ var exprs = [{
         parent: _parent,
         child: _child // empty for now
       });
-
       replaceLastQuery(selector, left, compound);
 
       // update the ref since we moved things around for `query`
@@ -8926,7 +9853,6 @@ var exprs = [{
         ancestor: _ancestor,
         descendant: _descendant // empty for now
       });
-
       replaceLastQuery(selector, left, compound);
 
       // update the ref since we moved things around for `query`
@@ -9009,7 +9935,6 @@ var consumeExpr = function consumeExpr(remaining) {
       break; // we've consumed one expr, so we can return now
     }
   }
-
   return {
     expr: expr,
     match: match,
@@ -9060,7 +9985,6 @@ var parse = function parse(selector) {
         currentQuery = ret; // change the current query to be filled if the expr specifies
       }
     }
-
     remaining = exprInfo.remaining;
 
     // we're done when there's nothing left to parse
@@ -9582,7 +10506,7 @@ var cache = function cache(fn, name) {
     } else if (elementOrCollection(selectorOrEles) && selectorOrEles.length === 1) {
       key = selectorOrEles.id();
     }
-    if (eles.length === 1 && key) {
+    if (eles.length === 1 && key !== undefined && key !== null) {
       var _p = eles[0]._private;
       var tch = _p.traversalCache = _p.traversalCache || {};
       var ch = tch[name] = tch[name] || [];
@@ -9639,7 +10563,6 @@ var elesfn$f = {
       ancestors = ancestors || parents;
       ancestors = ancestors.intersect(parents); // current list must be common with current ele parents set
     }
-
     return ancestors.filter(selector);
   },
   orphans: function orphans(selector) {
@@ -10007,7 +10930,7 @@ fn$4 = elesfn$c = {
       cy.startBatch();
       for (var i = 0; i < this.length; i++) {
         var ele = this[i];
-        var _pos = void 0;
+        var _pos = undefined;
         if (_pos = _fn(ele, i)) {
           if (silent) {
             ele.silentPosition(_pos);
@@ -10020,7 +10943,6 @@ fn$4 = elesfn$c = {
     }
     return this; // chaining
   },
-
   silentPositions: function silentPositions(pos) {
     return this.positions(pos, true);
   },
@@ -10096,7 +11018,7 @@ fn$4 = elesfn$c = {
       } else {
         // getting
         var pos = ele.position();
-        rpos = modelToRenderedPosition(pos, zoom, pan);
+        rpos = modelToRenderedPosition$1(pos, zoom, pan);
         if (dim === undefined) {
           // then return the whole rendered position
           return rpos;
@@ -10108,10 +11030,8 @@ fn$4 = elesfn$c = {
     } else if (!setting) {
       return undefined; // for empty collection case
     }
-
     return this; // chaining
   },
-
   // get/set the position relative to the parent
   relativePosition: function relativePosition(dim, val) {
     var ele = this[0];
@@ -10173,7 +11093,6 @@ fn$4 = elesfn$c = {
     } else if (!setting) {
       return undefined; // for empty collection case
     }
-
     return this; // chaining
   }
 };
@@ -10490,10 +11409,14 @@ var updateBoundsFromLabel = function updateBoundsFromLabel(bounds, ele, prefix) 
     }
 
     // shift by margin and expand by outline and border
-    lx1 += marginX - Math.max(outlineWidth, halfBorderWidth) - padding - marginOfError;
-    lx2 += marginX + Math.max(outlineWidth, halfBorderWidth) + padding + marginOfError;
-    ly1 += marginY - Math.max(outlineWidth, halfBorderWidth) - padding - marginOfError;
-    ly2 += marginY + Math.max(outlineWidth, halfBorderWidth) + padding + marginOfError;
+    var leftPad = marginX - Math.max(outlineWidth, halfBorderWidth) - padding - marginOfError;
+    var rightPad = marginX + Math.max(outlineWidth, halfBorderWidth) + padding + marginOfError;
+    var topPad = marginY - Math.max(outlineWidth, halfBorderWidth) - padding - marginOfError;
+    var botPad = marginY + Math.max(outlineWidth, halfBorderWidth) + padding + marginOfError;
+    lx1 += leftPad;
+    lx2 += rightPad;
+    ly1 += topPad;
+    ly2 += botPad;
 
     // always store the unrotated label bounds separately
     var bbPrefix = prefix || 'main';
@@ -10505,6 +11428,10 @@ var updateBoundsFromLabel = function updateBoundsFromLabel(bounds, ele, prefix) 
     bb.y2 = ly2;
     bb.w = lx2 - lx1;
     bb.h = ly2 - ly1;
+    bb.leftPad = leftPad;
+    bb.rightPad = rightPad;
+    bb.topPad = topPad;
+    bb.botPad = botPad;
     var isAutorotate = isEdge && rotation.strValue === 'autorotate';
     var isPfValue = rotation.pfValue != null && rotation.pfValue !== 0;
     if (isAutorotate || isPfValue) {
@@ -10569,40 +11496,40 @@ var updateBoundsFromOutline = function updateBoundsFromOutline(bounds, ele) {
   }
   var outlineOpacity = ele.pstyle('outline-opacity').value;
   var outlineWidth = ele.pstyle('outline-width').value;
-  if (outlineOpacity > 0 && outlineWidth > 0) {
-    var outlineOffset = ele.pstyle('outline-offset').value;
-    var nodeShape = ele.pstyle('shape').value;
-    var outlineSize = outlineWidth + outlineOffset;
-    var scaleX = (bounds.w + outlineSize * 2) / bounds.w;
-    var scaleY = (bounds.h + outlineSize * 2) / bounds.h;
-    var xOffset = 0;
-    var yOffset = 0;
-    if (["diamond", "pentagon", "round-triangle"].includes(nodeShape)) {
-      scaleX = (bounds.w + outlineSize * 2.4) / bounds.w;
-      yOffset = -outlineSize / 3.6;
-    } else if (["concave-hexagon", "rhomboid", "right-rhomboid"].includes(nodeShape)) {
-      scaleX = (bounds.w + outlineSize * 2.4) / bounds.w;
-    } else if (nodeShape === "star") {
-      scaleX = (bounds.w + outlineSize * 2.8) / bounds.w;
-      scaleY = (bounds.h + outlineSize * 2.6) / bounds.h;
-      yOffset = -outlineSize / 3.8;
-    } else if (nodeShape === "triangle") {
-      scaleX = (bounds.w + outlineSize * 2.8) / bounds.w;
-      scaleY = (bounds.h + outlineSize * 2.4) / bounds.h;
-      yOffset = -outlineSize / 1.4;
-    } else if (nodeShape === "vee") {
-      scaleX = (bounds.w + outlineSize * 4.4) / bounds.w;
-      scaleY = (bounds.h + outlineSize * 3.8) / bounds.h;
-      yOffset = -outlineSize * .5;
-    }
-    var hDelta = bounds.h * scaleY - bounds.h;
-    var wDelta = bounds.w * scaleX - bounds.w;
-    expandBoundingBoxSides(bounds, [Math.ceil(hDelta / 2), Math.ceil(wDelta / 2)]);
-    if (xOffset != 0 || yOffset !== 0) {
-      var oBounds = shiftBoundingBox(bounds, xOffset, yOffset);
-      updateBoundingBox(bounds, oBounds);
-    }
+  var outlineOffset = ele.pstyle('outline-offset').value;
+  var expansion = outlineWidth + outlineOffset;
+  updateBoundsFromMiter(bounds, ele, outlineOpacity, expansion, 'outside', expansion / 2);
+};
+var updateBoundsFromMiter = function updateBoundsFromMiter(bounds, ele, opacity, expansionSize, expansionPosition, useFallbackValue) {
+  if (opacity === 0 || expansionSize <= 0 || expansionPosition === 'inside') {
+    return;
   }
+  var cy = ele.cy();
+  var shape = ele.pstyle('shape').value;
+  var rshape = cy.renderer().nodeShapes[shape];
+  var _ele$position = ele.position(),
+    x = _ele$position.x,
+    y = _ele$position.y;
+  var w = ele.width();
+  var h = ele.height();
+  if (rshape.hasMiterBounds) {
+    if (expansionPosition === 'center') {
+      expansionSize /= 2;
+    }
+    var mbb = rshape.miterBounds(x, y, w, h, expansionSize);
+    updateBoundsFromBox(bounds, mbb);
+  } else if (useFallbackValue != null && useFallbackValue > 0) {
+    expandBoundingBoxSides(bounds, [useFallbackValue, useFallbackValue, useFallbackValue, useFallbackValue]);
+  }
+};
+var updateBoundsFromMiterBorder = function updateBoundsFromMiterBorder(bounds, ele) {
+  if (ele.cy().headless()) {
+    return;
+  }
+  var borderOpacity = ele.pstyle('border-opacity').value;
+  var borderWidth = ele.pstyle('border-width').pfValue;
+  var borderPosition = ele.pstyle('border-position').value;
+  updateBoundsFromMiter(bounds, ele, borderOpacity, borderWidth, borderPosition);
 };
 
 // get the bounding box of the elements (in raw model position)
@@ -10670,8 +11597,14 @@ var boundingBoxImpl = function boundingBoxImpl(ele, options) {
       ey1 = y - halfH;
       ey2 = y + halfH;
       updateBounds(bounds, ex1, ey1, ex2, ey2);
-      if (styleEnabled && options.includeOutlines) {
+      if (styleEnabled) {
         updateBoundsFromOutline(bounds, ele);
+      }
+      if (styleEnabled && options.includeOutlines && !headless) {
+        updateBoundsFromOutline(bounds, ele);
+      }
+      if (styleEnabled) {
+        updateBoundsFromMiterBorder(bounds, ele);
       }
     } else if (isEdge && options.includeEdges) {
       if (styleEnabled && !headless) {
@@ -10714,7 +11647,7 @@ var boundingBoxImpl = function boundingBoxImpl(ele, options) {
             }
             updateBounds(bounds, ex1 - wHalf, ey1 - wHalf, ex2 + wHalf, ey2 + wHalf);
           }
-        } else if (curveStyle === 'bezier' || curveStyle === 'unbundled-bezier' || curveStyle.endsWith('segments') || curveStyle.endsWith('taxi')) {
+        } else if (curveStyle === 'bezier' || curveStyle === 'unbundled-bezier' || endsWith(curveStyle, 'segments') || endsWith(curveStyle, 'taxi')) {
           var pts;
           switch (curveStyle) {
             case 'bezier':
@@ -10873,15 +11806,16 @@ var getKey = function getKey(opts) {
   return key;
 };
 var getBoundingBoxPosKey = function getBoundingBoxPosKey(ele) {
+  var r = function r(x) {
+    return Math.round(x);
+  };
   if (ele.isEdge()) {
     var p1 = ele.source().position();
     var p2 = ele.target().position();
-    var r = function r(x) {
-      return Math.round(x);
-    };
     return hashIntsArray([r(p1.x), r(p1.y), r(p2.x), r(p2.y)]);
   } else {
-    return 0;
+    var p = ele.position();
+    return hashIntsArray([r(p.x), r(p.y)]);
   }
 };
 var cachedBoundingBoxImpl = function cachedBoundingBoxImpl(ele, opts) {
@@ -10890,20 +11824,10 @@ var cachedBoundingBoxImpl = function cachedBoundingBoxImpl(ele, opts) {
   var isEdge = ele.isEdge();
   var key = opts == null ? defBbOptsKey : getKey(opts);
   var usingDefOpts = key === defBbOptsKey;
-  var currPosKey = getBoundingBoxPosKey(ele);
-  var isPosKeySame = _p.bbCachePosKey === currPosKey;
-  var useCache = opts.useCache && isPosKeySame;
-  var isDirty = function isDirty(ele) {
-    return ele._private.bbCache == null || ele._private.styleDirty;
-  };
-  var needRecalc = !useCache || isDirty(ele) || isEdge && isDirty(ele.source()) || isDirty(ele.target());
-  if (needRecalc) {
-    if (!isPosKeySame) {
-      ele.recalculateRenderedStyle(useCache);
-    }
+  if (_p.bbCache == null) {
     bb = boundingBoxImpl(ele, defBbOpts);
     _p.bbCache = bb;
-    _p.bbCachePosKey = currPosKey;
+    _p.bbCachePosKey = getBoundingBoxPosKey(ele);
   } else {
     bb = _p.bbCache;
   }
@@ -10955,11 +11879,18 @@ var defBbOptsKey = getKey(defBbOpts);
 var filledBbOpts = defaults$g(defBbOpts);
 elesfn$b.boundingBox = function (options) {
   var bounds;
+  var useCache = options === undefined || options.useCache === undefined || options.useCache === true;
+  var isDirty = memoize(function (ele) {
+    var _p = ele._private;
+    return _p.bbCache == null || _p.styleDirty || _p.bbCachePosKey !== getBoundingBoxPosKey(ele);
+  }, function (ele) {
+    return ele.id();
+  });
 
   // the main usecase is ele.boundingBox() for a single element with no/def options
   // specified s.t. the cache is used, so check for this case to make it faster by
   // avoiding the overhead of the rest of the function
-  if (this.length === 1 && this[0]._private.bbCache != null && !this[0]._private.styleDirty && (options === undefined || options.useCache === undefined || options.useCache === true)) {
+  if (useCache && this.length === 1 && !isDirty(this[0])) {
     if (options === undefined) {
       options = defBbOpts;
     } else {
@@ -10973,20 +11904,20 @@ elesfn$b.boundingBox = function (options) {
     var eles = this;
     var cy = eles.cy();
     var styleEnabled = cy.styleEnabled();
+
+    // cache the isDirty state for all eles, edges first since they depend on node state
+    this.edges().forEach(isDirty);
+    this.nodes().forEach(isDirty);
     if (styleEnabled) {
-      for (var i = 0; i < eles.length; i++) {
-        var ele = eles[i];
-        var _p = ele._private;
-        var currPosKey = getBoundingBoxPosKey(ele);
-        var isPosKeySame = _p.bbCachePosKey === currPosKey;
-        var useCache = opts.useCache && isPosKeySame && !_p.styleDirty;
-        ele.recalculateRenderedStyle(useCache);
-      }
+      this.recalculateRenderedStyle(useCache);
     }
-    this.updateCompoundBounds(!options.useCache);
-    for (var _i = 0; _i < eles.length; _i++) {
-      var _ele = eles[_i];
-      updateBoundsFromBox(bounds, cachedBoundingBoxImpl(_ele, opts));
+    this.updateCompoundBounds(!useCache);
+    for (var i = 0; i < eles.length; i++) {
+      var ele = eles[i];
+      if (isDirty(ele)) {
+        ele.dirtyBoundingBoxCache();
+      }
+      updateBoundsFromBox(bounds, cachedBoundingBoxImpl(ele, opts));
     }
   }
   bounds.x1 = noninf(bounds.x1);
@@ -11054,7 +11985,6 @@ elesfn$b.boundingBoxAt = function (fn) {
     parents.dirtyBoundingBoxCache();
     parents.updateCompoundBounds(true); // force update b/c we're inside a batch cycle
   }
-
   var bb = copyBoundingBox(this.boundingBox({
     useCache: false
   }));
@@ -11064,7 +11994,6 @@ elesfn$b.boundingBoxAt = function (fn) {
     parents.dirtyBoundingBoxCache();
     parents.updateCompoundBounds(true); // force update b/c we're inside a batch cycle
   }
-
   cy.endBatch();
   return bb;
 };
@@ -11112,7 +12041,16 @@ var defineDimFns = function defineDimFns(opts) {
     if (ele) {
       if (styleEnabled) {
         var dim = ele[opts.name]();
-        var border = ele.pstyle('border-width').pfValue; // n.b. 1/2 each side
+        var borderPos = ele.pstyle('border-position').value;
+        var border;
+        if (borderPos === 'center') {
+          border = ele.pstyle('border-width').pfValue; // n.b. 1/2 each side
+        } else if (borderPos === 'outside') {
+          border = 2 * ele.pstyle('border-width').pfValue;
+        } else {
+          // 'inside'
+          border = 0;
+        }
         var padding = 2 * ele.padding();
         return dim + border + padding;
       } else {
@@ -11166,23 +12104,23 @@ elesfn$a.paddedWidth = function () {
 var widthHeight = elesfn$a;
 
 var ifEdge = function ifEdge(ele, getValue) {
-  if (ele.isEdge()) {
+  if (ele.isEdge() && ele.takesUpSpace()) {
     return getValue(ele);
   }
 };
 var ifEdgeRenderedPosition = function ifEdgeRenderedPosition(ele, getPoint) {
-  if (ele.isEdge()) {
+  if (ele.isEdge() && ele.takesUpSpace()) {
     var cy = ele.cy();
-    return modelToRenderedPosition(getPoint(ele), cy.zoom(), cy.pan());
+    return modelToRenderedPosition$1(getPoint(ele), cy.zoom(), cy.pan());
   }
 };
 var ifEdgeRenderedPositions = function ifEdgeRenderedPositions(ele, getPoints) {
-  if (ele.isEdge()) {
+  if (ele.isEdge() && ele.takesUpSpace()) {
     var cy = ele.cy();
     var pan = cy.pan();
     var zoom = cy.zoom();
     return getPoints(ele).map(function (p) {
-      return modelToRenderedPosition(p, zoom, pan);
+      return modelToRenderedPosition$1(p, zoom, pan);
     });
   }
 };
@@ -11349,24 +12287,24 @@ var defaults$8 = {
   qualifierCompare: function qualifierCompare(q1, q2) {
     return q1 === q2;
   },
-  eventMatches: function eventMatches( /*context, listener, eventObj*/
+  eventMatches: function eventMatches(/*context, listener, eventObj*/
   ) {
     return true;
   },
-  addEventFields: function addEventFields( /*context, evt*/
+  addEventFields: function addEventFields(/*context, evt*/
   ) {},
   callbackContext: function callbackContext(context /*, listener, eventObj*/) {
     return context;
   },
-  beforeEmit: function beforeEmit( /* context, listener, eventObj */
+  beforeEmit: function beforeEmit(/* context, listener, eventObj */
   ) {},
-  afterEmit: function afterEmit( /* context, listener, eventObj */
+  afterEmit: function afterEmit(/* context, listener, eventObj */
   ) {},
-  bubble: function bubble( /*context*/
+  bubble: function bubble(/*context*/
   ) {
     return false;
   },
-  parent: function parent( /*context*/
+  parent: function parent(/*context*/
   ) {
     return null;
   },
@@ -11417,7 +12355,6 @@ var forEachEvent = function forEachEvent(self, handler, events, qualifier, callb
     }
   }
 };
-
 var makeEventObj = function makeEventObj(self, obj) {
   self.addEventFields(self.context, obj);
   return new Event(obj.type, obj);
@@ -11478,7 +12415,7 @@ p.one = function (events, qualifier, callback, conf) {
 p.removeListener = p.off = function (events, qualifier, callback, conf) {
   var _this = this;
   if (this.emitting !== 0) {
-    this.listeners = copyArray$1(this.listeners);
+    this.listeners = copyArray(this.listeners);
   }
   var listeners = this.listeners;
   var _loop = function _loop(i) {
@@ -11515,7 +12452,7 @@ p.emit = p.trigger = function (events, extraParams, manualCallback) {
       }];
       numListenersBeforeEmit = listeners.length;
     }
-    var _loop2 = function _loop2(i) {
+    var _loop2 = function _loop2() {
       var listener = listeners[i];
       if (listener.type === eventObj.type && (!listener.namespace || listener.namespace === eventObj.namespace || listener.namespace === universalNamespace) && self.eventMatches(self.context, listener, eventObj)) {
         var args = [eventObj];
@@ -11538,7 +12475,7 @@ p.emit = p.trigger = function (events, extraParams, manualCallback) {
       } // if listener matches
     };
     for (var i = 0; i < numListenersBeforeEmit; i++) {
-      _loop2(i);
+      _loop2();
     } // for listener
 
     if (self.bubble(self.context) && !eventObj.isPropagationStopped()) {
@@ -11714,7 +12651,6 @@ var elesfn$8 = {
     }
     return this.spawn(); // if not handled by above, give 'em an empty collection
   },
-
   not: function not(toRemove) {
     if (!toRemove) {
       return this;
@@ -11855,7 +12791,6 @@ var elesfn$8 = {
     }
     return this; // chaining
   },
-
   unmergeAt: function unmergeAt(i) {
     var ele = this[i];
     var id = ele.id();
@@ -11894,7 +12829,6 @@ var elesfn$8 = {
     if (!entry) {
       return this; // no need to remove
     }
-
     var i = entry.index;
     this.unmergeAt(i);
     return this;
@@ -11914,7 +12848,6 @@ var elesfn$8 = {
     }
     return this; // chaining
   },
-
   unmergeBy: function unmergeBy(toRmFn) {
     for (var i = this.length - 1; i >= 0; i--) {
       var ele = this[i];
@@ -12071,7 +13004,6 @@ var elesfn$6 = {
         } // exit each early on return false
       }
     }
-
     return this;
   },
   toArray: function toArray() {
@@ -12143,7 +13075,6 @@ var elesfn$6 = {
       if (!ele.isParent()) {
         return MAX_INT$1 - 1; // childless nodes always on top
       }
-
       return depth;
     } else {
       var src = _p.source;
@@ -12154,16 +13085,13 @@ var elesfn$6 = {
     }
   }
 };
-
 elesfn$6.each = elesfn$6.forEach;
 var defineSymbolIterator = function defineSymbolIterator() {
   var typeofUndef = "undefined" ;
-  var isIteratorSupported = (typeof Symbol === "undefined" ? "undefined" : _typeof(Symbol)) != typeofUndef && _typeof(Symbol.iterator) != typeofUndef; // eslint-disable-line no-undef
-
+  var isIteratorSupported = (typeof Symbol === "undefined" ? "undefined" : _typeof(Symbol)) != typeofUndef && _typeof(Symbol.iterator) != typeofUndef;
   if (isIteratorSupported) {
     elesfn$6[Symbol.iterator] = function () {
       var _this = this;
-      // eslint-disable-line no-undef
       var entry = {
         value: undefined,
         done: false
@@ -12181,7 +13109,6 @@ var defineSymbolIterator = function defineSymbolIterator() {
           return entry;
         }
       }, Symbol.iterator, function () {
-        // eslint-disable-line no-undef
         return this;
       });
     };
@@ -12231,7 +13158,7 @@ var elesfn$5 = {
     var getMemoizeKey = function getMemoizeKey(node) {
       return node.id();
     };
-    var fnMem = memoize$1(fn, getMemoizeKey); // memoized version of position function
+    var fnMem = memoize(fn, getMemoizeKey); // memoized version of position function
 
     layout.emit({
       type: 'layoutstart',
@@ -12267,7 +13194,7 @@ var elesfn$5 = {
       return bb;
     };
     var bb = spacingBb();
-    var getFinalPos = memoize$1(function (node, i) {
+    var getFinalPos = memoize(function (node, i) {
       var newPos = fnMem(node, i);
       if (useSpacingFactor) {
         var spacing = Math.abs(options.spacingFactor);
@@ -12354,7 +13281,6 @@ var elesfn$5 = {
     }
     return this; // chaining
   },
-
   layout: function layout(options) {
     var cy = this.cy();
     return cy.makeLayout(extend({}, options, {
@@ -12434,7 +13360,6 @@ var elesfn$4 = {
       bEles.merge(this);
       return this; // chaining and exit early when batching
     }
-
     var hasCompounds = cy.hasCompoundNodes();
     var updatedEles = this;
     notifyRenderer = notifyRenderer || notifyRenderer === undefined ? true : false;
@@ -12450,13 +13375,11 @@ var elesfn$4 = {
     } else {
       changedEles.emit('style'); // just fire the event
     }
-
     updatedEles.forEach(function (ele) {
       return ele._private.styleDirty = true;
     });
     return this; // chaining
   },
-
   // private: clears dirty flag and recalculates style
   cleanStyle: function cleanStyle() {
     var cy = this.cy();
@@ -12481,7 +13404,14 @@ var elesfn$4 = {
       return;
     }
     if (ele) {
-      this.cleanStyle();
+      // this.cleanStyle();
+
+      // Inline the important part of cleanStyle(), for raw performance
+      if (ele._private.styleDirty) {
+        // n.b. this flag should be set before apply() to avoid potential infinite recursion
+        ele._private.styleDirty = false;
+        cy.style().apply(ele);
+      }
       var overriddenStyle = ele._private.style[property];
       if (overriddenStyle != null) {
         return overriddenStyle;
@@ -12562,7 +13492,6 @@ var elesfn$4 = {
     }
     return this; // chaining
   },
-
   removeStyle: function removeStyle(names) {
     var cy = this.cy();
     if (!cy.styleEnabled()) {
@@ -12587,17 +13516,14 @@ var elesfn$4 = {
 
     return this; // chaining
   },
-
   show: function show() {
     this.css('display', 'element');
     return this; // chaining
   },
-
   hide: function hide() {
     this.css('display', 'none');
     return this; // chaining
   },
-
   effectiveOpacity: function effectiveOpacity() {
     var cy = this.cy();
     if (!cy.styleEnabled()) {
@@ -12769,7 +13695,6 @@ function defineSwitchFunction(params) {
             } // to save cycles assume not able for all on override
           }
         }
-
         if (able) {
           ele._private[params.field] = params.value;
           if (changed) {
@@ -12990,8 +13915,7 @@ extend(elesfn$2, {
   }), 'incomers'),
   // aka DAG ancestors
   predecessors: defineDagAllHops({
-    incoming: true
-  })
+    })
 });
 
 // Neighbourhood functions
@@ -13204,7 +14128,6 @@ extend(elesfn$2, {
       // root may contain only edges
       unvisited = root.sources(); // doesn't matter which node to use (undirected), so just use the source sides
     }
-
     var visitInComponent = function visitInComponent(node, component) {
       visited.merge(node);
       unvisited.unmerge(node);
@@ -13256,7 +14179,7 @@ var Collection = function Collection(cy, elements) {
     error('A collection must have a reference to the core');
     return;
   }
-  var map = new Map$2();
+  var map = new Map$1();
   var createdElements = false;
   if (!elements) {
     elements = [];
@@ -13279,7 +14202,6 @@ var Collection = function Collection(cy, elements) {
       } else if (cy.hasElementWithId(_data.id) || elesIds.has(_data.id)) {
         continue; // can't create element if prior id already exists
       }
-
       var ele = new Element(cy, json, false);
       eles.push(ele);
       elesIds.add(_data.id);
@@ -13317,7 +14239,7 @@ var Collection = function Collection(cy, elements) {
       this.lazyMap = m;
     },
     rebuildMap: function rebuildMap() {
-      var m = this.lazyMap = new Map$2();
+      var m = this.lazyMap = new Map$1();
       var eles = this.eles;
       for (var _i2 = 0; _i2 < eles.length; _i2++) {
         var _ele = eles[_i2];
@@ -13385,7 +14307,6 @@ elesfn$1.getElementById = function (id) {
   var entry = this._private.map.get(id);
   return entry ? entry.ele : new Collection(cy); // get ele or empty collection
 };
-
 elesfn$1.$id = elesfn$1.getElementById;
 elesfn$1.poolIndex = function () {
   var cy = this._private.cy;
@@ -13440,7 +14361,7 @@ elesfn$1.json = function (obj) {
         }
       } else {
         // parent is immutable via data()
-        var newParentValSpecd = ('parent' in obj.data);
+        var newParentValSpecd = 'parent' in obj.data;
         var parent = obj.data.parent;
         if (newParentValSpecd && (parent != null || _data2.parent != null) && parent != _data2.parent) {
           if (parent === undefined) {
@@ -13450,7 +14371,6 @@ elesfn$1.json = function (obj) {
           if (parent != null) {
             parent = '' + parent; // id must be string
           }
-
           ele = ele.move({
             parent: parent
           });
@@ -13619,14 +14539,13 @@ elesfn$1.restore = function () {
         if (number$1(val)) {
           val = _data3[field] = '' + _data3[field]; // now string
         }
-
         if (val == null || val === '') {
           // can't create if source or target is not defined properly
           error('Can not create edge `' + id + '` with unspecified ' + field);
           badSourceOrTarget = true;
         } else if (!cy.hasElementWithId(val)) {
           // can't create edge if one of its nodes doesn't exist
-          error('Can not create edge `' + id + '` with nonexistant ' + field + ' `' + val + '`');
+          error('Can not create edge `' + id + '` with nonexistent ' + field + ' `' + val + '`');
           badSourceOrTarget = true;
         }
       }
@@ -13650,7 +14569,7 @@ elesfn$1.restore = function () {
     } // if is edge
 
     // create mock ids / indexes maps for element so it can be used like collections
-    _private.map = new Map$2();
+    _private.map = new Map$1();
     _private.map.set(id, {
       ele: _ele2,
       index: 0
@@ -13709,18 +14628,19 @@ elesfn$1.restore = function () {
 
   if (elements.length > 0) {
     var restored = elements.length === self.length ? self : new Collection(cy, elements);
-    for (var _i5 = 0; _i5 < restored.length; _i5++) {
-      var _ele3 = restored[_i5];
-      if (_ele3.isNode()) {
-        continue;
+
+    // Invalidate traversal caches for source/target nodes of added edges.
+    // Skip if this is a bulk initial add (no pre-existing edges to invalidate).
+    // Phase 1 (line 392) already clears each element's own cache.
+    if (cy_p.elements.length > restored.length) {
+      for (var _i5 = 0; _i5 < restored.length; _i5++) {
+        var _ele3 = restored[_i5];
+        if (_ele3.isNode()) {
+          continue;
+        }
+        _ele3.source().clearTraversalCache();
+        _ele3.target().clearTraversalCache();
       }
-
-      // adding an edge invalidates the traversal caches for the parallel edges
-      _ele3.parallelEdges().clearTraversalCache();
-
-      // adding an edge invalidates the traversal cache for the connected nodes
-      _ele3.source().clearTraversalCache();
-      _ele3.target().clearTraversalCache();
     }
     var toUpdateStyle;
     if (cy_p.hasCompoundNodes) {
@@ -13737,7 +14657,6 @@ elesfn$1.restore = function () {
   }
   return self; // chainability
 };
-
 elesfn$1.removed = function () {
   var ele = this[0];
   return ele && ele._private.removed;
@@ -13824,7 +14743,6 @@ elesfn$1.remove = function () {
   if (removeFromPool) {
     cy.removeFromPool(elesToRemove); // remove from core pool
   }
-
   for (var _i6 = 0; _i6 < elesToRemove.length; _i6++) {
     var _ele4 = elesToRemove[_i6];
     if (_ele4.isEdge()) {
@@ -13920,7 +14838,6 @@ elesfn$1.move = function (struct) {
         }
         eles.restore(notifyRenderer, modifyPool); // make new refs, style, etc.
       });
-
       eles.emitAndNotify('move');
     }
   } else if (struct.parent !== undefined) {
@@ -13942,7 +14859,6 @@ elesfn$1.move = function (struct) {
         }
         updated.restore(notifyRenderer, modifyPool); // make new refs, style, etc.
       });
-
       eles.emitAndNotify('move');
     }
   }
@@ -14282,7 +15198,6 @@ var easings = {
       // can't get a spring w/ duration 0
       return easings.linear; // duration 0 => jump to end so impl doesn't matter
     }
-
     var spring = generateSpringRK4(tension, friction, duration);
     return function (start, end, percent) {
       return start + (end - start) * spring(percent);
@@ -14389,7 +15304,6 @@ function step$1(self, ani, now, isCore) {
         if (name === 'spring') {
           args.push(ani_p.duration); // need duration to generate spring
         }
-
         ani_p.easingImpl = easings[name].apply(null, args);
       } else {
         // static impl by name
@@ -14467,7 +15381,6 @@ function step$1(self, ani, now, isCore) {
       self.emit('style');
     } // if
   }
-
   ani_p.progress = percent;
   return percent;
 }
@@ -14766,7 +15679,6 @@ var corefn$5 = {
       }
       return; // notifications are disabled during batching
     }
-
     if (!_p.notificationsEnabled) {
       return;
     } // exit on disabled
@@ -14862,7 +15774,18 @@ var rendererDefaults = defaults$g({
   touchTapThreshold: 8,
   wheelSensitivity: 1,
   debug: false,
-  showFps: false
+  showFps: false,
+  // webgl options
+  webgl: undefined,
+  webglDebug: false,
+  webglDebugShowAtlases: false,
+  // defaults good for mobile
+  webglTexSize: 2048,
+  webglTexRows: 36,
+  webglTexRowsNodes: 18,
+  webglBatchSize: 2048,
+  webglTexPerBatch: 14,
+  webglBgColor: [255, 255, 255]
 });
 var corefn$4 = {
   renderTo: function renderTo(context, zoom, pan, pxRatio) {
@@ -15032,7 +15955,7 @@ styfn$8.getPropertiesDiff = function (oldCxtKey, newCxtKey) {
     var cxtHasDiffed = oldHasCxt !== newHasCxt;
     var cxtHasMappedProps = cxt.mappedProperties.length > 0;
     if (cxtHasDiffed || newHasCxt && cxtHasMappedProps) {
-      var props = void 0;
+      var props = undefined;
       if (cxtHasDiffed && cxtHasMappedProps) {
         props = cxt.properties; // suffices b/c mappedProperties is a subset of properties
       } else if (cxtHasDiffed) {
@@ -15040,7 +15963,6 @@ styfn$8.getPropertiesDiff = function (oldCxtKey, newCxtKey) {
       } else if (cxtHasMappedProps) {
         props = cxt.mappedProperties; // only need to check mapped
       }
-
       for (var j = 0; j < props.length; j++) {
         var prop = props[j];
         var name = prop.name;
@@ -15061,7 +15983,6 @@ styfn$8.getPropertiesDiff = function (oldCxtKey, newCxtKey) {
             break;
           } // exit early as long as one later context overrides
         }
-
         if (!addedProp[name] && !laterCxtOverrides) {
           addedProp[name] = true;
           diffProps.push(name);
@@ -15248,7 +16169,7 @@ styfn$8.updateStyleHints = function (ele) {
     var propInfo = this.properties[name];
     var type = propInfo.type;
     var _grKey = propInfo.groupKey;
-    var normalizedNumberVal = void 0;
+    var normalizedNumberVal = undefined;
     if (propInfo.hashOverride != null) {
       normalizedNumberVal = propInfo.hashOverride(ele, parsedProp);
     } else if (parsedProp.pfValue != null) {
@@ -15314,12 +16235,14 @@ styfn$8.updateStyleHints = function (ele) {
       nodeOutline = _p$styleKeys.nodeOutline,
       backgroundImage = _p$styleKeys.backgroundImage,
       compound = _p$styleKeys.compound,
-      pie = _p$styleKeys.pie;
-    var nodeKeys = [nodeBody, nodeBorder, nodeOutline, backgroundImage, compound, pie].filter(function (k) {
+      pie = _p$styleKeys.pie,
+      stripe = _p$styleKeys.stripe;
+    var nodeKeys = [nodeBody, nodeBorder, nodeOutline, backgroundImage, compound, pie, stripe].filter(function (k) {
       return k != null;
     }).reduce(hashArrays, [DEFAULT_HASH_SEED, DEFAULT_HASH_SEED_ALT]);
     _p.nodeKey = combineHashesArray(nodeKeys);
     _p.hasPie = pie != null && pie[0] !== DEFAULT_HASH_SEED && pie[1] !== DEFAULT_HASH_SEED_ALT;
+    _p.hasStripe = stripe != null && stripe[0] !== DEFAULT_HASH_SEED && stripe[1] !== DEFAULT_HASH_SEED_ALT;
   }
   return oldStyleKey !== _p.styleKey;
 };
@@ -15336,6 +16259,7 @@ styfn$8.clearStyleHints = function (ele) {
   _p.targetLabelStyleKey = null;
   _p.nodeKey = null;
   _p.hasPie = null;
+  _p.hasStripe = null;
 };
 
 // apply a property to the style (for internal use)
@@ -15426,7 +16350,6 @@ styfn$8.applyParsedProperty = function (ele, parsedProp) {
       return false; // we're unsuccessful deleting the bypass
     }
   }
-
   var printMappingErr = function printMappingErr() {
     warn('Do not assign mappings to elements without corresponding data (i.e. ele `' + ele.id() + '` has no mapping for property `' + prop.name + '` with data field `' + prop.field + '`); try a `[' + prop.field + ']` selector to limit scope to elements with `' + prop.field + '` defined');
   };
@@ -15492,7 +16415,6 @@ styfn$8.applyParsedProperty = function (ele, parsedProp) {
         } else {
           return false; // can only map to colours and numbers
         }
-
         if (!flatProp) {
           // if we can't flatten the property, then don't apply the property and fall back on the existing style
           printMappingErr();
@@ -15635,7 +16557,7 @@ styfn$8.updateTransitions = function (ele, diffProps) {
       var fromProp = prevProp;
       var toProp = diffProp.next != null ? diffProp.next : styProp;
       var diff = false;
-      var initVal = void 0;
+      var initVal = undefined;
       var initDt = 0.000001; // delta time % value for initVal (allows animating out of init zero opacity)
 
       if (!fromProp) {
@@ -15701,7 +16623,10 @@ styfn$8.updateTransitions = function (ele, diffProps) {
 styfn$8.checkTrigger = function (ele, name, fromValue, toValue, getTrigger, onTrigger) {
   var prop = this.properties[name];
   var triggerCheck = getTrigger(prop);
-  if (triggerCheck != null && triggerCheck(fromValue, toValue)) {
+  if (ele.removed()) {
+    return;
+  }
+  if (triggerCheck != null && triggerCheck(fromValue, toValue, ele)) {
     onTrigger(prop);
   }
 };
@@ -15719,29 +16644,38 @@ styfn$8.checkBoundsTrigger = function (ele, name, fromValue, toValue) {
   }, function (prop) {
     ele.dirtyCompoundBoundsCache();
     ele.dirtyBoundingBoxCache();
-
-    // if the prop change makes the bb of pll bezier edges invalid,
-    // then dirty the pll edge bb cache as well
-    if (
-    // only for beziers -- so performance of other edges isn't affected
-    prop.triggersBoundsOfParallelBeziers && name === 'curve-style' && (fromValue === 'bezier' || toValue === 'bezier')) {
-      ele.parallelEdges().forEach(function (pllEdge) {
-        if (pllEdge.isBundledBezier()) {
-          pllEdge.dirtyBoundingBoxCache();
-        }
-      });
-    }
-    if (prop.triggersBoundsOfConnectedEdges && name === 'display' && (fromValue === 'none' || toValue === 'none')) {
-      ele.connectedEdges().forEach(function (edge) {
-        edge.dirtyBoundingBoxCache();
-      });
-    }
+  });
+};
+styfn$8.checkConnectedEdgesBoundsTrigger = function (ele, name, fromValue, toValue) {
+  this.checkTrigger(ele, name, fromValue, toValue, function (prop) {
+    return prop.triggersBoundsOfConnectedEdges;
+  }, function (prop) {
+    ele.connectedEdges().forEach(function (edge) {
+      edge.dirtyBoundingBoxCache();
+    });
+  });
+};
+styfn$8.checkParallelEdgesBoundsTrigger = function (ele, name, fromValue, toValue) {
+  this.checkTrigger(ele, name, fromValue, toValue, function (prop) {
+    return prop.triggersBoundsOfParallelEdges;
+  }, function (prop) {
+    ele.parallelEdges().forEach(function (pllEdge) {
+      pllEdge.dirtyBoundingBoxCache();
+    });
   });
 };
 styfn$8.checkTriggers = function (ele, name, fromValue, toValue) {
   ele.dirtyStyleCache();
-  this.checkZOrderTrigger(ele, name, fromValue, toValue);
-  this.checkBoundsTrigger(ele, name, fromValue, toValue);
+
+  // Only run expensive trigger cascades after initial style is applied.
+  // During first apply(), appliedInitStyle is still false and all elements are
+  // already dirty, so there is no need to traverse connected/parallel edges.
+  if (ele._private.appliedInitStyle) {
+    this.checkZOrderTrigger(ele, name, fromValue, toValue);
+    this.checkBoundsTrigger(ele, name, fromValue, toValue);
+    this.checkConnectedEdgesBoundsTrigger(ele, name, fromValue, toValue);
+    this.checkParallelEdgesBoundsTrigger(ele, name, fromValue, toValue);
+  }
 };
 
 var styfn$7 = {};
@@ -15808,7 +16742,7 @@ styfn$7.applyBypass = function (eles, name, value, updateTransitions) {
     // for each ele
     var ele = eles[_i2];
     var diffProps = {};
-    var diffProp = void 0;
+    var diffProp = undefined;
     for (var j = 0; j < props.length; j++) {
       // for each prop
       var _prop = props[j];
@@ -16083,7 +17017,6 @@ styfn$4.appendFromJson = function (json) {
       style.css(name, value); // apply property
     }
   }
-
   return style;
 };
 
@@ -16348,6 +17281,12 @@ var styfn$2 = {};
     axisDirection: {
       enums: ['horizontal', 'leftward', 'rightward', 'vertical', 'upward', 'downward', 'auto']
     },
+    axisDirectionExplicit: {
+      enums: ['leftward', 'rightward', 'upward', 'downward']
+    },
+    axisDirectionPrimary: {
+      enums: ['horizontal', 'vertical']
+    },
     paddingRelativeTo: {
       enums: ['width', 'height', 'average', 'min', 'max']
     },
@@ -16386,6 +17325,9 @@ var styfn$2 = {};
     bgContainment: {
       enums: ['inside', 'over'],
       multiple: true
+    },
+    boxSelection: {
+      enums: ['contain', 'overlap', 'none']
     },
     color: {
       color: true
@@ -16448,7 +17390,7 @@ var styfn$2 = {};
       enums: ['whitespace', 'anywhere']
     },
     textBackgroundShape: {
-      enums: ['rectangle', 'roundrectangle', 'round-rectangle']
+      enums: ['rectangle', 'roundrectangle', 'round-rectangle', 'circle']
     },
     nodeShape: {
       enums: ['rectangle', 'roundrectangle', 'round-rectangle', 'cutrectangle', 'cut-rectangle', 'bottomroundrectangle', 'bottom-round-rectangle', 'barrel', 'ellipse', 'triangle', 'round-triangle', 'square', 'pentagon', 'round-pentagon', 'hexagon', 'round-hexagon', 'concavehexagon', 'concave-hexagon', 'heptagon', 'round-heptagon', 'octagon', 'round-octagon', 'tag', 'round-tag', 'star', 'diamond', 'round-diamond', 'vee', 'rhomboid', 'right-rhomboid', 'polygon']
@@ -16592,7 +17534,6 @@ var styfn$2 = {};
       enums: ['to-bottom', 'to-top', 'to-left', 'to-right', 'to-bottom-right', 'to-bottom-left', 'to-top-right', 'to-top-left', 'to-right-bottom', 'to-left-bottom', 'to-right-top', 'to-left-top' // different order
       ]
     },
-
     boundsExpansion: {
       number: true,
       multiple: true,
@@ -16781,6 +17722,10 @@ var styfn$2 = {};
   }, {
     name: 'text-justification',
     type: t.justification
+  }, {
+    name: 'box-select-labels',
+    type: t.bool,
+    triggersBounds: diff.any
   }];
   var behavior = [{
     name: 'events',
@@ -16790,13 +17735,25 @@ var styfn$2 = {};
     name: 'text-events',
     type: t.bool,
     triggersZOrder: diff.any
+  }, {
+    name: 'box-selection',
+    type: t.boxSelection,
+    triggersZOrder: diff.any
   }];
   var visibility = [{
     name: 'display',
     type: t.display,
     triggersZOrder: diff.any,
     triggersBounds: diff.any,
-    triggersBoundsOfConnectedEdges: true
+    triggersBoundsOfConnectedEdges: diff.any,
+    triggersBoundsOfParallelEdges: function triggersBoundsOfParallelEdges(fromValue, toValue, ele) {
+      if (fromValue === toValue) {
+        return false;
+      }
+
+      // only if edge is bundled bezier (so as not to affect performance of other edges)
+      return ele.pstyle('curve-style').value === 'bezier';
+    }
   }, {
     name: 'visibility',
     type: t.visibility,
@@ -17088,6 +18045,12 @@ var styfn$2 = {};
     name: 'line-dash-offset',
     type: t.number
   }, {
+    name: 'line-outline-width',
+    type: t.size
+  }, {
+    name: 'line-outline-color',
+    type: t.color
+  }, {
     name: 'line-gradient-stop-colors',
     type: t.colors
   }, {
@@ -17097,7 +18060,15 @@ var styfn$2 = {};
     name: 'curve-style',
     type: t.curveStyle,
     triggersBounds: diff.any,
-    triggersBoundsOfParallelBeziers: true
+    triggersBoundsOfParallelEdges: function triggersBoundsOfParallelEdges(fromValue, toValue) {
+      if (fromValue === toValue) {
+        return false;
+      } // must have diff
+
+      return fromValue === 'bezier' ||
+      // remove from bundle
+      toValue === 'bezier'; // add to bundle
+    }
   }, {
     name: 'haystack-radius',
     type: t.zeroOneNumber,
@@ -17231,6 +18202,14 @@ var styfn$2 = {};
     name: 'pie-size',
     type: t.sizeMaybePercent
   });
+  pie.push({
+    name: 'pie-hole',
+    type: t.sizeMaybePercent
+  });
+  pie.push({
+    name: 'pie-start-angle',
+    type: t.angle
+  });
   for (var i = 1; i <= styfn$2.pieBackgroundN; i++) {
     pie.push({
       name: 'pie-' + i + '-background-color',
@@ -17242,6 +18221,32 @@ var styfn$2 = {};
     });
     pie.push({
       name: 'pie-' + i + '-background-opacity',
+      type: t.zeroOneNumber
+    });
+  }
+
+  // stripe backgrounds for nodes
+  var stripe = [];
+  styfn$2.stripeBackgroundN = 16; // because the stripe properties are numbered, give access to a constant N (for renderer use)
+  stripe.push({
+    name: 'stripe-size',
+    type: t.sizeMaybePercent
+  });
+  stripe.push({
+    name: 'stripe-direction',
+    type: t.axisDirectionPrimary
+  });
+  for (var _i = 1; _i <= styfn$2.stripeBackgroundN; _i++) {
+    stripe.push({
+      name: 'stripe-' + _i + '-background-color',
+      type: t.color
+    });
+    stripe.push({
+      name: 'stripe-' + _i + '-background-size',
+      type: t.percent
+    });
+    stripe.push({
+      name: 'stripe-' + _i + '-background-opacity',
       type: t.zeroOneNumber
     });
   }
@@ -17274,7 +18279,7 @@ var styfn$2 = {};
       });
     });
   }, {});
-  var props = styfn$2.properties = [].concat(behavior, transition, visibility, overlay, underlay, ghost, commonLabel, labelDimensions, mainLabel, sourceLabel, targetLabel, nodeBody, nodeBorder, nodeOutline, backgroundImage, pie, compound, edgeLine, edgeArrow, core);
+  var props = styfn$2.properties = [].concat(behavior, transition, visibility, overlay, underlay, ghost, commonLabel, labelDimensions, mainLabel, sourceLabel, targetLabel, nodeBody, nodeBorder, nodeOutline, backgroundImage, pie, stripe, compound, edgeLine, edgeArrow, core);
   var propGroups = styfn$2.propertyGroups = {
     // common to all eles
     behavior: behavior,
@@ -17295,6 +18300,7 @@ var styfn$2 = {};
     nodeOutline: nodeOutline,
     backgroundImage: backgroundImage,
     pie: pie,
+    stripe: stripe,
     compound: compound,
     // edge props
     edgeLine: edgeLine,
@@ -17354,14 +18360,14 @@ var styfn$2 = {};
   });
 
   // allow access of properties by name ( e.g. style.properties.height )
-  for (var _i = 0; _i < props.length; _i++) {
-    var prop = props[_i];
+  for (var _i2 = 0; _i2 < props.length; _i2++) {
+    var prop = props[_i2];
     props[prop.name] = prop; // allow lookup by name
   }
 
   // map aliases
-  for (var _i2 = 0; _i2 < aliases.length; _i2++) {
-    var alias = aliases[_i2];
+  for (var _i3 = 0; _i3 < aliases.length; _i3++) {
+    var alias = aliases[_i3];
     var pointsToProp = props[alias.pointsTo];
     var aliasProp = {
       name: alias.name,
@@ -17374,7 +18380,6 @@ var styfn$2 = {};
     props[alias.name] = aliasProp; // allow lookup by name
   }
 })();
-
 styfn$2.getDefaultProperty = function (name) {
   return this.getDefaultProperties()[name];
 };
@@ -17402,6 +18407,7 @@ styfn$2.getDefaultProperties = function () {
     'text-justification': 'auto',
     'line-height': 1,
     'color': '#000',
+    'box-selection': 'contain',
     'text-outline-color': '#000',
     'text-outline-width': 0,
     'text-outline-opacity': 1,
@@ -17458,6 +18464,7 @@ styfn$2.getDefaultProperties = function () {
     'transition-duration': 0,
     'transition-delay': 0,
     'transition-timing-function': 'linear',
+    'box-select-labels': 'no',
     // node props
     'background-blacken': 0,
     'background-color': '#999',
@@ -17521,7 +18528,9 @@ styfn$2.getDefaultProperties = function () {
     'min-height-bias-bottom': 0
   }, {
     // node pie bg
-    'pie-size': '100%'
+    'pie-size': '100%',
+    'pie-hole': 0,
+    'pie-start-angle': '0deg'
   }, [{
     name: 'pie-{{i}}-background-color',
     value: 'black'
@@ -17539,12 +18548,34 @@ styfn$2.getDefaultProperties = function () {
     }
     return css;
   }, {}), {
+    // node stripes bg
+    'stripe-size': '100%',
+    'stripe-direction': 'horizontal'
+  }, [{
+    name: 'stripe-{{i}}-background-color',
+    value: 'black'
+  }, {
+    name: 'stripe-{{i}}-background-size',
+    value: '0%'
+  }, {
+    name: 'stripe-{{i}}-background-opacity',
+    value: 1
+  }].reduce(function (css, prop) {
+    for (var i = 1; i <= styfn$2.stripeBackgroundN; i++) {
+      var name = prop.name.replace('{{i}}', i);
+      var val = prop.value;
+      css[name] = val;
+    }
+    return css;
+  }, {}), {
     // edge props
     'line-style': 'solid',
     'line-color': '#999',
     'line-fill': 'solid',
     'line-cap': 'butt',
     'line-opacity': 1,
+    'line-outline-width': 0,
+    'line-outline-color': '#000',
     'line-gradient-stop-colors': '#999',
     'line-gradient-stop-positions': '0%',
     'control-point-step-size': 40,
@@ -17665,7 +18696,6 @@ styfn$1.parse = function (name, value, propIsBypass, propIsFlat) {
       ret.value = copy(ret.value); // because it could be an array, e.g. colour
     }
   }
-
   return ret;
 };
 styfn$1.parseImplWarn = function (name, value, propIsBypass, propIsFlat) {
@@ -17791,12 +18821,10 @@ styfn$1.parseImpl = function (name, value, propIsBypass, propIsFlat) {
       || (c1[3] == null || c1[3] === 1 // full opacity for colour 1?
       ) && (c2[3] == null || c2[3] === 1) // full opacity for colour 2?
       );
-
       if (same) {
         return false;
       } // can't make a mapper without a range
     }
-
     return {
       name: name,
       value: mapData,
@@ -17904,7 +18932,6 @@ styfn$1.parseImpl = function (name, value, propIsBypass, propIsFlat) {
         units = implicitUnits; // implicitly px if unspecified
       }
     }
-
     value = parseFloat(value);
 
     // if not a number and enums not allowed, then the value is invalid
@@ -18035,9 +19062,9 @@ styfn$1.parseImpl = function (name, value, propIsBypass, propIsFlat) {
   }
 };
 
-var Style = function Style(cy) {
-  if (!(this instanceof Style)) {
-    return new Style(cy);
+var _Style = function Style(cy) {
+  if (!(this instanceof _Style)) {
+    return new _Style(cy);
   }
   if (!core(cy)) {
     error('A style must have a core reference');
@@ -18050,7 +19077,7 @@ var Style = function Style(cy) {
   this.length = 0;
   this.resetToDefault();
 };
-var styfn = Style.prototype;
+var styfn = _Style.prototype;
 styfn.instanceString = function () {
   return 'style';
 };
@@ -18074,7 +19101,6 @@ styfn.clear = function () {
   });
   return this; // chaining
 };
-
 styfn.resetToDefault = function () {
   this.clear();
   this.addDefaultStylesheet();
@@ -18124,7 +19150,6 @@ styfn.css = function () {
 
   return this; // chaining
 };
-
 styfn.style = styfn.css;
 
 // add a single css rule to the current context
@@ -18141,6 +19166,9 @@ styfn.cssRule = function (name, value) {
     if (property.name.match(/pie-(\d+)-background-size/) && property.value) {
       this._private.hasPie = true;
     }
+    if (property.name.match(/stripe-(\d+)-background-size/) && property.value) {
+      this._private.hasStripe = true;
+    }
     if (property.mapped) {
       this[i].mappedProperties.push(property);
     }
@@ -18153,7 +19181,6 @@ styfn.cssRule = function (name, value) {
   }
   return this; // chaining
 };
-
 styfn.append = function (style) {
   if (stylesheet(style)) {
     style.appendToStyle(this);
@@ -18167,22 +19194,22 @@ styfn.append = function (style) {
 };
 
 // static function
-Style.fromJson = function (cy, json) {
-  var style = new Style(cy);
+_Style.fromJson = function (cy, json) {
+  var style = new _Style(cy);
   style.fromJson(json);
   return style;
 };
-Style.fromString = function (cy, string) {
-  return new Style(cy).fromString(string);
+_Style.fromString = function (cy, string) {
+  return new _Style(cy).fromString(string);
 };
 [styfn$8, styfn$7, styfn$6, styfn$5, styfn$4, styfn$3, styfn$2, styfn$1].forEach(function (props) {
   extend(styfn, props);
 });
-Style.types = styfn.types;
-Style.properties = styfn.properties;
-Style.propertyGroups = styfn.propertyGroups;
-Style.propertyGroupNames = styfn.propertyGroupNames;
-Style.propertyGroupKeys = styfn.propertyGroupKeys;
+_Style.types = styfn.types;
+_Style.properties = styfn.properties;
+_Style.propertyGroups = styfn.propertyGroups;
+_Style.propertyGroupNames = styfn.propertyGroupNames;
+_Style.propertyGroupKeys = styfn.propertyGroupKeys;
 
 var corefn$2 = {
   style: function style(newStyle) {
@@ -18197,11 +19224,11 @@ var corefn$2 = {
     if (stylesheet(style)) {
       _p.style = style.generateStyle(this);
     } else if (array(style)) {
-      _p.style = Style.fromJson(this, style);
+      _p.style = _Style.fromJson(this, style);
     } else if (string(style)) {
-      _p.style = Style.fromString(this, style);
+      _p.style = _Style.fromString(this, style);
     } else {
-      _p.style = Style(this);
+      _p.style = _Style(this);
     }
     return _p.style;
   },
@@ -18221,7 +19248,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   autoungrabify: function autoungrabify(bool) {
     if (bool !== undefined) {
       this._private.autoungrabify = bool ? true : false;
@@ -18230,7 +19256,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   autounselectify: function autounselectify(bool) {
     if (bool !== undefined) {
       this._private.autounselectify = bool ? true : false;
@@ -18239,7 +19264,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   selectionType: function selectionType(selType) {
     var _p = this._private;
     if (_p.selectionType == null) {
@@ -18262,7 +19286,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   userPanningEnabled: function userPanningEnabled(bool) {
     if (bool !== undefined) {
       this._private.userPanningEnabled = bool ? true : false;
@@ -18271,7 +19294,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   zoomingEnabled: function zoomingEnabled(bool) {
     if (bool !== undefined) {
       this._private.zoomingEnabled = bool ? true : false;
@@ -18280,7 +19302,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   userZoomingEnabled: function userZoomingEnabled(bool) {
     if (bool !== undefined) {
       this._private.userZoomingEnabled = bool ? true : false;
@@ -18289,7 +19310,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   boxSelectionEnabled: function boxSelectionEnabled(bool) {
     if (bool !== undefined) {
       this._private.boxSelectionEnabled = bool ? true : false;
@@ -18298,7 +19318,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   pan: function pan() {
     var args = arguments;
     var pan = this._private.pan;
@@ -18343,11 +19362,9 @@ var corefn$1 = {
         break;
       // invalid
     }
-
     this.notify('viewport');
     return this; // chaining
   },
-
   panBy: function panBy(arg0, arg1) {
     var args = arguments;
     var pan = this._private.pan;
@@ -18382,11 +19399,12 @@ var corefn$1 = {
         break;
       // invalid
     }
-
     this.notify('viewport');
     return this; // chaining
   },
-
+  gc: function gc() {
+    this.notify('gc');
+  },
   fit: function fit(elements, padding) {
     var viewportState = this.getFitViewport(elements, padding);
     if (viewportState) {
@@ -18398,7 +19416,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   getFitViewport: function getFitViewport(elements, padding) {
     if (number$1(elements) && padding === undefined) {
       // elements is optional
@@ -18506,7 +19523,7 @@ var corefn$1 = {
       // then zoom about a point
       zoom = params.level;
       if (params.position != null) {
-        pos = modelToRenderedPosition(params.position, currentZoom, currentPan);
+        pos = modelToRenderedPosition$1(params.position, currentZoom, currentPan);
       } else if (params.renderedPosition != null) {
         pos = params.renderedPosition;
       }
@@ -18570,7 +19587,6 @@ var corefn$1 = {
       return this; // chaining
     }
   },
-
   viewport: function viewport(opts) {
     var _p = this._private;
     var zoomDefd = true;
@@ -18620,7 +19636,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   center: function center(elements) {
     var pan = this.getCenterPan(elements);
     if (pan) {
@@ -18630,7 +19645,6 @@ var corefn$1 = {
     }
     return this; // chaining
   },
-
   getCenterPan: function getCenterPan(elements, zoom) {
     if (!this._private.panningEnabled) {
       return;
@@ -18669,7 +19683,6 @@ var corefn$1 = {
     });
     return this; // chaining
   },
-
   invalidateSize: function invalidateSize() {
     this._private.sizeCache = null;
   },
@@ -18796,7 +19809,6 @@ var Core = function Core(opts) {
     reg.cy.destroy();
     reg = {}; // old instance => replace reg completely
   }
-
   var readies = reg.readies = reg.readies || [];
   if (container) {
     container._cyreg = reg;
@@ -18903,7 +19915,9 @@ var Core = function Core(opts) {
     }
     if (elements != null) {
       if (plainObject(elements) || array(elements)) {
+        cy.startBatch();
         cy.add(elements);
+        cy.endBatch();
       }
     }
     cy.one('layoutready', function (e) {
@@ -18980,6 +19994,26 @@ extend(corefn, {
     cy.destroyRenderer();
     this.emit('destroy');
     cy._private.destroyed = true;
+
+    // Release all elements to free memory (275K elements = 100+ MB)
+    var _p = cy._private;
+    if (_p.elements) {
+      // Clear per-element back-references and caches
+      for (var i = 0; i < _p.elements.length; i++) {
+        var ep = _p.elements[i]._private;
+        ep.cy = null;
+        ep.traversalCache = null;
+        ep.style = null;
+        ep.rstyle = null;
+        ep.edges = null;
+        ep.children = null;
+        ep.parent = null;
+      }
+      _p.elements = null;
+    }
+    _p.byGroup = null;
+    _p.listeners = [];
+    _p.emitter = null;
     return cy;
   },
   hasElementWithId: function hasElementWithId(id) {
@@ -19001,7 +20035,6 @@ extend(corefn, {
     this._private.elements.merge(eles);
     return this; // chaining
   },
-
   removeFromPool: function removeFromPool(eles) {
     this._private.elements.unmerge(eles);
     return this;
@@ -19217,6 +20250,8 @@ var defaults$7 = {
   // whether to fit the viewport to the graph
   directed: false,
   // whether the tree is directed downwards (or edges can point in any direction if false)
+  direction: 'downward',
+  // determines the direction in which the tree structure is drawn.  The possible values are 'downward', 'upward', 'rightward', or 'leftward'.
   padding: 30,
   // padding on fit
   circle: false,
@@ -19253,7 +20288,6 @@ var defaults$7 = {
     return position;
   } // transform a given node position. Useful for changing flow direction in discrete layouts
 };
-
 var deprecatedOptionDefaults = {
   maximal: false,
   // whether to shift nodes down their natural BFS depths in order to avoid upwards edges (DAGS only); setting acyclic to true sets maximal to true also
@@ -19272,23 +20306,18 @@ function BreadthFirstLayout(options) {
   this.options = extend({}, defaults$7, deprecatedOptionDefaults, options);
 }
 BreadthFirstLayout.prototype.run = function () {
-  var params = this.options;
-  var options = params;
-  var cy = params.cy;
+  var options = this.options;
+  var cy = options.cy;
   var eles = options.eles;
   var nodes = eles.nodes().filter(function (n) {
-    return !n.isParent();
+    return n.isChildless();
   });
   var graph = eles;
   var directed = options.directed;
   var maximal = options.acyclic || options.maximal || options.maximalAdjustments > 0; // maximalAdjustments for compat. w/ old code; also, setting acyclic to true sets maximal to true
 
-  var bb = makeBoundingBox(options.boundingBox ? options.boundingBox : {
-    x1: 0,
-    y1: 0,
-    w: cy.width(),
-    h: cy.height()
-  });
+  var hasBoundingBox = !!options.boundingBox;
+  var bb = makeBoundingBox(hasBoundingBox ? options.boundingBox : structuredClone(cy.extent()));
   var roots;
   if (elementOrCollection(options.roots)) {
     roots = options.roots;
@@ -19308,7 +20337,7 @@ BreadthFirstLayout.prototype.run = function () {
     } else {
       var components = eles.components();
       roots = cy.collection();
-      var _loop = function _loop(_i) {
+      var _loop = function _loop() {
         var comp = components[_i];
         var maxDegree = comp.maxDegree(false);
         var compRoots = comp.filter(function (ele) {
@@ -19317,7 +20346,7 @@ BreadthFirstLayout.prototype.run = function () {
         roots = roots.add(compRoots);
       };
       for (var _i = 0; _i < components.length; _i++) {
-        _loop(_i);
+        _loop();
       }
     }
   }
@@ -19339,7 +20368,9 @@ BreadthFirstLayout.prototype.run = function () {
       depth = _getInfo.depth,
       index = _getInfo.index;
     depths[depth][index] = null;
-    addToDepth(ele, newDepth);
+
+    // add only childless nodes
+    if (ele.isChildless()) addToDepth(ele, newDepth);
   };
 
   // find the depths of the nodes
@@ -19349,7 +20380,9 @@ BreadthFirstLayout.prototype.run = function () {
     visit: function visit(node, edge, pNode, i, depth) {
       var ele = node[0];
       var id = ele.id();
-      addToDepth(ele, depth);
+
+      // add only childless nodes
+      if (ele.isChildless()) addToDepth(ele, depth);
       foundByBfs[id] = true;
     }
   });
@@ -19366,7 +20399,6 @@ BreadthFirstLayout.prototype.run = function () {
   }
 
   // assign the nodes a depth and index
-
   var assignDepthsAt = function assignDepthsAt(i) {
     var eles = depths[i];
     for (var j = 0; j < eles.length; j++) {
@@ -19380,11 +20412,6 @@ BreadthFirstLayout.prototype.run = function () {
         depth: i,
         index: j
       });
-    }
-  };
-  var assignDepths = function assignDepths() {
-    for (var _i3 = 0; _i3 < depths.length; _i3++) {
-      assignDepthsAt(_i3);
     }
   };
   var adjustMaximally = function adjustMaximally(ele, shifted) {
@@ -19438,13 +20465,11 @@ BreadthFirstLayout.prototype.run = function () {
     }
   }
 
-  assignDepths(); // clear holes
-
   // find min distance we need to leave between nodes
   var minDistance = 0;
   if (options.avoidOverlap) {
-    for (var _i4 = 0; _i4 < nodes.length; _i4++) {
-      var n = nodes[_i4];
+    for (var _i3 = 0; _i3 < nodes.length; _i3++) {
+      var n = nodes[_i3];
       var nbb = n.layoutDimensions(options);
       var w = nbb.w;
       var h = nbb.h;
@@ -19462,8 +20487,8 @@ BreadthFirstLayout.prototype.run = function () {
     var neighbors = ele.neighborhood();
     var percent = 0;
     var samples = 0;
-    for (var _i5 = 0; _i5 < neighbors.length; _i5++) {
-      var neighbor = neighbors[_i5];
+    for (var _i4 = 0; _i4 < neighbors.length; _i4++) {
+      var neighbor = neighbors[_i4];
       if (neighbor.isEdge() || neighbor.isParent() || !nodes.has(neighbor)) {
         continue;
       }
@@ -19496,7 +20521,6 @@ BreadthFirstLayout.prototype.run = function () {
   };
 
   // rearrange the indices in each depth level based on connectivity
-
   var sortFn = function sortFn(a, b) {
     var apct = getWeightedPercent(a);
     var bpct = getWeightedPercent(b);
@@ -19510,48 +20534,70 @@ BreadthFirstLayout.prototype.run = function () {
   if (options.depthSort !== undefined) {
     sortFn = options.depthSort;
   }
+  var depthsLen = depths.length;
 
   // sort each level to make connected nodes closer
-  for (var _i6 = 0; _i6 < depths.length; _i6++) {
-    depths[_i6].sort(sortFn);
-    assignDepthsAt(_i6);
+  for (var _i5 = 0; _i5 < depthsLen; _i5++) {
+    depths[_i5].sort(sortFn);
+    assignDepthsAt(_i5);
   }
 
   // assign orphan nodes to a new top-level depth
   var orphanDepth = [];
-  for (var _i7 = 0; _i7 < orphanNodes.length; _i7++) {
-    orphanDepth.push(orphanNodes[_i7]);
+  for (var _i6 = 0; _i6 < orphanNodes.length; _i6++) {
+    orphanDepth.push(orphanNodes[_i6]);
   }
-  depths.unshift(orphanDepth);
-  assignDepths();
+  var assignDepths = function assignDepths() {
+    for (var _i7 = 0; _i7 < depthsLen; _i7++) {
+      assignDepthsAt(_i7);
+    }
+  };
+
+  // add a new top-level depth only when there are orphan nodes
+  if (orphanDepth.length) {
+    depths.unshift(orphanDepth);
+    depthsLen = depths.length;
+    assignDepths();
+  }
   var biggestDepthSize = 0;
-  for (var _i8 = 0; _i8 < depths.length; _i8++) {
+  for (var _i8 = 0; _i8 < depthsLen; _i8++) {
     biggestDepthSize = Math.max(depths[_i8].length, biggestDepthSize);
   }
   var center = {
     x: bb.x1 + bb.w / 2,
-    y: bb.x1 + bb.h / 2
+    y: bb.y1 + bb.h / 2
   };
+
+  // average node size
+  var aveNodeSize = nodes.reduce(function (acc, node) {
+    return function (box) {
+      return {
+        w: acc.w === -1 ? box.w : (acc.w + box.w) / 2,
+        h: acc.h === -1 ? box.h : (acc.h + box.h) / 2
+      };
+    }(node.boundingBox({
+      includeLabels: options.nodeDimensionsIncludeLabels
+    }));
+  }, {
+    w: -1,
+    h: -1
+  });
+  var distanceY = Math.max(
+  // only one depth
+  depthsLen === 1 ? 0 :
+  // inside a bounding box, no need for top & bottom padding
+  hasBoundingBox ? (bb.h - options.padding * 2 - aveNodeSize.h) / (depthsLen - 1) : (bb.h - options.padding * 2 - aveNodeSize.h) / (depthsLen + 1), minDistance);
   var maxDepthSize = depths.reduce(function (max, eles) {
     return Math.max(max, eles.length);
   }, 0);
-  var getPosition = function getPosition(ele) {
+  var getPositionTopBottom = function getPositionTopBottom(ele) {
     var _getInfo2 = getInfo(ele),
       depth = _getInfo2.depth,
       index = _getInfo2.index;
-    var depthSize = depths[depth].length;
-    var distanceX = Math.max(bb.w / ((options.grid ? maxDepthSize : depthSize) + 1), minDistance);
-    var distanceY = Math.max(bb.h / (depths.length + 1), minDistance);
-    var radiusStepSize = Math.min(bb.w / 2 / depths.length, bb.h / 2 / depths.length);
-    radiusStepSize = Math.max(radiusStepSize, minDistance);
-    if (!options.circle) {
-      var epos = {
-        x: center.x + (index + 1 - (depthSize + 1) / 2) * distanceX,
-        y: (depth + 1) * distanceY
-      };
-      return epos;
-    } else {
-      var radius = radiusStepSize * depth + radiusStepSize - (depths.length > 0 && depths[0].length <= 3 ? radiusStepSize / 2 : 0);
+    if (options.circle) {
+      var radiusStepSize = Math.min(bb.w / 2 / depthsLen, bb.h / 2 / depthsLen);
+      radiusStepSize = Math.max(radiusStepSize, minDistance);
+      var radius = radiusStepSize * depth + radiusStepSize - (depthsLen > 0 && depths[0].length <= 3 ? radiusStepSize / 2 : 0);
       var theta = 2 * Math.PI / depths[depth].length * index;
       if (depth === 0 && depths[0].length === 1) {
         radius = 1;
@@ -19560,7 +20606,31 @@ BreadthFirstLayout.prototype.run = function () {
         x: center.x + radius * Math.cos(theta),
         y: center.y + radius * Math.sin(theta)
       };
+    } else {
+      var depthSize = depths[depth].length;
+      var distanceX = Math.max(
+      // only one depth
+      depthSize === 1 ? 0 :
+      // inside a bounding box, no need for left & right padding
+      hasBoundingBox ? (bb.w - options.padding * 2 - aveNodeSize.w) / ((options.grid ? maxDepthSize : depthSize) - 1) : (bb.w - options.padding * 2 - aveNodeSize.w) / ((options.grid ? maxDepthSize : depthSize) + 1), minDistance);
+      var epos = {
+        x: center.x + (index + 1 - (depthSize + 1) / 2) * distanceX,
+        y: center.y + (depth + 1 - (depthsLen + 1) / 2) * distanceY
+      };
+      return epos;
     }
+  };
+  var rotateDegrees = {
+    'downward': 0,
+    'leftward': 90,
+    'upward': 180,
+    'rightward': -90
+  };
+  if (Object.keys(rotateDegrees).indexOf(options.direction) === -1) {
+    error("Invalid direction '".concat(options.direction, "' specified for breadthfirst layout. Valid values are: ").concat(Object.keys(rotateDegrees).join(', ')));
+  }
+  var getPosition = function getPosition(ele) {
+    return rotatePosAndSkewByBox(getPositionTopBottom(ele), bb, rotateDegrees[options.direction]);
   };
   eles.nodes().layoutPositions(this, options, getPosition);
   return this; // chaining
@@ -19607,7 +20677,6 @@ var defaults$6 = {
     return position;
   } // transform a given node position. Useful for changing flow direction in discrete layouts 
 };
-
 function CircleLayout(options) {
   this.options = extend({}, defaults$6, options);
 }
@@ -19727,7 +20796,6 @@ var defaults$5 = {
     return position;
   } // transform a given node position. Useful for changing flow direction in discrete layouts
 };
-
 function ConcentricLayout(options) {
   this.options = extend({}, defaults$5, options);
 }
@@ -19752,7 +20820,7 @@ ConcentricLayout.prototype.run = function () {
   var maxNodeSize = 0;
   for (var i = 0; i < nodes.length; i++) {
     var node = nodes[i];
-    var value = void 0;
+    var value = undefined;
 
     // calculate the node value
     value = options.concentric(node);
@@ -19880,6 +20948,7 @@ http://dl.acm.org/citation.cfm?id=1498047
 
 Modifications tracked on Github.
 */
+
 var DEBUG;
 
 /**
@@ -20056,7 +21125,7 @@ CoseLayout.prototype.run = function () {
   var i = 0;
   var loopRet = true;
   if (options.animate === true) {
-    var frame = function frame() {
+    var _frame = function frame() {
       var f = 0;
       while (loopRet && f < options.refresh) {
         loopRet = mainLoop(i);
@@ -20072,10 +21141,10 @@ CoseLayout.prototype.run = function () {
         if (now - startTime >= options.animationThreshold) {
           refresh();
         }
-        requestAnimationFrame(frame);
+        requestAnimationFrame(_frame);
       }
     };
-    frame();
+    _frame();
   } else {
     while (loopRet) {
       loopRet = mainLoop(i);
@@ -20098,7 +21167,6 @@ CoseLayout.prototype.stop = function () {
   this.emit('layoutstop');
   return this; // chaining
 };
-
 CoseLayout.prototype.destroy = function () {
   if (this.thread) {
     this.thread.stop();
@@ -20300,7 +21368,7 @@ var createLayoutInfo = function createLayoutInfo(cy, layout, options) {
  */
 var findLCA = function findLCA(node1, node2, layoutInfo) {
   // Find their common ancester, starting from the root graph
-  var res = findLCA_aux(node1, node2, 0, layoutInfo);
+  var res = _findLCA_aux(node1, node2, 0, layoutInfo);
   if (2 > res.count) {
     // If aux function couldn't find the common ancester,
     // then it is the root graph
@@ -20324,7 +21392,7 @@ var findLCA = function findLCA(node1, node2, layoutInfo) {
  *                   Y is the graph index of the lowest graph containing
  *                   all X nodes
  */
-var findLCA_aux = function findLCA_aux(node1, node2, graphIx, layoutInfo) {
+var _findLCA_aux = function findLCA_aux(node1, node2, graphIx, layoutInfo) {
   var graph = layoutInfo.graphSet[graphIx];
   // If both nodes belongs to graphIx
   if (-1 < graph.indexOf(node1) && -1 < graph.indexOf(node2)) {
@@ -20346,7 +21414,7 @@ var findLCA_aux = function findLCA_aux(node1, node2, graphIx, layoutInfo) {
       continue;
     }
     var childGraphIx = layoutInfo.indexToGraph[layoutInfo.idToIndex[children[0]]];
-    var result = findLCA_aux(node1, node2, childGraphIx, layoutInfo);
+    var result = _findLCA_aux(node1, node2, childGraphIx, layoutInfo);
     if (0 === result.count) {
       // Neither node1 nor node2 are present in this subgraph
       continue;
@@ -20413,8 +21481,9 @@ var getScaleInBoundsFn = function getScaleInBoundsFn(layoutInfo, options, nodes)
     var lnode = layoutInfo.layoutNodes[layoutInfo.idToIndex[ele.data('id')]];
     if (options.boundingBox) {
       // then add extra bounding box constraint
-      var pctX = (lnode.positionX - coseBB.x1) / coseBB.w;
-      var pctY = (lnode.positionY - coseBB.y1) / coseBB.h;
+      // Handle single node case where coseBB.w or coseBB.h is 0
+      var pctX = coseBB.w === 0 ? 0.5 : (lnode.positionX - coseBB.x1) / coseBB.w;
+      var pctY = coseBB.h === 0 ? 0.5 : (lnode.positionY - coseBB.y1) / coseBB.h;
       return {
         x: bb.x1 + pctX * bb.w,
         y: bb.y1 + pctY * bb.h
@@ -20516,7 +21585,7 @@ var calculateNodeForces = function calculateNodeForces(layoutInfo, options) {
   }
 };
 var randomDistance = function randomDistance(max) {
-  return -max + 2 * max * Math.random();
+  return -1 + 2 * max * Math.random();
 };
 
 /**
@@ -20898,7 +21967,7 @@ var updatePositions = function updatePositions(layoutInfo, options) {
     // logDebug(s);
 
     // Update ancestry boudaries
-    updateAncestryBoundaries(n, layoutInfo);
+    _updateAncestryBoundaries(n, layoutInfo);
   }
 
   // Update size, position of compund nodes
@@ -20947,7 +22016,7 @@ var limitForce = function limitForce(forceX, forceY, max) {
  * @brief : Function used for keeping track of compound node
  *          sizes, since they should bound all their subnodes.
  */
-var updateAncestryBoundaries = function updateAncestryBoundaries(node, layoutInfo) {
+var _updateAncestryBoundaries = function updateAncestryBoundaries(node, layoutInfo) {
   // var s = "Propagating new position/size of node " + node.id;
   var parentId = node.parentId;
   if (null == parentId) {
@@ -20992,7 +22061,7 @@ var updateAncestryBoundaries = function updateAncestryBoundaries(node, layoutInf
   // If updated boundaries, propagate changes upward
   if (flag) {
     // logDebug(s);
-    return updateAncestryBoundaries(p, layoutInfo);
+    return _updateAncestryBoundaries(p, layoutInfo);
   }
 
   // s += ". No changes in boundaries/position of parent node " + p.id;
@@ -21104,7 +22173,6 @@ var defaults$3 = {
     return position;
   } // transform a given node position. Useful for changing flow direction in discrete layouts 
 };
-
 function GridLayout(options) {
   this.options = extend({}, defaults$3, options);
 }
@@ -21385,7 +22453,6 @@ var defaults$1 = {
     return position;
   } // transform a given node position. Useful for changing flow direction in discrete layouts
 };
-
 function PresetLayout(options) {
   this.options = extend({}, defaults$1, options);
 }
@@ -21442,7 +22509,6 @@ var defaults = {
     return position;
   } // transform a given node position. Useful for changing flow direction in discrete layouts 
 };
-
 function RandomLayout(options) {
   this.options = extend({}, defaults, options);
 }
@@ -21496,7 +22562,6 @@ function NullRenderer(options) {
   this.options = options;
   this.notifications = 0; // for testing
 }
-
 var noop = function noop() {};
 var throwImgErr = function throwImgErr() {
   throw new Error('A headless instance can not render images');
@@ -21997,6 +23062,8 @@ BRp$e.findNearestElements = function (x, y, interactiveElementsOnly, isTouch) {
 // 'Give me everything from this box'
 BRp$e.getAllInBox = function (x1, y1, x2, y2) {
   var eles = this.getCachedZSortedEles().interactive;
+  var zoom = this.cy.zoom();
+  var labelThreshold = 2 / zoom;
   var box = [];
   var x1c = Math.min(x1, x2);
   var x2c = Math.max(x1, x2);
@@ -22012,42 +23079,228 @@ BRp$e.getAllInBox = function (x1, y1, x2, y2) {
     x2: x2,
     y2: y2
   });
+  var selectionBox = [{
+    x: boxBb.x1,
+    y: boxBb.y1
+  }, {
+    x: boxBb.x2,
+    y: boxBb.y1
+  }, {
+    x: boxBb.x2,
+    y: boxBb.y2
+  }, {
+    x: boxBb.x1,
+    y: boxBb.y2
+  }];
+  var boxEdges = [[selectionBox[0], selectionBox[1]], [selectionBox[1], selectionBox[2]], [selectionBox[2], selectionBox[3]], [selectionBox[3], selectionBox[0]]];
+  function preprop(obj, name, pre) {
+    return getPrefixedProperty(obj, name, pre);
+  }
+  function getRotatedLabelBox(ele, prefix) {
+    var _p = ele._private;
+    var th = labelThreshold;
+    var prefixDash = '';
+    ele.boundingBox();
+    var bb = _p.labelBounds['main'];
+
+    // If the bounding box is not available, return null.
+    // This indicates that the label box cannot be calculated, which is consistent
+    // with the expected behavior of this function. Returning null allows the caller
+    // to handle the absence of a bounding box explicitly.
+    if (!bb) {
+      return null;
+    }
+    var lx = preprop(_p.rscratch, 'labelX', prefix);
+    var ly = preprop(_p.rscratch, 'labelY', prefix);
+    var theta = preprop(_p.rscratch, 'labelAngle', prefix);
+    var ox = ele.pstyle(prefixDash + 'text-margin-x').pfValue;
+    var oy = ele.pstyle(prefixDash + 'text-margin-y').pfValue;
+    var lx1 = bb.x1 - th - ox;
+    var lx2 = bb.x2 + th - ox;
+    var ly1 = bb.y1 - th - oy;
+    var ly2 = bb.y2 + th - oy;
+    if (theta) {
+      var cos = Math.cos(theta);
+      var sin = Math.sin(theta);
+      var rotate = function rotate(x, y) {
+        x = x - lx;
+        y = y - ly;
+        return {
+          x: x * cos - y * sin + lx,
+          y: x * sin + y * cos + ly
+        };
+      };
+      return [rotate(lx1, ly1), rotate(lx2, ly1), rotate(lx2, ly2), rotate(lx1, ly2)];
+    } else {
+      return [{
+        x: lx1,
+        y: ly1
+      }, {
+        x: lx2,
+        y: ly1
+      }, {
+        x: lx2,
+        y: ly2
+      }, {
+        x: lx1,
+        y: ly2
+      }];
+    }
+  }
+  function doLinesIntersect(p1, p2, q1, q2) {
+    function ccw(a, b, c) {
+      return (c.y - a.y) * (b.x - a.x) > (b.y - a.y) * (c.x - a.x);
+    }
+    return ccw(p1, q1, q2) !== ccw(p2, q1, q2) && ccw(p1, p2, q1) !== ccw(p1, p2, q2);
+  }
   for (var e = 0; e < eles.length; e++) {
     var ele = eles[e];
     if (ele.isNode()) {
       var node = ele;
+      var textEvents = node.pstyle('text-events').strValue === 'yes';
+      var nodeBoxSelectMode = node.pstyle('box-selection').strValue;
+      var labelBoxSelectEnabled = node.pstyle('box-select-labels').strValue === 'yes';
+      if (nodeBoxSelectMode === 'none') {
+        continue;
+      }
+      var includeLabels = (nodeBoxSelectMode === 'overlap' || labelBoxSelectEnabled) && textEvents;
       var nodeBb = node.boundingBox({
         includeNodes: true,
         includeEdges: false,
-        includeLabels: false
+        includeLabels: includeLabels
       });
-      if (boundingBoxesIntersect(boxBb, nodeBb) && !boundingBoxInBoundingBox(nodeBb, boxBb)) {
-        box.push(node);
+      if (nodeBoxSelectMode === 'contain') {
+        var selected = false;
+        if (labelBoxSelectEnabled && textEvents) {
+          var rotatedLabelBox = getRotatedLabelBox(node);
+          if (rotatedLabelBox && satPolygonIntersection(rotatedLabelBox, selectionBox)) {
+            box.push(node);
+            selected = true;
+          }
+        }
+        if (!selected && boundingBoxInBoundingBox(boxBb, nodeBb)) {
+          box.push(node);
+        }
+      } else if (nodeBoxSelectMode === 'overlap') {
+        if (boundingBoxesIntersect(boxBb, nodeBb)) {
+          var nodeBodyBb = node.boundingBox({
+            includeNodes: true,
+            includeEdges: true,
+            includeLabels: false,
+            includeMainLabels: false,
+            includeSourceLabels: false,
+            includeTargetLabels: false
+          });
+          var nodeBodyCorners = [{
+            x: nodeBodyBb.x1,
+            y: nodeBodyBb.y1
+          }, {
+            x: nodeBodyBb.x2,
+            y: nodeBodyBb.y1
+          }, {
+            x: nodeBodyBb.x2,
+            y: nodeBodyBb.y2
+          }, {
+            x: nodeBodyBb.x1,
+            y: nodeBodyBb.y2
+          }];
+
+          // if node body intersects, no need to check label
+          if (satPolygonIntersection(nodeBodyCorners, selectionBox)) {
+            box.push(node);
+          } else {
+            // only check label if node body didn't intersect
+            var _rotatedLabelBox = getRotatedLabelBox(node);
+            if (_rotatedLabelBox && satPolygonIntersection(_rotatedLabelBox, selectionBox)) {
+              box.push(node);
+            }
+          }
+        }
       }
     } else {
       var edge = ele;
       var _p = edge._private;
       var rs = _p.rscratch;
-      if (rs.startX != null && rs.startY != null && !inBoundingBox(boxBb, rs.startX, rs.startY)) {
+      var edgeBoxSelectMode = edge.pstyle('box-selection').strValue;
+      if (edgeBoxSelectMode === 'none') {
         continue;
       }
-      if (rs.endX != null && rs.endY != null && !inBoundingBox(boxBb, rs.endX, rs.endY)) {
-        continue;
-      }
-      if (rs.edgeType === 'bezier' || rs.edgeType === 'multibezier' || rs.edgeType === 'self' || rs.edgeType === 'compound' || rs.edgeType === 'segments' || rs.edgeType === 'haystack') {
-        var pts = _p.rstyle.bezierPts || _p.rstyle.linePts || _p.rstyle.haystackPts;
-        var allInside = true;
-        for (var i = 0; i < pts.length; i++) {
-          if (!pointInBoundingBox(boxBb, pts[i])) {
-            allInside = false;
-            break;
-          }
+      if (edgeBoxSelectMode === 'contain') {
+        if (rs.startX != null && rs.startY != null && !inBoundingBox(boxBb, rs.startX, rs.startY)) {
+          continue;
         }
-        if (allInside) {
+        if (rs.endX != null && rs.endY != null && !inBoundingBox(boxBb, rs.endX, rs.endY)) {
+          continue;
+        }
+        if (rs.edgeType === 'bezier' || rs.edgeType === 'multibezier' || rs.edgeType === 'self' || rs.edgeType === 'compound' || rs.edgeType === 'segments' || rs.edgeType === 'haystack') {
+          var pts = _p.rstyle.bezierPts || _p.rstyle.linePts || _p.rstyle.haystackPts;
+          var allInside = true;
+          for (var i = 0; i < pts.length; i++) {
+            if (!pointInBoundingBox(boxBb, pts[i])) {
+              allInside = false;
+              break;
+            }
+          }
+          if (allInside) {
+            box.push(edge);
+          }
+        } else if (rs.edgeType === 'straight') {
           box.push(edge);
         }
-      } else if (rs.edgeType === 'haystack' || rs.edgeType === 'straight') {
-        box.push(edge);
+      } else if (edgeBoxSelectMode === 'overlap') {
+        var _selected = false;
+
+        // Check: either endpoint inside box
+        if (rs.startX != null && rs.startY != null && rs.endX != null && rs.endY != null && (inBoundingBox(boxBb, rs.startX, rs.startY) || inBoundingBox(boxBb, rs.endX, rs.endY))) {
+          box.push(edge);
+          _selected = true;
+        }
+
+        // Haystack fallback (only check if not already selected)
+        else if (!_selected && rs.edgeType === 'haystack') {
+          var haystackPts = _p.rstyle.haystackPts;
+          for (var _i = 0; _i < haystackPts.length; _i++) {
+            if (pointInBoundingBox(boxBb, haystackPts[_i])) {
+              box.push(edge);
+              _selected = true;
+              break;
+            }
+          }
+        }
+
+        // Segment intersection check (only if not already selected)
+        if (!_selected) {
+          var _pts = _p.rstyle.bezierPts || _p.rstyle.linePts || _p.rstyle.haystackPts;
+
+          // straight edges
+          if ((!_pts || _pts.length < 2) && rs.edgeType === 'straight') {
+            if (rs.startX != null && rs.startY != null && rs.endX != null && rs.endY != null) {
+              _pts = [{
+                x: rs.startX,
+                y: rs.startY
+              }, {
+                x: rs.endX,
+                y: rs.endY
+              }];
+            }
+          }
+          if (!_pts || _pts.length < 2) continue;
+          for (var _i2 = 0; _i2 < _pts.length - 1; _i2++) {
+            var segStart = _pts[_i2];
+            var segEnd = _pts[_i2 + 1];
+            for (var b = 0; b < boxEdges.length; b++) {
+              var _boxEdges$b = _slicedToArray(boxEdges[b], 2),
+                boxStart = _boxEdges$b[0],
+                boxEnd = _boxEdges$b[1];
+              if (doLinesIntersect(segStart, segEnd, boxStart, boxEnd)) {
+                box.push(edge);
+                _selected = true;
+                break;
+              }
+            }
+            if (_selected) break;
+          }
+        }
       }
     }
   }
@@ -22372,6 +23625,8 @@ function getRoundCorner(previousPoint, currentPoint, nextPoint, radiusMax) {
   };
 }
 
+var AVOID_IMPOSSIBLE_BEZIER_CONSTANT = 0.01;
+var AVOID_IMPOSSIBLE_BEZIER_CONSTANT_L = Math.sqrt(2 * AVOID_IMPOSSIBLE_BEZIER_CONSTANT);
 var BRp$c = {};
 BRp$c.findMidptPtsEtc = function (edge, pairInfo) {
   var posPts = pairInfo.posPts,
@@ -22423,7 +23678,6 @@ BRp$c.findMidptPtsEtc = function (edge, pairInfo) {
           warn("Edge ".concat(edge.id(), " has edge-distances:endpoints specified without manual endpoints specified via source-endpoint and target-endpoint.  Falling back on edge-distances:intersection (default)."));
           midptPts = intersectionPts; // back to default
         }
-
         break;
       }
   }
@@ -22568,8 +23822,8 @@ BRp$c.findCompoundLoopPoints = function (edge, pairInfo, i, edgeIsUnbundled) {
 
   // avoids cases with impossible beziers
   var minCompoundStretch = 0.5;
-  var compoundStretchA = Math.max(minCompoundStretch, Math.log(srcW * 0.01));
-  var compoundStretchB = Math.max(minCompoundStretch, Math.log(tgtW * 0.01));
+  var compoundStretchA = Math.max(minCompoundStretch, Math.log(srcW * AVOID_IMPOSSIBLE_BEZIER_CONSTANT));
+  var compoundStretchB = Math.max(minCompoundStretch, Math.log(tgtW * AVOID_IMPOSSIBLE_BEZIER_CONSTANT));
   rs.ctrlpts = [loopPos.x, loopPos.y - (1 + Math.pow(loopW, 1.12) / 100) * loopDist * (j / 3 + 1) * compoundStretchA, loopPos.x - (1 + Math.pow(loopW, 1.12) / 100) * loopDist * (j / 3 + 1) * compoundStretchB, loopPos.y];
 };
 BRp$c.findStraightEdgePoints = function (edge) {
@@ -22593,7 +23847,7 @@ BRp$c.findBezierPoints = function (edge, pairInfo, i, edgeIsUnbundled, edgeIsSwa
   rs.ctrlpts = [];
   for (var b = 0; b < bezierN; b++) {
     var normctrlptDist = (0.5 - pairInfo.eles.length / 2 + i) * stepSize * (edgeIsSwapped ? -1 : 1);
-    var manctrlptDist = void 0;
+    var manctrlptDist = undefined;
     var sign = signum(normctrlptDist);
     if (multi) {
       ctrlptDist = ctrlptDists ? ctrlptDists.pfValue[b] : stepSize; // fall back on step size
@@ -22940,14 +24194,26 @@ BRp$c.storeAllpts = function (edge) {
           y: rs.segpts[_i + 1]
         };
         var corner = rs.roundCorners[_i / 2];
-        var v = [point.x - corner.cx, point.y - corner.cy];
-        var factor = corner.radius / Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
-        v = v.map(function (c) {
-          return c * factor;
-        });
-        rs.midX = corner.cx + v[0];
-        rs.midY = corner.cy + v[1];
-        rs.midVector = v;
+        if (corner.radius === 0) {
+          // On collinear points
+          var nextPoint = {
+            x: rs.segpts[_i + 2],
+            y: rs.segpts[_i + 3]
+          };
+          rs.midX = point.x;
+          rs.midY = point.y;
+          rs.midVector = [point.y - nextPoint.y, nextPoint.x - point.x];
+        } else {
+          // On rounded points
+          var v = [point.x - corner.cx, point.y - corner.cy];
+          var factor = corner.radius / Math.sqrt(Math.pow(v[0], 2) + Math.pow(v[1], 2));
+          v = v.map(function (c) {
+            return c * factor;
+          });
+          rs.midX = corner.cx + v[0];
+          rs.midY = corner.cy + v[1];
+          rs.midVector = v;
+        }
       }
     }
   }
@@ -22971,24 +24237,9 @@ BRp$c.findEdgeControlPoints = function (edges) {
   var r = this;
   var cy = r.cy;
   var hasCompounds = cy.hasCompoundNodes();
-  var hashTable = {
-    map: new Map$2(),
-    get: function get(pairId) {
-      var map2 = this.map.get(pairId[0]);
-      if (map2 != null) {
-        return map2.get(pairId[1]);
-      } else {
-        return null;
-      }
-    },
-    set: function set(pairId, val) {
-      var map2 = this.map.get(pairId[0]);
-      if (map2 == null) {
-        map2 = new Map$2();
-        this.map.set(pairId[0], map2);
-      }
-      map2.set(pairId[1], val);
-    }
+  var hashTable = new Map$1();
+  var getKey = function getKey(pairId, edgeIsUnbundled) {
+    return [].concat(_toConsumableArray(pairId), [edgeIsUnbundled ? 1 : 0]).join('-');
   };
   var pairIds = [];
   var haystackEdges = [];
@@ -23008,20 +24259,24 @@ BRp$c.findEdgeControlPoints = function (edges) {
       haystackEdges.push(edge);
       continue;
     }
-    var edgeIsUnbundled = curveStyle === 'unbundled-bezier' || curveStyle.endsWith('segments') || curveStyle === 'straight' || curveStyle === 'straight-triangle' || curveStyle.endsWith('taxi');
+    var edgeIsUnbundled = curveStyle === 'unbundled-bezier' || endsWith(curveStyle, 'segments') || curveStyle === 'straight' || curveStyle === 'straight-triangle' || endsWith(curveStyle, 'taxi');
     var edgeIsBezier = curveStyle === 'unbundled-bezier' || curveStyle === 'bezier';
     var src = _p.source;
     var tgt = _p.target;
     var srcIndex = src.poolIndex();
     var tgtIndex = tgt.poolIndex();
     var pairId = [srcIndex, tgtIndex].sort();
-    var tableEntry = hashTable.get(pairId);
+    var key = getKey(pairId, edgeIsUnbundled);
+    var tableEntry = hashTable.get(key);
     if (tableEntry == null) {
       tableEntry = {
         eles: []
       };
-      hashTable.set(pairId, tableEntry);
-      pairIds.push(pairId);
+      pairIds.push({
+        pairId: pairId,
+        edgeIsUnbundled: edgeIsUnbundled
+      });
+      hashTable.set(key, tableEntry);
     }
     tableEntry.eles.push(edge);
     if (edgeIsUnbundled) {
@@ -23034,10 +24289,13 @@ BRp$c.findEdgeControlPoints = function (edges) {
 
   // for each pair (src, tgt), create the ctrl pts
   // Nested for loop is OK; total number of iterations for both loops = edgeCount
-  var _loop = function _loop(p) {
-    var pairId = pairIds[p];
-    var pairInfo = hashTable.get(pairId);
-    var swappedpairInfo = void 0;
+  var _loop = function _loop() {
+    var _pairIds$p = pairIds[p],
+      pairId = _pairIds$p.pairId,
+      edgeIsUnbundled = _pairIds$p.edgeIsUnbundled;
+    var key = getKey(pairId, edgeIsUnbundled);
+    var pairInfo = hashTable.get(key);
+    var swappedpairInfo;
     if (!pairInfo.hasUnbundled) {
       var pllEdges = pairInfo.eles[0].parallelEdges().filter(function (e) {
         return e.isBundledBezier();
@@ -23088,7 +24346,7 @@ BRp$c.findEdgeControlPoints = function (edges) {
       var _edge = pairInfo.eles[_i2];
       var rs = _edge[0]._private.rscratch;
       var _curveStyle = _edge.pstyle('curve-style').value;
-      var _edgeIsUnbundled = _curveStyle === 'unbundled-bezier' || _curveStyle.endsWith('segments') || _curveStyle.endsWith('taxi');
+      var _edgeIsUnbundled = _curveStyle === 'unbundled-bezier' || endsWith(_curveStyle, 'segments') || endsWith(_curveStyle, 'taxi');
 
       // whether the normalised pair order is the reverse of the edge's src-tgt order
       var edgeIsSwapped = !src.same(_edge.source());
@@ -23117,6 +24375,9 @@ BRp$c.findEdgeControlPoints = function (edges) {
         var dy = tgtOutside[1] - srcOutside[1];
         var dx = tgtOutside[0] - srcOutside[0];
         var l = Math.sqrt(dx * dx + dy * dy);
+        if (number$1(l) && l >= AVOID_IMPOSSIBLE_BEZIER_CONSTANT_L) ; else {
+          l = Math.sqrt(Math.max(dx * dx, AVOID_IMPOSSIBLE_BEZIER_CONSTANT) + Math.max(dy * dy, AVOID_IMPOSSIBLE_BEZIER_CONSTANT));
+        }
         var vector = pairInfo.vector = {
           x: dx,
           y: dy
@@ -23141,7 +24402,9 @@ BRp$c.findEdgeControlPoints = function (edges) {
           hasUnbundled: pairInfo.hasUnbundled,
           eles: pairInfo.eles,
           srcPos: tgtPos,
+          srcRs: tgtRs,
           tgtPos: srcPos,
+          tgtRs: srcRs,
           srcW: tgtW,
           srcH: tgtH,
           tgtW: srcW,
@@ -23205,7 +24468,7 @@ BRp$c.findEdgeControlPoints = function (edges) {
     } // for pair edges
   };
   for (var p = 0; p < pairIds.length; p++) {
-    _loop(p);
+    _loop();
   } // for pair ids
 
   // haystacks avoid the expense of pairInfo stuff (intersections etc.)
@@ -23228,17 +24491,17 @@ function getPts(pts) {
 }
 BRp$c.getSegmentPoints = function (edge) {
   var rs = edge[0]._private.rscratch;
+  this.recalculateRenderedStyle(edge);
   var type = rs.edgeType;
   if (type === 'segments') {
-    this.recalculateRenderedStyle(edge);
     return getPts(rs.segpts);
   }
 };
 BRp$c.getControlPoints = function (edge) {
   var rs = edge[0]._private.rscratch;
+  this.recalculateRenderedStyle(edge);
   var type = rs.edgeType;
   if (type === 'bezier' || type === 'multibezier' || type === 'self' || type === 'compound') {
-    this.recalculateRenderedStyle(edge);
     return getPts(rs.ctrlpts);
   }
 };
@@ -23279,6 +24542,7 @@ BRp$b.manualEndptToPx = function (node, prop) {
   }
 };
 BRp$b.findEndpoints = function (edge) {
+  var _ref, _tgtManEndpt$pfValue, _ref2, _srcManEndpt$pfValue;
   var r = this;
   var intersect;
   var source = edge.source()[0];
@@ -23294,7 +24558,7 @@ BRp$b.findEndpoints = function (edge) {
   var curveStyle = edge.pstyle('curve-style').value;
   var rs = edge._private.rscratch;
   var et = rs.edgeType;
-  var taxi = curveStyle === 'taxi';
+  var taxi = endsWith(curveStyle, 'taxi'); // Covers taxi and round-taxi
   var self = et === 'self' || et === 'compound';
   var bezier = et === 'bezier' || et === 'multibezier' || self;
   var multi = et !== 'bezier';
@@ -23316,14 +24580,16 @@ BRp$b.findEndpoints = function (edge) {
   var p1_i; // point to intersect with target shape
   var p2_i; // point to intersect with source shape
 
+  var tgtManEndptPt = (_ref = (tgtManEndpt === null || tgtManEndpt === undefined || (_tgtManEndpt$pfValue = tgtManEndpt.pfValue) === null || _tgtManEndpt$pfValue === undefined ? undefined : _tgtManEndpt$pfValue.length) === 2 ? tgtManEndpt.pfValue : null) !== null && _ref !== undefined ? _ref : [0, 0];
+  var srcManEndptPt = (_ref2 = (srcManEndpt === null || srcManEndpt === undefined || (_srcManEndpt$pfValue = srcManEndpt.pfValue) === null || _srcManEndpt$pfValue === undefined ? undefined : _srcManEndpt$pfValue.length) === 2 ? srcManEndpt.pfValue : null) !== null && _ref2 !== undefined ? _ref2 : [0, 0];
   if (bezier) {
     var cpStart = [rs.ctrlpts[0], rs.ctrlpts[1]];
     var cpEnd = multi ? [rs.ctrlpts[rs.ctrlpts.length - 2], rs.ctrlpts[rs.ctrlpts.length - 1]] : cpStart;
     p1 = cpEnd;
     p2 = cpStart;
   } else if (lines) {
-    var srcArrowFromPt = !segments ? [tgtPos.x, tgtPos.y] : rs.segpts.slice(0, 2);
-    var tgtArrowFromPt = !segments ? [srcPos.x, srcPos.y] : rs.segpts.slice(rs.segpts.length - 2);
+    var srcArrowFromPt = !segments ? [tgtPos.x + tgtManEndptPt[0], tgtPos.y + tgtManEndptPt[1]] : rs.segpts.slice(0, 2);
+    var tgtArrowFromPt = !segments ? [srcPos.x + srcManEndptPt[0], srcPos.y + srcManEndptPt[1]] : rs.segpts.slice(rs.segpts.length - 2);
     p1 = tgtArrowFromPt;
     p2 = srcArrowFromPt;
   }
@@ -23543,8 +24809,6 @@ BRp$a.recalculateEdgeProjections = function (edges) {
   this.findEdgeControlPoints(edges);
 };
 
-/* global document */
-
 var BRp$9 = {};
 BRp$9.recalculateNodeLabelProjection = function (node) {
   var content = node.pstyle('label').strValue;
@@ -23637,9 +24901,9 @@ BRp$9.recalculateEdgeLabelProjections = function (edge) {
   setRs('labelY', null, p.y);
   var midAngle = lineAngleFromDelta(rs.midDispX, rs.midDispY);
   setRs('labelAutoAngle', null, midAngle);
-  var createControlPointInfo = function createControlPointInfo() {
-    if (createControlPointInfo.cache) {
-      return createControlPointInfo.cache;
+  var _createControlPointInfo = function createControlPointInfo() {
+    if (_createControlPointInfo.cache) {
+      return _createControlPointInfo.cache;
     } // use cache so only 1x per edge
 
     var ctrlpts = [];
@@ -23698,8 +24962,7 @@ BRp$9.recalculateEdgeLabelProjections = function (edge) {
       }
       addSegment(cp, bpts[_i * nProjs + nProjs - 1], cp.p2, r.bezierProjPcts[nProjs - 1], 1); // last
     }
-
-    return createControlPointInfo.cache = ctrlpts;
+    return _createControlPointInfo.cache = ctrlpts;
   };
   var calculateEndProjection = function calculateEndProjection(prefix) {
     var angle;
@@ -23714,7 +24977,7 @@ BRp$9.recalculateEdgeLabelProjections = function (edge) {
       case 'bezier':
       case 'multibezier':
         {
-          var cps = createControlPointInfo();
+          var cps = _createControlPointInfo();
           var selected;
           var startDist = 0;
           var totalDist = 0;
@@ -23811,6 +25074,15 @@ BRp$9.applyLabelDimensions = function (ele) {
 BRp$9.applyPrefixedLabelDimensions = function (ele, prefix) {
   var _p = ele._private;
   var text = this.getLabelText(ele, prefix);
+  var cacheKey = hashString(text, ele._private.labelDimsKey);
+
+  // save recalc if the label is the same as before
+  if (getPrefixedProperty(_p.rscratch, 'prefixedLabelDimsKey', prefix) === cacheKey) {
+    return; // then the label dimensions + text are the same
+  }
+
+  // save the key
+  setPrefixedProperty(_p.rscratch, 'prefixedLabelDimsKey', prefix, cacheKey);
   var labelDims = this.calculateLabelDimensions(ele, text);
   var lineHeight = ele.pstyle('line-height').pfValue;
   var textWrap = ele.pstyle('text-wrap').strValue;
@@ -23863,8 +25135,8 @@ BRp$9.getLabelText = function (ele, prefix) {
     var overflow = ele.pstyle('text-overflow-wrap').value;
     var overflowAny = overflow === 'anywhere';
     var wrappedLines = [];
-    var wordsRegex = /[\s\u200b]+/;
-    var wordSeparator = overflowAny ? '' : ' ';
+    var separatorRegex = /[\s\u200b]+|$/g; // Include end of string to add last word
+
     for (var l = 0; l < lines.length; l++) {
       var line = lines[l];
       var lineDims = this.calculateLabelDimensions(ele, line);
@@ -23875,26 +25147,39 @@ BRp$9.getLabelText = function (ele, prefix) {
       }
       if (lineW > maxW) {
         // line is too long
-        var words = line.split(wordsRegex);
+        var separatorMatches = line.matchAll(separatorRegex);
         var subline = '';
-        for (var w = 0; w < words.length; w++) {
-          var word = words[w];
-          var testLine = subline.length === 0 ? word : subline + wordSeparator + word;
-          var testDims = this.calculateLabelDimensions(ele, testLine);
-          var testW = testDims.width;
-          if (testW <= maxW) {
-            // word fits on current line
-            subline += word + wordSeparator;
-          } else {
-            // word starts new line
-            if (subline) {
-              wrappedLines.push(subline);
+        var previousIndex = 0;
+        // Add fake match
+        var _iterator = _createForOfIteratorHelper(separatorMatches),
+          _step;
+        try {
+          for (_iterator.s(); !(_step = _iterator.n()).done;) {
+            var separatorMatch = _step.value;
+            var wordSeparator = separatorMatch[0];
+            var word = line.substring(previousIndex, separatorMatch.index);
+            previousIndex = separatorMatch.index + wordSeparator.length;
+            var testLine = subline.length === 0 ? word : subline + word + wordSeparator;
+            var testDims = this.calculateLabelDimensions(ele, testLine);
+            var testW = testDims.width;
+            if (testW <= maxW) {
+              // word fits on current line
+              subline += word + wordSeparator;
+            } else {
+              // word starts new line
+              if (subline) {
+                wrappedLines.push(subline);
+              }
+              subline = word + wordSeparator;
             }
-            subline = word + wordSeparator;
           }
-        }
 
-        // if there's remaining text, put it in a wrapped line
+          // if there's remaining text, put it in a wrapped line
+        } catch (err) {
+          _iterator.e(err);
+        } finally {
+          _iterator.f();
+        }
         if (!subline.match(/^[\s\u200b]+$/)) {
           wrappedLines.push(subline);
         }
@@ -23956,12 +25241,8 @@ BRp$9.getLabelJustification = function (ele) {
 };
 BRp$9.calculateLabelDimensions = function (ele, text) {
   var r = this;
-  var cacheKey = hashString(text, ele._private.labelDimsKey);
-  var cache = r.labelDimCache || (r.labelDimCache = []);
-  var existingVal = cache[cacheKey];
-  if (existingVal != null) {
-    return existingVal;
-  }
+  var containerWindow = r.cy.window();
+  var document = containerWindow.document;
   var padding = 0; // add padding around text dims, as the measurement isn't that accurate
   var fStyle = ele.pstyle('font-style').strValue;
   var size = ele.pstyle('font-size').pfValue;
@@ -23994,7 +25275,7 @@ BRp$9.calculateLabelDimensions = function (ele, text) {
   }
   width += padding;
   height += padding;
-  return cache[cacheKey] = {
+  return {
     width: width,
     height: height
   };
@@ -24118,6 +25399,9 @@ BRp$7.recalculateRenderedStyle = function (eles, useCache) {
   var isCleanConnected = function isCleanConnected(ele) {
     return ele._private.rstyle.cleanConnected;
   };
+  if (eles.length === 0) {
+    return;
+  }
   var edges = [];
   var nodes = [];
 
@@ -24139,6 +25423,13 @@ BRp$7.recalculateRenderedStyle = function (eles, useCache) {
     // (and a request for recalc may come in between frames)
     if (ele.isEdge() && (!isCleanConnected(ele.source()) || !isCleanConnected(ele.target()))) {
       rstyle.clean = false;
+    }
+    if (ele.isEdge() && ele.isBundledBezier()) {
+      if (ele.parallelEdges().some(function (ele) {
+        return !ele._private.rstyle.clean && ele.isBundledBezier();
+      })) {
+        rstyle.clean = false;
+      }
     }
 
     // only update if dirty and in graph
@@ -24272,7 +25563,6 @@ BRp$4.getCachedImage = function (url, crossOrigin, onLoad) {
       crossOrigin = crossOrigin === 'null' ? null : crossOrigin;
       image.crossOrigin = crossOrigin; // prevent tainted canvas
     }
-
     image.src = url;
     return image;
   }
@@ -24280,11 +25570,23 @@ BRp$4.getCachedImage = function (url, crossOrigin, onLoad) {
 
 var BRp$3 = {};
 
-/* global document, window, ResizeObserver, MutationObserver */
+/* global document, ResizeObserver, MutationObserver */
 
 BRp$3.registerBinding = function (target, event, handler, useCapture) {
   // eslint-disable-line no-unused-vars
   var args = Array.prototype.slice.apply(arguments, [1]); // copy
+
+  if (Array.isArray(target)) {
+    var res = [];
+    for (var i = 0; i < target.length; i++) {
+      var t = target[i];
+      if (t !== undefined) {
+        var b = this.binder(t);
+        res.push(b.on.apply(b, args));
+      }
+    }
+    return res;
+  }
   var b = this.binder(target);
   return b.on.apply(b, args);
 };
@@ -24344,6 +25646,13 @@ BRp$3.load = function () {
   var isSelected = function isSelected(ele) {
     return ele.selected();
   };
+  var getShadowRoot = function getShadowRoot(element) {
+    var rootNode = element.getRootNode();
+    // Check if the root node is a shadow root
+    if (rootNode && rootNode.nodeType === 11 && rootNode.host !== undefined) {
+      return rootNode;
+    }
+  };
   var triggerEvents = function triggerEvents(target, names, e, position) {
     if (target == null) {
       target = r.cy;
@@ -24360,7 +25669,6 @@ BRp$3.load = function () {
   var isMultSelKeyDown = function isMultSelKeyDown(e) {
     return e.shiftKey || e.metaKey || e.ctrlKey; // maybe e.altKey
   };
-
   var allowPanningPassthrough = function allowPanningPassthrough(down, downs) {
     var allowPassthrough = true;
     if (r.cy.hasCompoundNodes() && down && down.pannable()) {
@@ -24531,7 +25839,7 @@ BRp$3.load = function () {
       r.destroy();
     });
   }
-  var onResize = debounce_1(function () {
+  var onResize = debounce(function () {
     r.cy.resize();
   }, 100);
   if (haveMutationsApi) {
@@ -24614,6 +25922,11 @@ BRp$3.load = function () {
     if (!eventInContainer(e)) {
       return;
     }
+
+    // during left mouse button gestures, ignore other buttons
+    if (r.hoverData.which === 1 && e.which !== 1) {
+      return;
+    }
     e.preventDefault();
     blurActiveDomElement();
     r.hoverData.capture = true;
@@ -24627,6 +25940,16 @@ BRp$3.load = function () {
     var draggedElements = r.dragData.possibleDragElements;
     r.hoverData.mdownPos = pos;
     r.hoverData.mdownGPos = gpos;
+    var makeEvent = function makeEvent(type) {
+      return {
+        originalEvent: e,
+        type: type,
+        position: {
+          x: pos[0],
+          y: pos[1]
+        }
+      };
+    };
     var checkForTaphold = function checkForTaphold() {
       r.hoverData.tapholdCancelled = false;
       clearTimeout(r.hoverData.tapholdTimeout);
@@ -24636,23 +25959,9 @@ BRp$3.load = function () {
         } else {
           var ele = r.hoverData.down;
           if (ele) {
-            ele.emit({
-              originalEvent: e,
-              type: 'taphold',
-              position: {
-                x: pos[0],
-                y: pos[1]
-              }
-            });
+            ele.emit(makeEvent('taphold'));
           } else {
-            cy.emit({
-              originalEvent: e,
-              type: 'taphold',
-              position: {
-                x: pos[0],
-                y: pos[1]
-              }
-            });
+            cy.emit(makeEvent('taphold'));
           }
         }
       }, r.tapholdDuration);
@@ -24690,16 +25999,6 @@ BRp$3.load = function () {
         // If something is under the cursor and it is draggable, prepare to grab it
         if (near != null) {
           if (r.nodeIsGrabbable(near)) {
-            var makeEvent = function makeEvent(type) {
-              return {
-                originalEvent: e,
-                type: type,
-                position: {
-                  x: pos[0],
-                  y: pos[1]
-                }
-              };
-            };
             var triggerGrab = function triggerGrab(ele) {
               ele.emit(makeEvent('grab'));
             };
@@ -24744,7 +26043,6 @@ BRp$3.load = function () {
       } else if (near.pannable()) {
         select[4] = 1; // for future pan
       }
-
       checkForTaphold();
     }
 
@@ -24752,7 +26050,8 @@ BRp$3.load = function () {
     select[0] = select[2] = pos[0];
     select[1] = select[3] = pos[1];
   }, false);
-  r.registerBinding(containerWindow, 'mousemove', function mousemoveHandler(e) {
+  var shadowRoot = getShadowRoot(r.container);
+  r.registerBinding([containerWindow, shadowRoot], 'mousemove', function mousemoveHandler(e) {
     // eslint-disable-line no-undef
     var capture = r.hoverData.capture;
     if (!capture && !eventInContainer(e)) {
@@ -24802,17 +26101,20 @@ BRp$3.load = function () {
       x: pos[0],
       y: pos[1]
     });
+    var makeEvent = function makeEvent(type) {
+      return {
+        originalEvent: e,
+        type: type,
+        position: {
+          x: pos[0],
+          y: pos[1]
+        }
+      };
+    };
     var goIntoBoxMode = function goIntoBoxMode() {
       r.data.bgActivePosistion = undefined;
       if (!r.hoverData.selecting) {
-        cy.emit({
-          originalEvent: e,
-          type: 'boxstart',
-          position: {
-            x: pos[0],
-            y: pos[1]
-          }
-        });
+        cy.emit(makeEvent('boxstart'));
       }
       select[4] = 1;
       r.hoverData.selecting = true;
@@ -24824,14 +26126,7 @@ BRp$3.load = function () {
     if (r.hoverData.which === 3) {
       // but only if over threshold
       if (isOverThresholdDrag) {
-        var cxtEvt = {
-          originalEvent: e,
-          type: 'cxtdrag',
-          position: {
-            x: pos[0],
-            y: pos[1]
-          }
-        };
+        var cxtEvt = makeEvent('cxtdrag');
         if (down) {
           down.emit(cxtEvt);
         } else {
@@ -24840,25 +26135,11 @@ BRp$3.load = function () {
         r.hoverData.cxtDragged = true;
         if (!r.hoverData.cxtOver || near !== r.hoverData.cxtOver) {
           if (r.hoverData.cxtOver) {
-            r.hoverData.cxtOver.emit({
-              originalEvent: e,
-              type: 'cxtdragout',
-              position: {
-                x: pos[0],
-                y: pos[1]
-              }
-            });
+            r.hoverData.cxtOver.emit(makeEvent('cxtdragout'));
           }
           r.hoverData.cxtOver = near;
           if (near) {
-            near.emit({
-              originalEvent: e,
-              type: 'cxtdragover',
-              position: {
-                x: pos[0],
-                y: pos[1]
-              }
-            });
+            near.emit(makeEvent('cxtdragover'));
           }
         }
       }
@@ -24882,7 +26163,7 @@ BRp$3.load = function () {
           };
         }
         cy.panBy(deltaP);
-        cy.emit('dragpan');
+        cy.emit(makeEvent('dragpan'));
         r.hoverData.dragged = true;
       }
 
@@ -24936,11 +26217,11 @@ BRp$3.load = function () {
             // then selection overrides
             if (down && down.grabbed()) {
               freeDraggedElements(draggedElements);
-              down.emit('freeon');
-              draggedElements.emit('free');
+              down.emit(makeEvent('freeon'));
+              draggedElements.emit(makeEvent('free'));
               if (r.dragData.didDrag) {
-                down.emit('dragfreeon');
-                draggedElements.emit('dragfree');
+                down.emit(makeEvent('dragfreeon'));
+                draggedElements.emit(makeEvent('dragfree'));
               }
             }
             goIntoBoxMode();
@@ -24974,7 +26255,7 @@ BRp$3.load = function () {
               }
             }
             r.hoverData.draggingEles = true;
-            draggedElements.silentShift(totalShift).emit('position drag');
+            draggedElements.silentShift(totalShift).emit(makeEvent('position')).emit(makeEvent('drag'));
             r.redrawHint('drag', true);
             r.redraw();
           }
@@ -24998,6 +26279,10 @@ BRp$3.load = function () {
   var clickTimeout, didDoubleClick, prevClickTimeStamp;
   r.registerBinding(containerWindow, 'mouseup', function mouseupHandler(e) {
     // eslint-disable-line no-undef
+    // during left mouse button gestures, ignore other buttons
+    if (r.hoverData.which === 1 && e.which !== 1 && r.hoverData.capture) {
+      return;
+    }
     var capture = r.hoverData.capture;
     if (!capture) {
       return;
@@ -25020,29 +26305,25 @@ BRp$3.load = function () {
     if (down) {
       down.unactivate();
     }
-    if (r.hoverData.which === 3) {
-      var cxtEvt = {
+    var makeEvent = function makeEvent(type) {
+      return {
         originalEvent: e,
-        type: 'cxttapend',
+        type: type,
         position: {
           x: pos[0],
           y: pos[1]
         }
       };
+    };
+    if (r.hoverData.which === 3) {
+      var cxtEvt = makeEvent('cxttapend');
       if (down) {
         down.emit(cxtEvt);
       } else {
         cy.emit(cxtEvt);
       }
       if (!r.hoverData.cxtDragged) {
-        var cxtTap = {
-          originalEvent: e,
-          type: 'cxttap',
-          position: {
-            x: pos[0],
-            y: pos[1]
-          }
-        };
+        var cxtTap = makeEvent('cxttap');
         if (down) {
           down.emit(cxtTap);
         } else {
@@ -25126,24 +26407,17 @@ BRp$3.load = function () {
         if (box.length > 0) {
           r.redrawHint('eles', true);
         }
-        cy.emit({
-          type: 'boxend',
-          originalEvent: e,
-          position: {
-            x: pos[0],
-            y: pos[1]
-          }
-        });
+        cy.emit(makeEvent('boxend'));
         var eleWouldBeSelected = function eleWouldBeSelected(ele) {
           return ele.selectable() && !ele.selected();
         };
         if (cy.selectionType() === 'additive') {
-          box.emit('box').stdFilter(eleWouldBeSelected).select().emit('boxselect');
+          box.emit(makeEvent('box')).stdFilter(eleWouldBeSelected).select().emit(makeEvent('boxselect'));
         } else {
           if (!multSelKeyDown) {
             cy.$(isSelected).unmerge(box).unselect();
           }
-          box.emit('box').stdFilter(eleWouldBeSelected).select().emit('boxselect');
+          box.emit(makeEvent('box')).stdFilter(eleWouldBeSelected).select().emit(makeEvent('boxselect'));
         }
 
         // always need redraw in case eles unselectable
@@ -25163,11 +26437,11 @@ BRp$3.load = function () {
         var downWasGrabbed = down && down.grabbed();
         freeDraggedElements(draggedElements);
         if (downWasGrabbed) {
-          down.emit('freeon');
-          draggedElements.emit('free');
+          down.emit(makeEvent('freeon'));
+          draggedElements.emit(makeEvent('free'));
           if (r.dragData.didDrag) {
-            down.emit('dragfreeon');
-            draggedElements.emit('dragfree');
+            down.emit(makeEvent('dragfreeon'));
+            draggedElements.emit(makeEvent('dragfree'));
           }
         }
       }
@@ -25184,8 +26458,74 @@ BRp$3.load = function () {
     r.hoverData.dragDelta = [];
     r.hoverData.mdownPos = null;
     r.hoverData.mdownGPos = null;
+    r.hoverData.which = null;
   }, false);
+  var wheelDeltas = []; // log of first N wheel deltas
+  var wheelDeltaN = 4; // how many events to log
+  var inaccurateScrollDevice;
+  var inaccurateScrollFactor = 100000; // base of inaccurate wheel deltas (e.g. base 5 could yield wheels of 10, 25, 50, etc.)
+
+  var allAreDivisibleBy = function allAreDivisibleBy(list, factor) {
+    for (var i = 0; i < list.length; i++) {
+      if (list[i] % factor !== 0) {
+        return false;
+      }
+    }
+    return true;
+  };
+  var allAreSameMagnitude = function allAreSameMagnitude(list) {
+    var firstMag = Math.abs(list[0]);
+    for (var i = 1; i < list.length; i++) {
+      if (Math.abs(list[i]) !== firstMag) {
+        return false;
+      }
+    }
+    return true;
+  };
   var wheelHandler = function wheelHandler(e) {
+    var clamp = false;
+    var delta = e.deltaY;
+    if (delta == null) {
+      // compatibility with old browsers
+      if (e.wheelDeltaY != null) {
+        delta = e.wheelDeltaY / 4;
+      } else if (e.wheelDelta != null) {
+        delta = e.wheelDelta / 4;
+      }
+    }
+    if (delta === 0) {
+      return; // no change in zoom (Bug: Zoom becomes erratic on rapid scroll due to deltaY: 0 event #3394)
+    }
+    if (inaccurateScrollDevice == null) {
+      if (wheelDeltas.length >= wheelDeltaN) {
+        // use log to determine if inaccurate
+        var wds = wheelDeltas;
+        inaccurateScrollDevice = allAreDivisibleBy(wds, 5);
+        if (!inaccurateScrollDevice) {
+          // check for all large values of exact same magnitude
+          var firstMag = Math.abs(wds[0]);
+          inaccurateScrollDevice = allAreSameMagnitude(wds) && firstMag > 5;
+        }
+        if (inaccurateScrollDevice) {
+          for (var i = 0; i < wds.length; i++) {
+            inaccurateScrollFactor = Math.min(Math.abs(wds[i]), inaccurateScrollFactor);
+          }
+        }
+
+        // console.log('Sampled wheel deltas:', wds);
+        // console.log('inaccurateScrollDevice:', inaccurateScrollDevice);
+        // console.log('inaccurateScrollFactor:', inaccurateScrollFactor);
+      } else {
+        // clamp and log until we reach N
+        wheelDeltas.push(delta);
+        clamp = true;
+        // console.log('Clamping initial wheel events until we get a good sample');
+      }
+    } else if (inaccurateScrollDevice) {
+      // keep updating
+      inaccurateScrollFactor = Math.min(Math.abs(delta), inaccurateScrollFactor);
+      // console.log('Keep updating inaccurateScrollFactor beyond sample in case we did not get the smallest possible val:', inaccurateScrollFactor);
+    }
     if (r.scrollingPage) {
       return;
     } // while scrolling, ignore wheel-to-zoom
@@ -25210,14 +26550,18 @@ BRp$3.load = function () {
         r.redraw();
       }, 150);
       var diff;
-      if (e.deltaY != null) {
-        diff = e.deltaY / -250;
-      } else if (e.wheelDeltaY != null) {
-        diff = e.wheelDeltaY / 1000;
-      } else {
-        diff = e.wheelDelta / 1000;
+      if (clamp && Math.abs(delta) > 5) {
+        delta = signum(delta) * 5;
+      }
+      diff = delta / -250;
+      if (inaccurateScrollDevice) {
+        diff /= inaccurateScrollFactor;
+        diff *= 3;
       }
       diff = diff * r.wheelSensitivity;
+
+      // console.log(`delta = ${delta}, diff = ${diff}, mode = ${e.deltaMode}`)
+
       var needsWheelFix = e.deltaMode === 1;
       if (needsWheelFix) {
         // fixes slow wheel events on ff/linux and ff/windows
@@ -25234,7 +26578,14 @@ BRp$3.load = function () {
           y: rpos[1]
         }
       });
-      cy.emit(e.type === 'gesturechange' ? 'pinchzoom' : 'scrollzoom');
+      cy.emit({
+        type: e.type === 'gesturechange' ? 'pinchzoom' : 'scrollzoom',
+        originalEvent: e,
+        position: {
+          x: pos[0],
+          y: pos[1]
+        }
+      });
     }
   };
 
@@ -25334,6 +26685,16 @@ BRp$3.load = function () {
       now[4] = pos[0];
       now[5] = pos[1];
     }
+    var makeEvent = function makeEvent(type) {
+      return {
+        originalEvent: e,
+        type: type,
+        position: {
+          x: now[0],
+          y: now[1]
+        }
+      };
+    };
 
     // record starting points for pinch-to-zoom
     if (e.touches[1]) {
@@ -25363,34 +26724,13 @@ BRp$3.load = function () {
         var near1 = r.findNearestElement(now[0], now[1], true, true);
         var near2 = r.findNearestElement(now[2], now[3], true, true);
         if (near1 && near1.isNode()) {
-          near1.activate().emit({
-            originalEvent: e,
-            type: 'cxttapstart',
-            position: {
-              x: now[0],
-              y: now[1]
-            }
-          });
+          near1.activate().emit(makeEvent('cxttapstart'));
           r.touchData.start = near1;
         } else if (near2 && near2.isNode()) {
-          near2.activate().emit({
-            originalEvent: e,
-            type: 'cxttapstart',
-            position: {
-              x: now[0],
-              y: now[1]
-            }
-          });
+          near2.activate().emit(makeEvent('cxttapstart'));
           r.touchData.start = near2;
         } else {
-          cy.emit({
-            originalEvent: e,
-            type: 'cxttapstart',
-            position: {
-              x: now[0],
-              y: now[1]
-            }
-          });
+          cy.emit(makeEvent('cxttapstart'));
         }
         if (r.touchData.start) {
           r.touchData.start._private.grabbed = false;
@@ -25436,16 +26776,6 @@ BRp$3.load = function () {
             });
           }
           setGrabTarget(near);
-          var makeEvent = function makeEvent(type) {
-            return {
-              originalEvent: e,
-              type: type,
-              position: {
-                x: now[0],
-                y: now[1]
-              }
-            };
-          };
           near.emit(makeEvent('grabon'));
           if (selectedNodes) {
             selectedNodes.forEach(function (n) {
@@ -25496,7 +26826,7 @@ BRp$3.load = function () {
     }
   }, false);
   var touchmoveHandler;
-  r.registerBinding(window, 'touchmove', touchmoveHandler = function touchmoveHandler(e) {
+  r.registerBinding(containerWindow, 'touchmove', touchmoveHandler = function touchmoveHandler(e) {
     // eslint-disable-line no-undef
     var capture = r.touchData.capture;
     if (!capture && !eventInContainer(e)) {
@@ -25522,6 +26852,16 @@ BRp$3.load = function () {
       now[4] = pos[0];
       now[5] = pos[1];
     }
+    var makeEvent = function makeEvent(type) {
+      return {
+        originalEvent: e,
+        type: type,
+        position: {
+          x: now[0],
+          y: now[1]
+        }
+      };
+    };
     var startGPos = r.touchData.startGPosition;
     var isOverThresholdDrag;
     if (capture && e.touches[0] && startGPos) {
@@ -25557,14 +26897,7 @@ BRp$3.load = function () {
         r.touchData.cxt = false;
         r.data.bgActivePosistion = undefined;
         r.redrawHint('select', true);
-        var cxtEvt = {
-          originalEvent: e,
-          type: 'cxttapend',
-          position: {
-            x: now[0],
-            y: now[1]
-          }
-        };
+        var cxtEvt = makeEvent('cxttapend');
         if (r.touchData.start) {
           r.touchData.start.unactivate().emit(cxtEvt);
           r.touchData.start = null;
@@ -25576,14 +26909,7 @@ BRp$3.load = function () {
 
     // context swipe
     if (capture && r.touchData.cxt) {
-      var cxtEvt = {
-        originalEvent: e,
-        type: 'cxtdrag',
-        position: {
-          x: now[0],
-          y: now[1]
-        }
-      };
+      var cxtEvt = makeEvent('cxtdrag');
       r.data.bgActivePosistion = undefined;
       r.redrawHint('select', true);
       if (r.touchData.start) {
@@ -25598,25 +26924,11 @@ BRp$3.load = function () {
       var near = r.findNearestElement(now[0], now[1], true, true);
       if (!r.touchData.cxtOver || near !== r.touchData.cxtOver) {
         if (r.touchData.cxtOver) {
-          r.touchData.cxtOver.emit({
-            originalEvent: e,
-            type: 'cxtdragout',
-            position: {
-              x: now[0],
-              y: now[1]
-            }
-          });
+          r.touchData.cxtOver.emit(makeEvent('cxtdragout'));
         }
         r.touchData.cxtOver = near;
         if (near) {
-          near.emit({
-            originalEvent: e,
-            type: 'cxtdragover',
-            position: {
-              x: now[0],
-              y: now[1]
-            }
-          });
+          near.emit(makeEvent('cxtdragover'));
         }
       }
 
@@ -25626,14 +26938,7 @@ BRp$3.load = function () {
       r.data.bgActivePosistion = undefined;
       this.lastThreeTouch = +new Date();
       if (!r.touchData.selecting) {
-        cy.emit({
-          originalEvent: e,
-          type: 'boxstart',
-          position: {
-            x: now[0],
-            y: now[1]
-          }
-        });
+        cy.emit(makeEvent('boxstart'));
       }
       r.touchData.selecting = true;
       r.touchData.didSelect = true;
@@ -25710,11 +27015,11 @@ BRp$3.load = function () {
           freeDraggedElements(draggedEles);
           r.redrawHint('drag', true);
           r.redrawHint('eles', true);
-          _start.unactivate().emit('freeon');
-          draggedEles.emit('free');
+          _start.unactivate().emit(makeEvent('freeon'));
+          draggedEles.emit(makeEvent('free'));
           if (r.dragData.didDrag) {
-            _start.emit('dragfreeon');
-            draggedEles.emit('dragfree');
+            _start.emit(makeEvent('dragfreeon'));
+            draggedEles.emit(makeEvent('dragfree'));
           }
         }
         cy.viewport({
@@ -25722,7 +27027,7 @@ BRp$3.load = function () {
           pan: pan2,
           cancelOnFailedZoom: true
         });
-        cy.emit('pinchzoom');
+        cy.emit(makeEvent('pinchzoom'));
         distance1 = distance2;
         f1x1 = f1x2;
         f1y1 = f1y2;
@@ -25788,7 +27093,7 @@ BRp$3.load = function () {
             }
           }
           r.hoverData.draggingEles = true;
-          draggedEles.silentShift(totalShift).emit('position drag');
+          draggedEles.silentShift(totalShift).emit(makeEvent('position')).emit(makeEvent('drag'));
           r.redrawHint('drag', true);
           if (r.touchData.startPosition[0] == earlier[0] && r.touchData.startPosition[1] == earlier[1]) {
             r.redrawHint('eles', true);
@@ -25815,24 +27120,10 @@ BRp$3.load = function () {
         });
         if ((!start || !start.grabbed()) && near != last) {
           if (last) {
-            last.emit({
-              originalEvent: e,
-              type: 'tapdragout',
-              position: {
-                x: now[0],
-                y: now[1]
-              }
-            });
+            last.emit(makeEvent('tapdragout'));
           }
           if (near) {
-            near.emit({
-              originalEvent: e,
-              type: 'tapdragover',
-              position: {
-                x: now[0],
-                y: now[1]
-              }
-            });
+            near.emit(makeEvent('tapdragover'));
           }
         }
         r.touchData.last = near;
@@ -25860,14 +27151,14 @@ BRp$3.load = function () {
               x: disp[0] * zoom,
               y: disp[1] * zoom
             });
-            cy.emit('dragpan');
+            cy.emit(makeEvent('dragpan'));
           } else if (isOverThresholdDrag) {
             r.swipePanning = true;
             cy.panBy({
               x: dx * zoom,
               y: dy * zoom
             });
-            cy.emit('dragpan');
+            cy.emit(makeEvent('dragpan'));
             if (start) {
               start.unactivate();
               r.redrawHint('select', true);
@@ -25937,33 +27228,29 @@ BRp$3.load = function () {
       now[4] = pos[0];
       now[5] = pos[1];
     }
-    if (start) {
-      start.unactivate();
-    }
-    var ctxTapend;
-    if (r.touchData.cxt) {
-      ctxTapend = {
+    var makeEvent = function makeEvent(type) {
+      return {
         originalEvent: e,
-        type: 'cxttapend',
+        type: type,
         position: {
           x: now[0],
           y: now[1]
         }
       };
+    };
+    if (start) {
+      start.unactivate();
+    }
+    var ctxTapend;
+    if (r.touchData.cxt) {
+      ctxTapend = makeEvent('cxttapend');
       if (start) {
         start.emit(ctxTapend);
       } else {
         cy.emit(ctxTapend);
       }
       if (!r.touchData.cxtDragged) {
-        var ctxTap = {
-          originalEvent: e,
-          type: 'cxttap',
-          position: {
-            x: now[0],
-            y: now[1]
-          }
-        };
+        var ctxTap = makeEvent('cxttap');
         if (start) {
           start.emit(ctxTap);
         } else {
@@ -25989,18 +27276,11 @@ BRp$3.load = function () {
       select[3] = undefined;
       select[4] = 0;
       r.redrawHint('select', true);
-      cy.emit({
-        type: 'boxend',
-        originalEvent: e,
-        position: {
-          x: now[0],
-          y: now[1]
-        }
-      });
+      cy.emit(makeEvent('boxend'));
       var eleWouldBeSelected = function eleWouldBeSelected(ele) {
         return ele.selectable() && !ele.selected();
       };
-      box.emit('box').stdFilter(eleWouldBeSelected).select().emit('boxselect');
+      box.emit(makeEvent('box')).stdFilter(eleWouldBeSelected).select().emit(makeEvent('boxselect'));
       if (box.nonempty()) {
         r.redrawHint('eles', true);
       }
@@ -26022,11 +27302,11 @@ BRp$3.load = function () {
         r.redrawHint('drag', true);
         r.redrawHint('eles', true);
         if (startWasGrabbed) {
-          start.emit('freeon');
-          draggedEles.emit('free');
+          start.emit(makeEvent('freeon'));
+          draggedEles.emit(makeEvent('free'));
           if (r.dragData.didDrag) {
-            start.emit('dragfreeon');
-            draggedEles.emit('dragfree');
+            start.emit(makeEvent('dragfreeon'));
+            draggedEles.emit(makeEvent('dragfree'));
           }
         }
         triggerEvents(start, ['touchend', 'tapend', 'vmouseup', 'tapdragout'], e, {
@@ -26227,6 +27507,10 @@ BRp$2.generatePolygon = function (name, points) {
     },
     checkPoint: function checkPoint(x, y, padding, width, height, centerX, centerY, cornerRadius) {
       return pointInsidePolygon(x, y, this.points, centerX, centerY, width, height, [0, -1], padding);
+    },
+    hasMiterBounds: name !== 'rectangle',
+    miterBounds: function miterBounds(centerX, centerY, width, height, strokeWidth, strokePosition) {
+      return miterBox(this.points, centerX, centerY, width, height, strokeWidth);
     }
   };
 };
@@ -26707,7 +27991,7 @@ BRp$1.startRenderLoop = function () {
   } else {
     r.renderLoopStarted = true;
   }
-  var renderFn = function renderFn(requestTime) {
+  var _renderFn = function renderFn(requestTime) {
     if (r.destroyed) {
       return;
     }
@@ -26737,9 +28021,9 @@ BRp$1.startRenderLoop = function () {
       beforeRenderCallbacks(r, false, requestTime);
     }
     r.skipFrame = false;
-    requestAnimationFrame(renderFn);
+    requestAnimationFrame(_renderFn);
   };
-  requestAnimationFrame(renderFn);
+  requestAnimationFrame(_renderFn);
 };
 
 var BaseRenderer = function BaseRenderer(options) {
@@ -26771,7 +28055,6 @@ BRp.init = function (options) {
       stylesheet.textContent = '.' + className + ' { position: relative; }';
       head.insertBefore(stylesheet, head.children[0]); // first so lowest priority
     }
-
     var computedStyle = containerWindow.getComputedStyle(ctr);
     var position = computedStyle.getPropertyValue('position');
     if (position === 'static') {
@@ -26808,6 +28091,7 @@ BRp.init = function (options) {
   r.redraws = 0;
   r.showFps = options.showFps;
   r.debug = options.debug;
+  r.webgl = options.webgl;
   r.hideEdgesOnViewport = options.hideEdgesOnViewport;
   r.textureOnViewport = options.textureOnViewport;
   r.wheelSensitivity = options.wheelSensitivity;
@@ -26861,6 +28145,9 @@ BRp.notify = function (eventName, eles) {
   }
   if (eventName === 'viewport') {
     r.redrawHint('select', true);
+  }
+  if (eventName === 'gc') {
+    r.redrawHint('gc', true);
   }
   if (eventName === 'load' || eventName === 'resize' || eventName === 'mount') {
     r.invalidateContainerClientCoordsCache();
@@ -26920,7 +28207,7 @@ var defs = {
       } else {
         self.dequeueingSetup = true;
       }
-      var queueRedraw = debounce_1(function () {
+      var queueRedraw = debounce(function () {
         r.redrawHint('eles', true);
         r.redrawHint('drag', true);
         r.redraw();
@@ -26990,14 +28277,14 @@ var ElementTextureCacheLookup = /*#__PURE__*/function () {
   function ElementTextureCacheLookup(getKey) {
     var doesEleInvalidateKey = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : falsify;
     _classCallCheck(this, ElementTextureCacheLookup);
-    this.idsByKey = new Map$2();
-    this.keyForId = new Map$2();
-    this.cachesByLvl = new Map$2();
+    this.idsByKey = new Map$1();
+    this.keyForId = new Map$1();
+    this.cachesByLvl = new Map$1();
     this.lvls = [];
     this.getKey = getKey;
     this.doesEleInvalidateKey = doesEleInvalidateKey;
   }
-  _createClass(ElementTextureCacheLookup, [{
+  return _createClass(ElementTextureCacheLookup, [{
     key: "getIdsFor",
     value: function getIdsFor(key) {
       if (key == null) {
@@ -27072,7 +28359,7 @@ var ElementTextureCacheLookup = /*#__PURE__*/function () {
         lvls = this.lvls;
       var caches = cachesByLvl.get(lvl);
       if (!caches) {
-        caches = new Map$2();
+        caches = new Map$1();
         cachesByLvl.set(lvl, caches);
         lvls.push(lvl);
       }
@@ -27162,7 +28449,6 @@ var ElementTextureCacheLookup = /*#__PURE__*/function () {
       return entireKeyInvalidated || this.getNumberOfIdsForKey(key) === 0;
     }
   }]);
-  return ElementTextureCacheLookup;
 }();
 
 var minTxrH = 25; // the size of the texture cache for small height eles (special case)
@@ -27230,7 +28516,7 @@ ETCp.getRetiredTextureQueue = function (txrH) {
 // queue of element draw requests at different scale levels
 ETCp.getElementQueue = function () {
   var self = this;
-  var q = self.eleCacheQueue = self.eleCacheQueue || new heap(function (a, b) {
+  var q = self.eleCacheQueue = self.eleCacheQueue || new Heap(function (a, b) {
     return b.reqs - a.reqs;
   });
   return q;
@@ -27290,7 +28576,6 @@ ETCp.getElement = function (ele, bb, pxRatio, lvl, reason) {
   if (eleScaledH > maxTxrH || eleScaledW > maxTxrW) {
     return null; // caching large elements is not efficient
   }
-
   var txrQ = self.getTextureQueue(txrH);
 
   // first try the second last one in case it has space at the end
@@ -27402,7 +28687,6 @@ ETCp.invalidateElement = function (ele) {
   if (!invalid) {
     return; // override the invalidation request if the element key has not changed
   }
-
   for (var lvl = minLvl$1; lvl <= maxLvl$1; lvl++) {
     var cache = lookup.getForCachedKey(ele, lvl);
     if (cache) {
@@ -27631,6 +28915,7 @@ var deqFastCost = 0.9; // % of frame time to be used when >60fps
 var maxDeqSize = 1; // number of eles to dequeue and render at higher texture in each batch
 var invalidThreshold = 250; // time threshold for disabling b/c of invalidations
 var maxLayerArea = 4000 * 4000; // layers can't be bigger than this
+var maxLayerDim = 32767; // maximum size for the width/height of layer canvases
 var useHighQualityEleTxrReqs = true; // whether to use high quality ele txr requests (generally faster and cheaper in the longterm)
 
 // var log = function(){ console.log.apply( console, arguments ); };
@@ -27645,7 +28930,7 @@ var LayeredTextureCache = function LayeredTextureCache(renderer) {
   self.lastInvalidationTime = performanceNow() - 2 * invalidThreshold;
   self.skipping = false;
   self.eleTxrDeqs = cy.collection();
-  self.scheduleElementRefinement = debounce_1(function () {
+  self.scheduleElementRefinement = debounce(function () {
     self.refineElementTextures(self.eleTxrDeqs);
     self.eleTxrDeqs.unmerge(self.eleTxrDeqs);
   }, refineEleDebounceTime);
@@ -27659,7 +28944,7 @@ var LayeredTextureCache = function LayeredTextureCache(renderer) {
   var qSort = function qSort(a, b) {
     return b.reqs - a.reqs;
   };
-  self.layersQueue = new heap(qSort);
+  self.layersQueue = new Heap(qSort);
   self.setupDequeueing();
 };
 var LTCp = LayeredTextureCache.prototype;
@@ -27738,7 +29023,7 @@ LTCp.getLayers = function (eles, pxRatio, lvl) {
         }
       }
     };
-    checkLvls(+1);
+    checkLvls(1);
     checkLvls(-1);
 
     // remove the invalid layers; they will be replaced as needed later in this function
@@ -27771,7 +29056,12 @@ LTCp.getLayers = function (eles, pxRatio, lvl) {
     opts = opts || {};
     var after = opts.after;
     getBb();
-    var area = bb.w * scale * (bb.h * scale);
+    var w = Math.ceil(bb.w * scale);
+    var h = Math.ceil(bb.h * scale);
+    if (w > maxLayerDim || h > maxLayerDim) {
+      return null;
+    }
+    var area = w * h;
     if (area > maxLayerArea) {
       return null;
     }
@@ -27829,7 +29119,6 @@ LTCp.getLayers = function (eles, pxRatio, lvl) {
 
       // log('new layer with id %s', layer.id);
     }
-
     if (tmpLayers || allowLazyQueueing) {
       // log('queue ele %s in layer %s', ele.id(), layer.id);
       self.queueLayer(layer, ele);
@@ -28042,7 +29331,6 @@ LTCp.refineElementTextures = function (eles) {
 
       // log('make replacement layer %s for %s with level %s', rLyr.id, layer.id, rLyr.level);
     }
-
     if (!rLyr.reqs) {
       for (var i = 0; i < rLyr.eles.length; i++) {
         self.queueLayer(rLyr, rLyr.eles[i]);
@@ -28052,7 +29340,6 @@ LTCp.refineElementTextures = function (eles) {
     }
   });
 };
-
 LTCp.enqueueElementRefinement = function (ele) {
   this.eleTxrDeqs.merge(ele);
   this.scheduleElementRefinement();
@@ -28166,7 +29453,7 @@ LTCp.applyLayerReplacement = function (layer) {
 
   self.requestRedraw();
 };
-LTCp.requestRedraw = debounce_1(function () {
+LTCp.requestRedraw = debounce(function () {
   var r = this.renderer;
   r.redrawHint('eles', true);
   r.redrawHint('drag', true);
@@ -28188,7 +29475,7 @@ LTCp.setupDequeueing = defs.setupDequeueing({
   }
 });
 
-var CRp$a = {};
+var CRp$b = {};
 var impl;
 function polygon(context, points) {
   for (var i = 0; i < points.length; i++) {
@@ -28243,22 +29530,22 @@ function circleTriangle(context, trianglePoints, rx, ry, r) {
     context.closePath();
   }
 }
-function circle(context, rx, ry, r) {
+function circle$1(context, rx, ry, r) {
   context.arc(rx, ry, r, 0, Math.PI * 2, false);
 }
-CRp$a.arrowShapeImpl = function (name) {
+CRp$b.arrowShapeImpl = function (name) {
   return (impl || (impl = {
     'polygon': polygon,
     'triangle-backcurve': triangleBackcurve,
     'triangle-tee': triangleTee,
     'circle-triangle': circleTriangle,
     'triangle-cross': triangleTee,
-    'circle': circle
+    'circle': circle$1
   }))[name];
 };
 
-var CRp$9 = {};
-CRp$9.drawElement = function (context, ele, shiftToOriginWithBb, showLabel, showOverlay, showOpacity) {
+var CRp$a = {};
+CRp$a.drawElement = function (context, ele, shiftToOriginWithBb, showLabel, showOverlay, showOpacity) {
   var r = this;
   if (ele.isNode()) {
     r.drawNode(context, ele, shiftToOriginWithBb, showLabel, showOverlay, showOpacity);
@@ -28266,7 +29553,7 @@ CRp$9.drawElement = function (context, ele, shiftToOriginWithBb, showLabel, show
     r.drawEdge(context, ele, shiftToOriginWithBb, showLabel, showOverlay, showOpacity);
   }
 };
-CRp$9.drawElementOverlay = function (context, ele) {
+CRp$a.drawElementOverlay = function (context, ele) {
   var r = this;
   if (ele.isNode()) {
     r.drawNodeOverlay(context, ele);
@@ -28274,7 +29561,7 @@ CRp$9.drawElementOverlay = function (context, ele) {
     r.drawEdgeOverlay(context, ele);
   }
 };
-CRp$9.drawElementUnderlay = function (context, ele) {
+CRp$a.drawElementUnderlay = function (context, ele) {
   var r = this;
   if (ele.isNode()) {
     r.drawNodeUnderlay(context, ele);
@@ -28282,7 +29569,7 @@ CRp$9.drawElementUnderlay = function (context, ele) {
     r.drawEdgeUnderlay(context, ele);
   }
 };
-CRp$9.drawCachedElementPortion = function (context, ele, eleTxrCache, pxRatio, lvl, reason, getRotation, getOpacity) {
+CRp$a.drawCachedElementPortion = function (context, ele, eleTxrCache, pxRatio, lvl, reason, getRotation, getOpacity) {
   var r = this;
   var bb = eleTxrCache.getBoundingBox(ele);
   if (bb.w === 0 || bb.h === 0) {
@@ -28338,7 +29625,6 @@ CRp$9.drawCachedElementPortion = function (context, ele, eleTxrCache, pxRatio, l
     eleTxrCache.drawElement(context, ele); // direct draw fallback
   }
 };
-
 var getZeroRotation = function getZeroRotation() {
   return 0;
 };
@@ -28357,7 +29643,7 @@ var getOpacity = function getOpacity(r, ele) {
 var getTextOpacity = function getTextOpacity(e, ele) {
   return ele.pstyle('text-opacity').pfValue * ele.effectiveOpacity();
 };
-CRp$9.drawCachedElement = function (context, ele, pxRatio, extent, lvl, requestHighQuality) {
+CRp$a.drawCachedElement = function (context, ele, pxRatio, extent, lvl, requestHighQuality) {
   var r = this;
   var _r$data = r.data,
     eleTxrCache = _r$data.eleTxrCache,
@@ -28384,21 +29670,21 @@ CRp$9.drawCachedElement = function (context, ele, pxRatio, extent, lvl, requestH
     r.drawElementOverlay(context, ele);
   }
 };
-CRp$9.drawElements = function (context, eles) {
+CRp$a.drawElements = function (context, eles) {
   var r = this;
   for (var i = 0; i < eles.length; i++) {
     var ele = eles[i];
     r.drawElement(context, ele);
   }
 };
-CRp$9.drawCachedElements = function (context, eles, pxRatio, extent) {
+CRp$a.drawCachedElements = function (context, eles, pxRatio, extent) {
   var r = this;
   for (var i = 0; i < eles.length; i++) {
     var ele = eles[i];
     r.drawCachedElement(context, ele, pxRatio, extent);
   }
 };
-CRp$9.drawCachedNodes = function (context, eles, pxRatio, extent) {
+CRp$a.drawCachedNodes = function (context, eles, pxRatio, extent) {
   var r = this;
   for (var i = 0; i < eles.length; i++) {
     var ele = eles[i];
@@ -28408,7 +29694,7 @@ CRp$9.drawCachedNodes = function (context, eles, pxRatio, extent) {
     r.drawCachedElement(context, ele, pxRatio, extent);
   }
 };
-CRp$9.drawLayeredElements = function (context, eles, pxRatio, extent) {
+CRp$a.drawLayeredElements = function (context, eles, pxRatio, extent) {
   var r = this;
   var layers = r.data.lyrTxrCache.getLayers(eles, pxRatio);
   if (layers) {
@@ -28426,8 +29712,8 @@ CRp$9.drawLayeredElements = function (context, eles, pxRatio, extent) {
   }
 };
 
-var CRp$8 = {};
-CRp$8.drawEdge = function (context, edge, shiftToOriginWithBb) {
+var CRp$9 = {};
+CRp$9.drawEdge = function (context, edge, shiftToOriginWithBb) {
   var drawLabel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
   var shouldDrawOverlay = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   var shouldDrawOpacity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
@@ -28453,6 +29739,8 @@ CRp$8.drawEdge = function (context, edge, shiftToOriginWithBb) {
   var lineStyle = edge.pstyle('line-style').value;
   var edgeWidth = edge.pstyle('width').pfValue;
   var lineCap = edge.pstyle('line-cap').value;
+  var lineOutlineWidth = edge.pstyle('line-outline-width').value;
+  var lineOutlineColor = edge.pstyle('line-outline-color').value;
   var effectiveLineOpacity = opacity * lineOpacity;
   // separate arrow opacity would require arrow-opacity property
   var effectiveArrowOpacity = opacity * lineOpacity;
@@ -28469,7 +29757,24 @@ CRp$8.drawEdge = function (context, edge, shiftToOriginWithBb) {
       context.lineCap = 'butt'; // reset for other drawing functions
     }
   };
-
+  var drawLineOutline = function drawLineOutline() {
+    var strokeOpacity = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : effectiveLineOpacity;
+    context.lineWidth = edgeWidth + lineOutlineWidth;
+    context.lineCap = lineCap;
+    if (lineOutlineWidth > 0) {
+      r.colorStrokeStyle(context, lineOutlineColor[0], lineOutlineColor[1], lineOutlineColor[2], strokeOpacity);
+    } else {
+      // do not draw any lineOutline
+      context.lineCap = 'butt'; // reset for other drawing functions
+      return;
+    }
+    if (curveStyle === 'straight-triangle') {
+      r.drawEdgeTrianglePath(edge, context, rs.allpts);
+    } else {
+      r.drawEdgePath(edge, context, rs.allpts, lineStyle);
+      context.lineCap = 'butt'; // reset for other drawing functions
+    }
+  };
   var drawOverlay = function drawOverlay() {
     if (!shouldDrawOverlay) {
       return;
@@ -28500,6 +29805,8 @@ CRp$8.drawEdge = function (context, edge, shiftToOriginWithBb) {
     drawLine(effectiveGhostOpacity);
     drawArrows(effectiveGhostOpacity);
     context.translate(-gx, -gy);
+  } else {
+    drawLineOutline();
   }
   drawUnderlay();
   drawLine();
@@ -28538,9 +29845,9 @@ var drawEdgeOverlayUnderlay = function drawEdgeOverlayUnderlay(overlayOrUnderlay
     r.drawEdgePath(edge, context, rs.allpts, 'solid');
   };
 };
-CRp$8.drawEdgeOverlay = drawEdgeOverlayUnderlay('overlay');
-CRp$8.drawEdgeUnderlay = drawEdgeOverlayUnderlay('underlay');
-CRp$8.drawEdgePath = function (edge, context, pts, type) {
+CRp$9.drawEdgeOverlay = drawEdgeOverlayUnderlay('overlay');
+CRp$9.drawEdgeUnderlay = drawEdgeOverlayUnderlay('underlay');
+CRp$9.drawEdgePath = function (edge, context, pts, type) {
   var rs = edge._private.rscratch;
   var canvasCxt = context;
   var path;
@@ -28631,7 +29938,7 @@ CRp$8.drawEdgePath = function (edge, context, pts, type) {
     context.setLineDash([]);
   }
 };
-CRp$8.drawEdgeTrianglePath = function (edge, context, pts) {
+CRp$9.drawEdgeTrianglePath = function (edge, context, pts) {
   // use line stroke style for triangle fill style
   context.fillStyle = context.strokeStyle;
   var edgeWidth = edge.pstyle('width').pfValue;
@@ -28648,7 +29955,7 @@ CRp$8.drawEdgeTrianglePath = function (edge, context, pts) {
     context.fill();
   }
 };
-CRp$8.drawArrowheads = function (context, edge, opacity) {
+CRp$9.drawArrowheads = function (context, edge, opacity) {
   var rs = edge._private.rscratch;
   var isHaystack = rs.edgeType === 'haystack';
   if (!isHaystack) {
@@ -28660,7 +29967,7 @@ CRp$8.drawArrowheads = function (context, edge, opacity) {
     this.drawArrowhead(context, edge, 'target', rs.arrowEndX, rs.arrowEndY, rs.tgtArrowAngle, opacity);
   }
 };
-CRp$8.drawArrowhead = function (context, edge, prefix, x, y, angle, opacity) {
+CRp$9.drawArrowhead = function (context, edge, prefix, x, y, angle, opacity) {
   if (isNaN(x) || x == null || isNaN(y) || y == null || isNaN(angle) || angle == null) {
     return;
   }
@@ -28694,7 +30001,7 @@ CRp$8.drawArrowhead = function (context, edge, prefix, x, y, angle, opacity) {
   self.colorStrokeStyle(context, color[0], color[1], color[2], opacity);
   self.drawArrowShape(edge, context, arrowFill, edgeWidth, arrowShape, arrowWidth, x, y, angle);
 };
-CRp$8.drawArrowShape = function (edge, context, fill, edgeWidth, shape, shapeWidth, x, y, angle) {
+CRp$9.drawArrowShape = function (edge, context, fill, edgeWidth, shape, shapeWidth, x, y, angle) {
   var r = this;
   var usePaths = this.usePaths() && shape !== 'triangle-cross';
   var pathCacheHit = false;
@@ -28767,8 +30074,8 @@ CRp$8.drawArrowShape = function (edge, context, fill, edgeWidth, shape, shapeWid
   }
 };
 
-var CRp$7 = {};
-CRp$7.safeDrawImage = function (context, img, ix, iy, iw, ih, x, y, w, h) {
+var CRp$8 = {};
+CRp$8.safeDrawImage = function (context, img, ix, iy, iw, ih, x, y, w, h) {
   // detect problematic cases for old browsers with bad images (cheaper than try-catch)
   if (iw <= 0 || ih <= 0 || w <= 0 || h <= 0) {
     return;
@@ -28779,7 +30086,7 @@ CRp$7.safeDrawImage = function (context, img, ix, iy, iw, ih, x, y, w, h) {
     warn(e);
   }
 };
-CRp$7.drawInscribedImage = function (context, img, node, index, nodeOpacity) {
+CRp$8.drawInscribedImage = function (context, img, node, index, nodeOpacity) {
   var r = this;
   var pos = node.position();
   var nodeX = pos.x;
@@ -28811,7 +30118,6 @@ CRp$7.drawInscribedImage = function (context, img, node, index, nodeOpacity) {
     imgH = img.cachedH = img.height || img.offsetHeight;
     document.body.removeChild(img); // eslint-disable-line no-undef
   }
-
   var w = imgW;
   var h = imgH;
   if (getIndexedStyle(node, 'background-width', 'value', index) !== 'auto') {
@@ -28831,7 +30137,6 @@ CRp$7.drawInscribedImage = function (context, img, node, index, nodeOpacity) {
   if (w === 0 || h === 0) {
     return; // no point in drawing empty image (and chrome is broken in this case)
   }
-
   if (fit === 'contain') {
     var scale = Math.min(nodeTW / w, nodeTH / h);
     w *= scale;
@@ -28916,8 +30221,8 @@ CRp$7.drawInscribedImage = function (context, img, node, index, nodeOpacity) {
   }
 };
 
-var CRp$6 = {};
-CRp$6.eleTextBiggerThanMin = function (ele, scale) {
+var CRp$7 = {};
+CRp$7.eleTextBiggerThanMin = function (ele, scale) {
   if (!scale) {
     var zoom = ele.cy().zoom();
     var pxRatio = this.getPixelRatio();
@@ -28932,7 +30237,7 @@ CRp$6.eleTextBiggerThanMin = function (ele, scale) {
   }
   return true;
 };
-CRp$6.drawElementText = function (context, ele, shiftToOriginWithBb, force, prefix) {
+CRp$7.drawElementText = function (context, ele, shiftToOriginWithBb, force, prefix) {
   var useEleOpacity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
   var r = this;
   if (force == null) {
@@ -28980,7 +30285,7 @@ CRp$6.drawElementText = function (context, ele, shiftToOriginWithBb, force, pref
     context.translate(bb.x1, bb.y1);
   }
 };
-CRp$6.getFontCache = function (context) {
+CRp$7.getFontCache = function (context) {
   var cache;
   this.fontCaches = this.fontCaches || [];
   for (var i = 0; i < this.fontCaches.length; i++) {
@@ -28998,7 +30303,7 @@ CRp$6.getFontCache = function (context) {
 
 // set up canvas context with font
 // returns transformed text string
-CRp$6.setupTextStyle = function (context, ele) {
+CRp$7.setupTextStyle = function (context, ele) {
   var useEleOpacity = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : true;
   // Font style
   var labelStyle = ele.pstyle('font-style').strValue;
@@ -29015,32 +30320,38 @@ CRp$6.setupTextStyle = function (context, ele) {
   this.colorFillStyle(context, color[0], color[1], color[2], opacity);
   this.colorStrokeStyle(context, outlineColor[0], outlineColor[1], outlineColor[2], outlineOpacity);
 };
-
-// TODO ensure re-used
+function circle(ctx, x, y, width, height) {
+  var diameter = Math.min(width, height);
+  var radius = diameter / 2;
+  var centerX = x + width / 2;
+  var centerY = y + height / 2;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.closePath();
+}
 function roundRect(ctx, x, y, width, height) {
   var radius = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 5;
-  var stroke = arguments.length > 6 ? arguments[6] : undefined;
+  var r = Math.min(radius, width / 2, height / 2); // prevent overflow
   ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
-  if (stroke) ctx.stroke();else ctx.fill();
 }
-CRp$6.getTextAngle = function (ele, prefix) {
+CRp$7.getTextAngle = function (ele, prefix) {
   var theta;
   var _p = ele._private;
   var rscratch = _p.rscratch;
   var pdash = prefix ? prefix + '-' : '';
   var rotation = ele.pstyle(pdash + 'text-rotation');
-  var textAngle = getPrefixedProperty(rscratch, 'labelAngle', prefix);
   if (rotation.strValue === 'autorotate') {
+    var textAngle = getPrefixedProperty(rscratch, 'labelAngle', prefix);
     theta = ele.isEdge() ? textAngle : 0;
   } else if (rotation.strValue === 'none') {
     theta = 0;
@@ -29049,7 +30360,7 @@ CRp$6.getTextAngle = function (ele, prefix) {
   }
   return theta;
 };
-CRp$6.drawText = function (context, ele, prefix) {
+CRp$7.drawText = function (context, ele, prefix) {
   var applyRotation = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
   var useEleOpacity = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   var _p = ele._private;
@@ -29112,9 +30423,18 @@ CRp$6.drawText = function (context, ele, prefix) {
     var textBorderWidth = ele.pstyle('text-border-width').pfValue;
     var backgroundPadding = ele.pstyle('text-background-padding').pfValue;
     var styleShape = ele.pstyle('text-background-shape').strValue;
-    var rounded = styleShape.indexOf('round') === 0;
+    var rounded = styleShape === 'round-rectangle' || styleShape === 'roundrectangle';
+    var circled = styleShape === 'circle';
     var roundRadius = 2;
     if (backgroundOpacity > 0 || textBorderWidth > 0 && borderOpacity > 0) {
+      var textFill = context.fillStyle;
+      var textStroke = context.strokeStyle;
+      var textLineWidth = context.lineWidth;
+      var textBackgroundColor = ele.pstyle('text-background-color').value;
+      var textBorderColor = ele.pstyle('text-border-color').value;
+      var textBorderStyle = ele.pstyle('text-border-style').value;
+      var doFill = backgroundOpacity > 0;
+      var doStroke = textBorderWidth > 0 && borderOpacity > 0;
       var bgX = textX - backgroundPadding;
       switch (halign) {
         case 'left':
@@ -29127,26 +30447,13 @@ CRp$6.drawText = function (context, ele, prefix) {
       var bgY = textY - textH - backgroundPadding;
       var bgW = textW + 2 * backgroundPadding;
       var bgH = textH + 2 * backgroundPadding;
-      if (backgroundOpacity > 0) {
-        var textFill = context.fillStyle;
-        var textBackgroundColor = ele.pstyle('text-background-color').value;
-        context.fillStyle = 'rgba(' + textBackgroundColor[0] + ',' + textBackgroundColor[1] + ',' + textBackgroundColor[2] + ',' + backgroundOpacity * parentOpacity + ')';
-        if (rounded) {
-          roundRect(context, bgX, bgY, bgW, bgH, roundRadius);
-        } else {
-          context.fillRect(bgX, bgY, bgW, bgH);
-        }
-        context.fillStyle = textFill;
+      if (doFill) {
+        context.fillStyle = "rgba(".concat(textBackgroundColor[0], ",").concat(textBackgroundColor[1], ",").concat(textBackgroundColor[2], ",").concat(backgroundOpacity * parentOpacity, ")");
       }
-      if (textBorderWidth > 0 && borderOpacity > 0) {
-        var textStroke = context.strokeStyle;
-        var textLineWidth = context.lineWidth;
-        var textBorderColor = ele.pstyle('text-border-color').value;
-        var textBorderStyle = ele.pstyle('text-border-style').value;
-        context.strokeStyle = 'rgba(' + textBorderColor[0] + ',' + textBorderColor[1] + ',' + textBorderColor[2] + ',' + borderOpacity * parentOpacity + ')';
+      if (doStroke) {
+        context.strokeStyle = "rgba(".concat(textBorderColor[0], ",").concat(textBorderColor[1], ",").concat(textBorderColor[2], ",").concat(borderOpacity * parentOpacity, ")");
         context.lineWidth = textBorderWidth;
         if (context.setLineDash) {
-          // for very outofdate browsers
           switch (textBorderStyle) {
             case 'dotted':
               context.setLineDash([1, 1]);
@@ -29155,34 +30462,44 @@ CRp$6.drawText = function (context, ele, prefix) {
               context.setLineDash([4, 2]);
               break;
             case 'double':
-              context.lineWidth = textBorderWidth / 4; // 50% reserved for white between the two borders
+              context.lineWidth = textBorderWidth / 4;
               context.setLineDash([]);
               break;
             case 'solid':
+            default:
               context.setLineDash([]);
               break;
           }
         }
-        if (rounded) {
-          roundRect(context, bgX, bgY, bgW, bgH, roundRadius, 'stroke');
-        } else {
-          context.strokeRect(bgX, bgY, bgW, bgH);
-        }
-        if (textBorderStyle === 'double') {
-          var whiteWidth = textBorderWidth / 2;
-          if (rounded) {
-            roundRect(context, bgX + whiteWidth, bgY + whiteWidth, bgW - whiteWidth * 2, bgH - whiteWidth * 2, roundRadius, 'stroke');
-          } else {
-            context.strokeRect(bgX + whiteWidth, bgY + whiteWidth, bgW - whiteWidth * 2, bgH - whiteWidth * 2);
-          }
-        }
-        if (context.setLineDash) {
-          // for very outofdate browsers
-          context.setLineDash([]);
-        }
-        context.lineWidth = textLineWidth;
-        context.strokeStyle = textStroke;
       }
+      if (rounded) {
+        context.beginPath();
+        roundRect(context, bgX, bgY, bgW, bgH, roundRadius);
+      } else if (circled) {
+        context.beginPath();
+        circle(context, bgX, bgY, bgW, bgH);
+      } else {
+        context.beginPath();
+        context.rect(bgX, bgY, bgW, bgH);
+      }
+      if (doFill) context.fill();
+      if (doStroke) context.stroke();
+
+      // Double border pass for 'double' style
+      if (doStroke && textBorderStyle === 'double') {
+        var whiteWidth = textBorderWidth / 2;
+        context.beginPath();
+        if (rounded) {
+          roundRect(context, bgX + whiteWidth, bgY + whiteWidth, bgW - 2 * whiteWidth, bgH - 2 * whiteWidth, roundRadius);
+        } else {
+          context.rect(bgX + whiteWidth, bgY + whiteWidth, bgW - 2 * whiteWidth, bgH - 2 * whiteWidth);
+        }
+        context.stroke();
+      }
+      context.fillStyle = textFill;
+      context.strokeStyle = textStroke;
+      context.lineWidth = textLineWidth;
+      if (context.setLineDash) context.setLineDash([]);
     }
     var lineWidth = 2 * ele.pstyle('text-outline-width').pfValue; // *2 b/c the stroke is drawn centred on the middle
 
@@ -29216,7 +30533,6 @@ CRp$6.drawText = function (context, ele, prefix) {
           textX += textW;
         } // else same as auto
       }
-
       switch (valign) {
         case 'top':
           textY -= (lines.length - 1) * lineHeight;
@@ -29247,8 +30563,9 @@ CRp$6.drawText = function (context, ele, prefix) {
 };
 
 /* global Path2D */
-var CRp$5 = {};
-CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
+
+var CRp$6 = {};
+CRp$6.drawNode = function (context, node, shiftToOriginWithBb) {
   var drawLabel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : true;
   var shouldDrawOverlay = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : true;
   var shouldDrawOpacity = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
@@ -29260,7 +30577,6 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
   if (!number$1(pos.x) || !number$1(pos.y)) {
     return; // can't draw node with undefined position
   }
-
   if (shouldDrawOpacity && !node.visible()) {
     return;
   }
@@ -29421,6 +30737,28 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
       }
     }
   };
+  var drawStripe = function drawStripe() {
+    var redrawShape = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+    var stripeOpacity = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : eleOpacity;
+    if (r.hasStripe(node)) {
+      context.save();
+      if (usePaths) {
+        context.clip(rs.pathCache);
+      } else {
+        r.nodeShapes[r.getNodeShape(node)].draw(context, pos.x, pos.y, nodeWidth, nodeHeight, cornerRadius, rs);
+        context.clip();
+      }
+      r.drawStripe(context, node, stripeOpacity);
+      context.restore();
+
+      // redraw/restore path if steps after stripes need it
+      if (redrawShape) {
+        if (!usePaths) {
+          r.nodeShapes[r.getNodeShape(node)].draw(context, pos.x, pos.y, nodeWidth, nodeHeight, cornerRadius, rs);
+        }
+      }
+    }
+  };
   var darken = function darken() {
     var darkenOpacity = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : eleOpacity;
     var opacity = (darkness > 0 ? darkness : -darkness) * darkenOpacity;
@@ -29570,23 +30908,23 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
         var radius = cornerRadius + (bWidth + outlineWidth + outlineOffset) / 2;
         var p = new Array(points.length / 2);
         var corners = new Array(points.length / 2);
-        for (var _i3 = 0; _i3 < points.length / 2; _i3++) {
-          p[_i3] = {
-            x: npos.x + offsetX + halfW * points[_i3 * 2],
-            y: npos.y + offsetY + halfH * points[_i3 * 2 + 1]
+        for (var _i2 = 0; _i2 < points.length / 2; _i2++) {
+          p[_i2] = {
+            x: npos.x + offsetX + halfW * points[_i2 * 2],
+            y: npos.y + offsetY + halfH * points[_i2 * 2 + 1]
           };
         }
-        var _i2,
+        var _i3,
           p1,
           p2,
           p3,
           len = p.length;
         p1 = p[len - 1];
         // for each point
-        for (_i2 = 0; _i2 < len; _i2++) {
-          p2 = p[_i2 % len];
-          p3 = p[(_i2 + 1) % len];
-          corners[_i2] = getRoundCorner(p1, p2, p3, radius);
+        for (_i3 = 0; _i3 < len; _i3++) {
+          p2 = p[_i3 % len];
+          p3 = p[(_i3 + 1) % len];
+          corners[_i3] = getRoundCorner(p1, p2, p3, radius);
           p1 = p2;
           p2 = p3;
         }
@@ -29663,6 +31001,7 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
     setupBorderColor(ghostOpacity * borderOpacity);
     drawBorder();
     drawPie(darkness !== 0 || borderWidth !== 0);
+    drawStripe(darkness !== 0 || borderWidth !== 0);
     drawImages(effGhostOpacity, false);
     darken(effGhostOpacity);
     context.translate(-gx, -gy);
@@ -29682,6 +31021,7 @@ CRp$5.drawNode = function (context, node, shiftToOriginWithBb) {
   setupBorderColor();
   drawBorder();
   drawPie(darkness !== 0 || borderWidth !== 0);
+  drawStripe(darkness !== 0 || borderWidth !== 0);
   drawImages(eleOpacity, false);
   darken();
   if (usePaths) {
@@ -29724,25 +31064,33 @@ var drawNodeOverlayUnderlay = function drawNodeOverlayUnderlay(overlayOrUnderlay
     }
   };
 };
-CRp$5.drawNodeOverlay = drawNodeOverlayUnderlay('overlay');
-CRp$5.drawNodeUnderlay = drawNodeOverlayUnderlay('underlay');
+CRp$6.drawNodeOverlay = drawNodeOverlayUnderlay('overlay');
+CRp$6.drawNodeUnderlay = drawNodeOverlayUnderlay('underlay');
 
 // does the node have at least one pie piece?
-CRp$5.hasPie = function (node) {
+CRp$6.hasPie = function (node) {
   node = node[0]; // ensure ele ref
 
   return node._private.hasPie;
 };
-CRp$5.drawPie = function (context, node, nodeOpacity, pos) {
+CRp$6.hasStripe = function (node) {
+  node = node[0]; // ensure ele ref
+
+  return node._private.hasStripe;
+};
+CRp$6.drawPie = function (context, node, nodeOpacity, pos) {
   node = node[0]; // ensure ele ref
   pos = pos || node.position();
   var cyStyle = node.cy().style();
   var pieSize = node.pstyle('pie-size');
+  var hole = node.pstyle('pie-hole');
+  var overallStartAngle = node.pstyle('pie-start-angle').pfValue;
   var x = pos.x;
   var y = pos.y;
   var nodeW = node.width();
   var nodeH = node.height();
   var radius = Math.min(nodeW, nodeH) / 2; // must fit in node
+  var holeRadius;
   var lastPercent = 0; // what % to continue drawing pie slices from on [0, 1]
   var usePaths = this.usePaths();
   if (usePaths) {
@@ -29752,7 +31100,15 @@ CRp$5.drawPie = function (context, node, nodeOpacity, pos) {
   if (pieSize.units === '%') {
     radius = radius * pieSize.pfValue;
   } else if (pieSize.pfValue !== undefined) {
-    radius = pieSize.pfValue / 2;
+    radius = pieSize.pfValue / 2; // diameter in pixels => radius
+  }
+  if (hole.units === '%') {
+    holeRadius = radius * hole.pfValue;
+  } else if (hole.pfValue !== undefined) {
+    holeRadius = hole.pfValue / 2; // diameter in pixels => radius
+  }
+  if (holeRadius >= radius) {
+    return; // the pie would be invisible anyway
   }
   for (var i = 1; i <= cyStyle.pieBackgroundN; i++) {
     // 1..N
@@ -29766,6 +31122,7 @@ CRp$5.drawPie = function (context, node, nodeOpacity, pos) {
       percent = 1 - lastPercent;
     }
     var angleStart = 1.5 * Math.PI + 2 * Math.PI * lastPercent; // start at 12 o'clock and go clockwise
+    angleStart += overallStartAngle; // shift by the overall pie start angle
     var angleDelta = 2 * Math.PI * percent;
     var angleEnd = angleStart + angleDelta;
 
@@ -29776,31 +31133,108 @@ CRp$5.drawPie = function (context, node, nodeOpacity, pos) {
     if (size === 0 || lastPercent >= 1 || lastPercent + percent > 1) {
       continue;
     }
-    context.beginPath();
-    context.moveTo(x, y);
-    context.arc(x, y, radius, angleStart, angleEnd);
-    context.closePath();
+    if (holeRadius === 0) {
+      // make a pie slice
+      context.beginPath();
+      context.moveTo(x, y);
+      context.arc(x, y, radius, angleStart, angleEnd);
+      context.closePath();
+    } else {
+      // make a pie slice that's like the above but with a hole in the middle
+      context.beginPath();
+      context.arc(x, y, radius, angleStart, angleEnd);
+      context.arc(x, y, holeRadius, angleEnd, angleStart, true); // true for anticlockwise
+      context.closePath();
+    }
     this.colorFillStyle(context, color[0], color[1], color[2], opacity);
     context.fill();
     lastPercent += percent;
   }
 };
+CRp$6.drawStripe = function (context, node, nodeOpacity, pos) {
+  node = node[0]; // ensure ele ref
+  pos = pos || node.position();
+  var cyStyle = node.cy().style();
+  var x = pos.x;
+  var y = pos.y;
+  var nodeW = node.width();
+  var nodeH = node.height();
+  var lastPercent = 0; // what % to continue drawing pie slices from on [0, 1]
+  var usePaths = this.usePaths();
+  context.save();
+  var direction = node.pstyle('stripe-direction').value;
+  var stripeSize = node.pstyle('stripe-size');
+  switch (direction) {
+    case 'vertical':
+      break;
+    // default
+    case 'righward':
+      context.rotate(-Math.PI / 2);
+      break;
+  }
+  var stripeW = nodeW;
+  var stripeH = nodeH;
+  if (stripeSize.units === '%') {
+    stripeW = stripeW * stripeSize.pfValue;
+    stripeH = stripeH * stripeSize.pfValue;
+  } else if (stripeSize.pfValue !== undefined) {
+    stripeW = stripeSize.pfValue;
+    stripeH = stripeSize.pfValue;
+  }
+  if (usePaths) {
+    x = 0;
+    y = 0;
+  }
 
-var CRp$4 = {};
+  // shift up from the centre of the node to the top-left corner
+  y -= stripeW / 2;
+  x -= stripeH / 2;
+  for (var i = 1; i <= cyStyle.stripeBackgroundN; i++) {
+    // 1..N
+    var size = node.pstyle('stripe-' + i + '-background-size').value;
+    var color = node.pstyle('stripe-' + i + '-background-color').value;
+    var opacity = node.pstyle('stripe-' + i + '-background-opacity').value * nodeOpacity;
+    var percent = size / 100; // map integer range [0, 100] to [0, 1]
+
+    // percent can't push beyond 1
+    if (percent + lastPercent > 1) {
+      percent = 1 - lastPercent;
+    }
+
+    // ignore if
+    // - zero size
+    // - we're already beyond the full chart
+    // - adding the current slice would go beyond the full chart
+    if (size === 0 || lastPercent >= 1 || lastPercent + percent > 1) {
+      continue;
+    }
+
+    // draw rect for the current stripe
+    context.beginPath();
+    context.rect(x, y + stripeH * lastPercent, stripeW, stripeH * percent);
+    context.closePath();
+    this.colorFillStyle(context, color[0], color[1], color[2], opacity);
+    context.fill();
+    lastPercent += percent;
+  }
+  context.restore();
+};
+
+var CRp$5 = {};
 var motionBlurDelay = 100;
 
 // var isFirefox = typeof InstallTrigger !== 'undefined';
 
-CRp$4.getPixelRatio = function () {
+CRp$5.getPixelRatio = function () {
   var context = this.data.contexts[0];
   if (this.forcedPixelRatio != null) {
     return this.forcedPixelRatio;
   }
+  var containerWindow = this.cy.window();
   var backingStore = context.backingStorePixelRatio || context.webkitBackingStorePixelRatio || context.mozBackingStorePixelRatio || context.msBackingStorePixelRatio || context.oBackingStorePixelRatio || context.backingStorePixelRatio || 1;
-  return (window.devicePixelRatio || 1) / backingStore; // eslint-disable-line no-undef
+  return (containerWindow.devicePixelRatio || 1) / backingStore; // eslint-disable-line no-undef
 };
-
-CRp$4.paintCache = function (context) {
+CRp$5.paintCache = function (context) {
   var caches = this.paintCaches = this.paintCaches || [];
   var needToCreateCache = true;
   var cache;
@@ -29819,7 +31253,7 @@ CRp$4.paintCache = function (context) {
   }
   return cache;
 };
-CRp$4.createGradientStyleFor = function (context, shapeStyleName, ele, fill, opacity) {
+CRp$5.createGradientStyleFor = function (context, shapeStyleName, ele, fill, opacity) {
   var gradientStyle;
   var usePaths = this.usePaths();
   var colors = ele.pstyle(shapeStyleName + '-gradient-stop-colors').value,
@@ -29897,12 +31331,12 @@ CRp$4.createGradientStyleFor = function (context, shapeStyleName, ele, fill, opa
   }
   return gradientStyle;
 };
-CRp$4.gradientFillStyle = function (context, ele, fill, opacity) {
+CRp$5.gradientFillStyle = function (context, ele, fill, opacity) {
   var gradientStyle = this.createGradientStyleFor(context, 'background', ele, fill, opacity);
   if (!gradientStyle) return null; // error
   context.fillStyle = gradientStyle;
 };
-CRp$4.colorFillStyle = function (context, r, g, b, a) {
+CRp$5.colorFillStyle = function (context, r, g, b, a) {
   context.fillStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
   // turn off for now, seems context does its own caching
 
@@ -29914,8 +31348,7 @@ CRp$4.colorFillStyle = function (context, r, g, b, a) {
   //   context.fillStyle = cache.fillStyle = fillStyle;
   // }
 };
-
-CRp$4.eleFillStyle = function (context, ele, opacity) {
+CRp$5.eleFillStyle = function (context, ele, opacity) {
   var backgroundFill = ele.pstyle('background-fill').value;
   if (backgroundFill === 'linear-gradient' || backgroundFill === 'radial-gradient') {
     this.gradientFillStyle(context, ele, backgroundFill, opacity);
@@ -29924,12 +31357,12 @@ CRp$4.eleFillStyle = function (context, ele, opacity) {
     this.colorFillStyle(context, backgroundColor[0], backgroundColor[1], backgroundColor[2], opacity);
   }
 };
-CRp$4.gradientStrokeStyle = function (context, ele, fill, opacity) {
+CRp$5.gradientStrokeStyle = function (context, ele, fill, opacity) {
   var gradientStyle = this.createGradientStyleFor(context, 'line', ele, fill, opacity);
   if (!gradientStyle) return null; // error
   context.strokeStyle = gradientStyle;
 };
-CRp$4.colorStrokeStyle = function (context, r, g, b, a) {
+CRp$5.colorStrokeStyle = function (context, r, g, b, a) {
   context.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
   // turn off for now, seems context does its own caching
 
@@ -29941,8 +31374,7 @@ CRp$4.colorStrokeStyle = function (context, r, g, b, a) {
   //   context.strokeStyle = cache.strokeStyle = strokeStyle;
   // }
 };
-
-CRp$4.eleStrokeStyle = function (context, ele, opacity) {
+CRp$5.eleStrokeStyle = function (context, ele, opacity) {
   var lineFill = ele.pstyle('line-fill').value;
   if (lineFill === 'linear-gradient' || lineFill === 'radial-gradient') {
     this.gradientStrokeStyle(context, ele, lineFill, opacity);
@@ -29953,7 +31385,7 @@ CRp$4.eleStrokeStyle = function (context, ele, opacity) {
 };
 
 // Resize canvas
-CRp$4.matchCanvasSize = function (container) {
+CRp$5.matchCanvasSize = function (container) {
   var r = this;
   var data = r.data;
   var bb = r.findContainerClientCoords();
@@ -29970,7 +31402,6 @@ CRp$4.matchCanvasSize = function (container) {
   if (canvasWidth === r.canvasWidth && canvasHeight === r.canvasHeight) {
     return; // save cycles if same
   }
-
   r.fontCaches = null; // resizing resets the style
 
   var canvasContainer = data.canvasContainer;
@@ -29999,8 +31430,9 @@ CRp$4.matchCanvasSize = function (container) {
   }
   r.canvasWidth = canvasWidth;
   r.canvasHeight = canvasHeight;
+  r.pixelRatio = pixelRatio;
 };
-CRp$4.renderTo = function (cxt, zoom, pan, pxRatio) {
+CRp$5.renderTo = function (cxt, zoom, pan, pxRatio) {
   this.render({
     forcedContext: cxt,
     forcedZoom: zoom,
@@ -30009,16 +31441,25 @@ CRp$4.renderTo = function (cxt, zoom, pan, pxRatio) {
     forcedPxRatio: pxRatio
   });
 };
-CRp$4.render = function (options) {
+CRp$5.clearCanvas = function () {
+  var r = this;
+  var data = r.data;
+  function clear(context) {
+    context.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
+  }
+  clear(data.contexts[r.NODE]);
+  clear(data.contexts[r.DRAG]);
+};
+CRp$5.render = function (options) {
+  var r = this;
   options = options || staticEmptyObject();
+  var cy = r.cy;
   var forcedContext = options.forcedContext;
   var drawAllLayers = options.drawAllLayers;
   var drawOnlyNodeLayer = options.drawOnlyNodeLayer;
   var forcedZoom = options.forcedZoom;
   var forcedPan = options.forcedPan;
-  var r = this;
   var pixelRatio = options.forcedPxRatio === undefined ? this.getPixelRatio() : options.forcedPxRatio;
-  var cy = r.cy;
   var data = r.data;
   var needDraw = data.canvasNeedsRedraw;
   var textureDraw = r.textureOnViewport && !forcedContext && (r.pinching || r.hoverData.dragging || r.swipePanning || r.data.wheelZooming);
@@ -30235,45 +31676,7 @@ CRp$4.render = function (options) {
       needDraw[r.DRAG] = false;
     }
   }
-  if (r.showFps || !drawOnlyNodeLayer && needDraw[r.SELECT_BOX] && !drawAllLayers) {
-    var context = forcedContext || data.contexts[r.SELECT_BOX];
-    setContextTransform(context);
-    if (r.selection[4] == 1 && (r.hoverData.selecting || r.touchData.selecting)) {
-      var zoom = r.cy.zoom();
-      var borderWidth = style.core('selection-box-border-width').value / zoom;
-      context.lineWidth = borderWidth;
-      context.fillStyle = 'rgba(' + style.core('selection-box-color').value[0] + ',' + style.core('selection-box-color').value[1] + ',' + style.core('selection-box-color').value[2] + ',' + style.core('selection-box-opacity').value + ')';
-      context.fillRect(r.selection[0], r.selection[1], r.selection[2] - r.selection[0], r.selection[3] - r.selection[1]);
-      if (borderWidth > 0) {
-        context.strokeStyle = 'rgba(' + style.core('selection-box-border-color').value[0] + ',' + style.core('selection-box-border-color').value[1] + ',' + style.core('selection-box-border-color').value[2] + ',' + style.core('selection-box-opacity').value + ')';
-        context.strokeRect(r.selection[0], r.selection[1], r.selection[2] - r.selection[0], r.selection[3] - r.selection[1]);
-      }
-    }
-    if (data.bgActivePosistion && !r.hoverData.selecting) {
-      var zoom = r.cy.zoom();
-      var pos = data.bgActivePosistion;
-      context.fillStyle = 'rgba(' + style.core('active-bg-color').value[0] + ',' + style.core('active-bg-color').value[1] + ',' + style.core('active-bg-color').value[2] + ',' + style.core('active-bg-opacity').value + ')';
-      context.beginPath();
-      context.arc(pos.x, pos.y, style.core('active-bg-size').pfValue / zoom, 0, 2 * Math.PI);
-      context.fill();
-    }
-    var timeToRender = r.lastRedrawTime;
-    if (r.showFps && timeToRender) {
-      timeToRender = Math.round(timeToRender);
-      var fps = Math.round(1000 / timeToRender);
-      context.setTransform(1, 0, 0, 1, 0, 0);
-      context.fillStyle = 'rgba(255, 0, 0, 0.75)';
-      context.strokeStyle = 'rgba(255, 0, 0, 0.75)';
-      context.lineWidth = 1;
-      context.fillText('1 frame = ' + timeToRender + ' ms = ' + fps + ' fps', 0, 20);
-      var maxFps = 60;
-      context.strokeRect(0, 30, 250, 20);
-      context.fillRect(0, 30, 250 * Math.min(fps / maxFps, 1), 20);
-    }
-    if (!drawAllLayers) {
-      needDraw[r.SELECT_BOX] = false;
-    }
-  }
+  this.drawSelectionRectangle(options, setContextTransform);
 
   // motionblur: blit rendered blurry frames
   if (motionBlur && mbPxRatio !== 1) {
@@ -30300,7 +31703,6 @@ CRp$4.render = function (options) {
       r.canvasWidth, r.canvasHeight // w, h
       );
     };
-
     if (needDraw[r.NODE] || needMbClear[r.NODE]) {
       drawMotionBlur(cxtNode, txtNode, needMbClear[r.NODE]);
       needDraw[r.NODE] = false;
@@ -30333,6 +31735,3119 @@ CRp$4.render = function (options) {
     cy.emit('render');
   }
 };
+var fpsHeight;
+CRp$5.drawSelectionRectangle = function (options, setContextTransform) {
+  var r = this;
+  var cy = r.cy;
+  var data = r.data;
+  var style = cy.style();
+  var drawOnlyNodeLayer = options.drawOnlyNodeLayer;
+  var drawAllLayers = options.drawAllLayers;
+  var needDraw = data.canvasNeedsRedraw;
+  var forcedContext = options.forcedContext;
+  if (r.showFps || !drawOnlyNodeLayer && needDraw[r.SELECT_BOX] && !drawAllLayers) {
+    var context = forcedContext || data.contexts[r.SELECT_BOX];
+    setContextTransform(context);
+    if (r.selection[4] == 1 && (r.hoverData.selecting || r.touchData.selecting)) {
+      var zoom = r.cy.zoom();
+      var borderWidth = style.core('selection-box-border-width').value / zoom;
+      context.lineWidth = borderWidth;
+      context.fillStyle = 'rgba(' + style.core('selection-box-color').value[0] + ',' + style.core('selection-box-color').value[1] + ',' + style.core('selection-box-color').value[2] + ',' + style.core('selection-box-opacity').value + ')';
+      context.fillRect(r.selection[0], r.selection[1], r.selection[2] - r.selection[0], r.selection[3] - r.selection[1]);
+      if (borderWidth > 0) {
+        context.strokeStyle = 'rgba(' + style.core('selection-box-border-color').value[0] + ',' + style.core('selection-box-border-color').value[1] + ',' + style.core('selection-box-border-color').value[2] + ',' + style.core('selection-box-opacity').value + ')';
+        context.strokeRect(r.selection[0], r.selection[1], r.selection[2] - r.selection[0], r.selection[3] - r.selection[1]);
+      }
+    }
+    if (data.bgActivePosistion && !r.hoverData.selecting) {
+      var zoom = r.cy.zoom();
+      var pos = data.bgActivePosistion;
+      context.fillStyle = 'rgba(' + style.core('active-bg-color').value[0] + ',' + style.core('active-bg-color').value[1] + ',' + style.core('active-bg-color').value[2] + ',' + style.core('active-bg-opacity').value + ')';
+      context.beginPath();
+      context.arc(pos.x, pos.y, style.core('active-bg-size').pfValue / zoom, 0, 2 * Math.PI);
+      context.fill();
+    }
+    var timeToRender = r.lastRedrawTime;
+    if (r.showFps && timeToRender) {
+      timeToRender = Math.round(timeToRender);
+      var fps = Math.round(1000 / timeToRender);
+      var text = '1 frame = ' + timeToRender + ' ms = ' + fps + ' fps';
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.fillStyle = 'rgba(255, 0, 0, 0.75)';
+      context.strokeStyle = 'rgba(255, 0, 0, 0.75)';
+      // context.lineWidth = 1;
+      context.font = '30px Arial';
+      if (!fpsHeight) {
+        var dims = context.measureText(text);
+        fpsHeight = dims.actualBoundingBoxAscent;
+      }
+      context.fillText(text, 0, fpsHeight);
+      var maxFps = 60;
+      context.strokeRect(0, fpsHeight + 10, 250, 20);
+      context.fillRect(0, fpsHeight + 10, 250 * Math.min(fps / maxFps, 1), 20);
+    }
+    if (!drawAllLayers) {
+      needDraw[r.SELECT_BOX] = false;
+    }
+  }
+};
+
+var SHARED_BUFFER = new ArrayBuffer(4);
+var FLOAT32 = new Float32Array(SHARED_BUFFER);
+var INT32 = new Int32Array(SHARED_BUFFER);
+
+/** Pack RGBA (0-255 each) into a single float. */
+function packColor(r, g, b, a) {
+  INT32[0] = (a & 0xFF) << 24 | (b & 0xFF) << 16 | (g & 0xFF) << 8 | r & 0xFF;
+  // Mask bit 24 to avoid NaN floats (sigma.js masking technique)
+  INT32[0] = INT32[0] & 0xfeffffff;
+  return FLOAT32[0];
+}
+
+/** Pack premultiplied alpha color from Cytoscape color array [r,g,b] (0-255) + opacity (0-1). */
+function packPremulColor(colorArr, opacity) {
+  var a = Math.round(opacity * 255);
+  var r = Math.round(colorArr[0] * opacity);
+  var g = Math.round(colorArr[1] * opacity);
+  var b = Math.round(colorArr[2] * opacity);
+  return packColor(r, g, b, a);
+}
+
+/** Pack a pick index (integer) as RGBA float for use in picking shaders. */
+function packPickIndex(index) {
+  return packColor(index & 0xFF, index >> 8 & 0xFF, index >> 16 & 0xFF, index >> 24 & 0xFF);
+}
+
+/**
+ * WebGL utility functions used by the new rendering engine.
+ */
+
+/** Unit quad: 2 triangles forming a [0,0]-[1,1] square. Shared across all programs. */
+var UNIT_QUAD = new Float32Array([0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1]);
+function compileShader(gl, type, source) {
+  var shader = gl.createShader(type);
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    throw new Error(gl.getShaderInfoLog(shader));
+  }
+  return shader;
+}
+function createProgram(gl, vertexSource, fragementSource) {
+  var vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexSource);
+  var fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragementSource);
+  var program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new Error('Could not initialize shaders');
+  }
+  return program;
+}
+
+/**
+ * Returns the current pan & zoom values, scaled by the pixel ratio.
+ */
+function getEffectivePanZoom(r) {
+  var pixelRatio = r.pixelRatio;
+  var zoom = r.cy.zoom();
+  var pan = r.cy.pan();
+  return {
+    zoom: zoom * pixelRatio,
+    pan: {
+      x: pan.x * pixelRatio,
+      y: pan.y * pixelRatio
+    }
+  };
+}
+function modelToRenderedPosition(r, pan, zoom, x, y) {
+  var rx = x * zoom + pan.x;
+  var ry = y * zoom + pan.y;
+  ry = Math.round(r.canvasHeight - ry); // adjust for webgl
+  return [rx, ry];
+}
+
+/**
+ * Creates a Frame Buffer to use for offscreen rendering.
+ * @param {WebGLRenderingContext} gl
+ */
+function createPickingFrameBuffer(gl) {
+  // Create and bind the framebuffer
+  var fb = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+
+  // Create a texture to render to
+  var targetTexture = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  // attach the texture as the first color attachment
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, targetTexture, 0);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  fb.setFramebufferAttachmentSizes = function (width, height) {
+    gl.bindTexture(gl.TEXTURE_2D, targetTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  };
+  fb.destroy = function () {
+    gl.deleteTexture(targetTexture);
+    gl.deleteFramebuffer(fb);
+  };
+  return fb;
+}
+
+var NODE_STRIDE = 11; // floats per node
+
+// Shape name -> enum mapping
+var SHAPE_ENUM = {
+  'rectangle': 0,
+  'square': 0,
+  'roundrectangle': 1,
+  'round-rectangle': 1,
+  'bottom-round-rectangle': 2,
+  'bottomroundrectangle': 2,
+  'ellipse': 3,
+  'triangle': 4,
+  'diamond': 5,
+  'pentagon': 6,
+  'hexagon': 7,
+  'heptagon': 8,
+  'octagon': 9,
+  'star': 10,
+  'tag': 11,
+  'vee': 12,
+  'rhomboid': 13,
+  'barrel': 14,
+  'cut-rectangle': 15,
+  'cutrectangle': 15,
+  'concave-hexagon': 16,
+  'concavehexagon': 16
+};
+
+// ---- Shader Sources ----
+
+var VERTEX_SHADER_SOURCE$2 = "#version 300 es\nprecision highp float;\n\nuniform mat3 uPanZoomMatrix;\n\n// Unit quad vertex (not instanced)\nlayout(location = 0) in vec2 aVertex;\n\n// Per-instance (divisor=1)\nlayout(location = 1) in vec2 aNodePos;\nlayout(location = 2) in vec2 aNodeSize;\nlayout(location = 3) in float aColor;\nlayout(location = 4) in float aBorderColor;\nlayout(location = 5) in float aBorderWidth;\nlayout(location = 6) in float aShape;\nlayout(location = 7) in float aCornerRadius;\nlayout(location = 8) in float aBorderPos;\nlayout(location = 9) in float aPickId;\n\n// To fragment shader\nout vec2 vPosition;\nflat out vec2 vBotLeft;\nflat out vec2 vTopRight;\nflat out float vColor;\nflat out float vBorderColor;\nflat out vec2 vBorderWidth; // [outer, inner]\nflat out int vShape;\nflat out float vCornerRadius;\nflat out float vPickId;\n\nuniform float uZoom;\n\nvoid main() {\n  // LOD cull: skip if node is < 2 pixels on screen\n  float screenSize = max(aNodeSize.x, aNodeSize.y) * uZoom;\n  if(screenSize < 2.0) {\n    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);\n    return;\n  }\n\n  float hw = aNodeSize.x / 2.0;\n  float hh = aNodeSize.y / 2.0;\n  float outerBorder = 0.0;\n\n  if(aBorderPos == 2.0) outerBorder = aBorderWidth;\n  else if(aBorderPos == 0.0) outerBorder = aBorderWidth / 2.0;\n\n  vec2 totalSize = aNodeSize + outerBorder * 2.0;\n  vec2 modelPos = aNodePos + (aVertex - 0.5) * totalSize;\n\n  gl_Position = vec4((uPanZoomMatrix * vec3(modelPos, 1.0)).xy, 0.0, 1.0);\n\n  vBotLeft = aNodePos - totalSize / 2.0;\n  vTopRight = aNodePos + totalSize / 2.0;\n  vPosition = modelPos;\n  vColor = aColor;\n  vBorderColor = aBorderColor;\n  vShape = int(aShape);\n  vPickId = aPickId;\n\n  if(aBorderPos == 1.0) {\n    vBorderWidth = vec2(0.0, -aBorderWidth);\n  } else if(aBorderPos == 2.0) {\n    vBorderWidth = vec2(aBorderWidth, 0.0);\n  } else {\n    float bw2 = aBorderWidth / 2.0;\n    vBorderWidth = vec2(bw2, -bw2);\n  }\n\n  float cr = aCornerRadius;\n  if(cr < 0.0) cr = min(hw, hh) * 0.3333;\n  cr = min(cr, min(hw, hh));\n  vCornerRadius = cr;\n}\n";
+var FRAGMENT_SHADER_HEADER$1 = "#version 300 es\nprecision highp float;\n\nin vec2 vPosition;\nflat in vec2 vBotLeft;\nflat in vec2 vTopRight;\nflat in float vColor;\nflat in float vBorderColor;\nflat in vec2 vBorderWidth; // [outer, inner]\nflat in int vShape;\nflat in float vCornerRadius;\nflat in float vPickId;\n\nuniform float uZoom;\n\nout vec4 outColor;\n\nvec4 unpackColor(float f) {\n  int v = floatBitsToInt(f);\n  return vec4(\n    float(v & 0xFF) / 255.0,\n    float((v >> 8) & 0xFF) / 255.0,\n    float((v >> 16) & 0xFF) / 255.0,\n    float((v >> 24) & 0xFF) / 255.0\n  );\n}\n\n// ---- SDF Functions ----\n// https://iquilezles.org/articles/distfunctions2d/\n\nfloat circleSD(vec2 p, float r) {\n  return distance(vec2(0), p) - r;\n}\n\nfloat rectangleSD(vec2 p, vec2 b) {\n  vec2 d = abs(p) - b;\n  return distance(vec2(0), max(d, 0.0)) + min(max(d.x, d.y), 0.0);\n}\n\nfloat roundRectangleSD(vec2 p, vec2 b, float cr) {\n  vec2 q = abs(p) - b + cr;\n  return min(max(q.x, q.y), 0.0) + distance(vec2(0), max(q, 0.0)) - cr;\n}\n\nfloat ellipseSD(vec2 p, vec2 ab) {\n  p = abs(p);\n  vec2 q = ab * (p - ab);\n  float w = (q.x < q.y) ? 1.570796327 : 0.0;\n  for(int i = 0; i < 5; i++) {\n    vec2 cs = vec2(cos(w), sin(w));\n    vec2 u = ab * vec2(cs.x, cs.y);\n    vec2 v = ab * vec2(-cs.y, cs.x);\n    w = w + dot(p - u, v) / (dot(p - u, u) + dot(v, v));\n  }\n  float d = length(p - ab * vec2(cos(w), sin(w)));\n  return (dot(p / ab, p / ab) > 1.0) ? d : -d;\n}\n\nfloat triangleSD(vec2 p, vec2 b) {\n  // Isosceles triangle centered at origin, width=2*b.x, height=2*b.y\n  p.y = -p.y; // flip so point is at top\n  float hw = b.x;\n  float hh = b.y;\n  p.y += hh; // shift so base is at y=0, apex at y=2*hh\n  vec2 a0 = vec2(hw, 0.0);\n  vec2 a1 = vec2(0.0, 2.0 * hh);\n  // Edge vectors\n  vec2 e0 = vec2(-hw, 2.0 * hh); // left edge\n  vec2 e1 = vec2(-hw, -2.0 * hh); // right edge (mirrored)\n  p.x = abs(p.x); // use symmetry\n  // Clamp to edge\n  vec2 v0 = p - a0;\n  float t0 = clamp(dot(v0, e0) / dot(e0, e0), 0.0, 1.0);\n  vec2 cp0 = a0 + e0 * t0;\n  // Bottom edge\n  float t1 = clamp(p.x / hw, 0.0, 1.0);\n  vec2 cp1 = vec2(t1 * hw, 0.0);\n  float d0 = length(p - cp0);\n  float d1 = length(p - cp1);\n  float d = min(d0, d1);\n  // Sign: negative inside\n  float s = 1.0;\n  // Cross product sign for left edge\n  if((cp0.x - p.x) * e0.y - (cp0.y - p.y) * e0.x > 0.0 && p.y > 0.0) s = -1.0;\n  if(p.y < 0.0) s = 1.0;\n  // Check if inside triangle using cross products\n  float cross1 = (-hw - p.x) * (2.0 * hh) - (0.0 - p.y) * (-hw); // not robust\n  // Simpler inside test\n  if(p.y >= 0.0 && p.y <= 2.0 * hh && p.x <= hw * (1.0 - p.y / (2.0 * hh))) s = -1.0;\n  return s * d;\n}\n\nfloat diamondSD(vec2 p, vec2 b) {\n  // Rhombus (diamond) SDF\n  p = abs(p);\n  float ndot = b.x * p.x + b.y * p.y; // not the standard ndot\n  vec2 q = vec2(b.x * p.x - b.y * p.y, b.x * p.y + b.y * p.x) / dot(b, b); // rotate\n  // Simpler approach: use the standard rhombus formula\n  float hx = b.x;\n  float hy = b.y;\n  // The diamond is defined by |x/hx| + |y/hy| <= 1\n  float d = (abs(p.x) / hx + abs(p.y) / hy - 1.0) * min(hx, hy) * 0.7071;\n  return d;\n}\n\nfloat polygonSD(vec2 p, float r, float N) {\n  // Regular N-gon SDF, radius r\n  float an = 3.141593 / N;\n  float he = r * tan(an);\n  p = vec2(abs(p.x), p.y);\n  float a = atan(p.x, p.y) + 3.141593;\n  float ia = floor(a / (2.0 * an)) * (2.0 * an);\n  float ca = cos(ia - an);\n  float sa = sin(ia - an);\n  p = vec2(ca * p.x - sa * p.y, sa * p.x + ca * p.y);\n  p = vec2(p.x - r, p.y - clamp(p.y, -he, he));\n  return length(p) * sign(p.x);\n}\n\nfloat starSD(vec2 p, vec2 b) {\n  // 5-pointed star using polygon subtraction\n  float r = min(b.x, b.y);\n  float an = 3.141593 / 5.0; // pi/5 = 36 degrees\n  float en = 3.141593 / 2.5; // pi/2.5 = 72 degrees (inner angle)\n  vec2 acs = vec2(cos(an), sin(an));\n  vec2 ecs = vec2(cos(en), sin(en));\n  float bn = mod(atan(p.x, p.y), 2.0 * an) - an;\n  p = length(p) * vec2(cos(bn), abs(sin(bn)));\n  p -= r * acs;\n  p += ecs * clamp(-dot(p, ecs), 0.0, r * acs.y / ecs.y);\n  return length(p) * sign(p.x);\n}\n\nfloat tagSD(vec2 p, vec2 b) {\n  // Tag shape: rectangle with a pointed right side\n  float hw = b.x;\n  float hh = b.y;\n  float pointW = hh * 0.4; // arrow point width\n  // Left part is a rectangle, right part is a triangle point\n  float rectW = hw - pointW;\n  // Shift p so rectangle is centered\n  float px = p.x + pointW * 0.5;\n  float d = rectangleSD(vec2(px, p.y), vec2(rectW, hh));\n  // Right triangle (arrow point)\n  if(p.x > rectW - pointW * 0.5) {\n    float tx = p.x - (rectW - pointW * 0.5);\n    float slope = hh / pointW;\n    float edge = hh - tx * slope;\n    if(abs(p.y) > edge) {\n      d = min(d, length(vec2(max(tx, 0.0), abs(p.y) - edge)));\n    } else {\n      d = min(d, -min(abs(abs(p.y) - edge), abs(tx)));\n    }\n  }\n  return d;\n}\n\nfloat veeSD(vec2 p, vec2 b) {\n  // V-shape (vee)\n  float hw = b.x;\n  float hh = b.y;\n  p.y = -p.y;\n  float slope = hh / hw;\n  float d = abs(p.y) - hh + abs(p.x) * slope;\n  d = d / sqrt(1.0 + slope * slope);\n  float dBox = rectangleSD(p, b);\n  return max(d, dBox);\n}\n\nfloat rhomboidSD(vec2 p, vec2 b) {\n  // Parallelogram / rhomboid shape\n  float hw = b.x;\n  float hh = b.y;\n  float skew = hw * 0.3;\n  vec2 q = vec2(p.x - p.y * skew / hh, p.y);\n  return rectangleSD(q, vec2(hw - abs(skew), hh));\n}\n\nfloat barrelSD(vec2 p, vec2 b) {\n  // Barrel: rectangle with curved sides\n  float hw = b.x;\n  float hh = b.y;\n  float curve = hw * 0.15;\n  float adjustedHW = hw - curve + curve * cos(p.y * 3.141593 / (2.0 * hh));\n  vec2 d = abs(p) - vec2(adjustedHW, hh);\n  return distance(vec2(0), max(d, 0.0)) + min(max(d.x, d.y), 0.0);\n}\n\nfloat cutRectangleSD(vec2 p, vec2 b) {\n  // Rectangle with cut corners\n  float hw = b.x;\n  float hh = b.y;\n  float cut = min(hw, hh) * 0.2;\n  float dRect = rectangleSD(p, b);\n  // Cut corners: 45-degree cuts\n  float dCorner = abs(p.x) + abs(p.y) - (hw + hh - cut);\n  dCorner = dCorner * 0.7071; // normalize\n  return max(dRect, dCorner);\n}\n\nfloat concaveHexagonSD(vec2 p, vec2 b) {\n  // Hexagon with concave sides\n  float hw = b.x;\n  float hh = b.y;\n  float indent = hw * 0.2;\n  p = abs(p);\n  // Start with hexagon-like shape\n  float dRect = rectangleSD(p, b);\n  // Add concavity on left/right sides\n  float concavity = indent * cos(p.y * 3.141593 / hh);\n  float adjustedX = p.x - concavity;\n  if(adjustedX > hw) {\n    return max(dRect, adjustedX - hw);\n  }\n  return dRect;\n}\n\n// ---- Blending and Interpolation ----\n\nvec4 blend(vec4 top, vec4 bot) {\n  return vec4(\n    top.rgb + (bot.rgb * (1.0 - top.a)),\n    top.a + (bot.a * (1.0 - top.a))\n  );\n}\n\nvec4 distInterp(vec4 cA, vec4 cB, float d) {\n  return mix(cA, cB, 1.0 - smoothstep(0.0, 1.5 / uZoom, abs(d)));\n}\n\n// ---- Compute SDF for given shape ----\n\nfloat computeSDF(vec2 p, vec2 b, int shape, float cr) {\n  if(shape == 0) { // RECTANGLE\n    return rectangleSD(p, b);\n  } else if(shape == 1) { // ROUND_RECTANGLE\n    return roundRectangleSD(p, b, cr);\n  } else if(shape == 2) { // BOTTOM_ROUND_RECTANGLE\n    // Only round bottom corners\n    float d1 = roundRectangleSD(p, b, cr);\n    float d2 = rectangleSD(p - vec2(0.0, b.y * 0.5), vec2(b.x, b.y * 0.5));\n    return (p.y > 0.0) ? d2 : d1;\n  } else if(shape == 3) { // ELLIPSE\n    if(b.x == b.y) return circleSD(p, b.x);\n    return ellipseSD(p, b);\n  } else if(shape == 4) { // TRIANGLE\n    return triangleSD(p, b);\n  } else if(shape == 5) { // DIAMOND\n    return diamondSD(p, b);\n  } else if(shape == 6) { // PENTAGON\n    float r = min(b.x, b.y);\n    return polygonSD(p, r, 5.0);\n  } else if(shape == 7) { // HEXAGON\n    float r = min(b.x, b.y);\n    return polygonSD(p, r, 6.0);\n  } else if(shape == 8) { // HEPTAGON\n    float r = min(b.x, b.y);\n    return polygonSD(p, r, 7.0);\n  } else if(shape == 9) { // OCTAGON\n    float r = min(b.x, b.y);\n    return polygonSD(p, r, 8.0);\n  } else if(shape == 10) { // STAR\n    return starSD(p, b);\n  } else if(shape == 11) { // TAG\n    return tagSD(p, b);\n  } else if(shape == 12) { // VEE\n    return veeSD(p, b);\n  } else if(shape == 13) { // RHOMBOID\n    return rhomboidSD(p, b);\n  } else if(shape == 14) { // BARREL\n    return barrelSD(p, b);\n  } else if(shape == 15) { // CUT_RECTANGLE\n    return cutRectangleSD(p, b);\n  } else if(shape == 16) { // CONCAVE_HEXAGON\n    return concaveHexagonSD(p, b);\n  }\n  return rectangleSD(p, b); // fallback\n}\n";
+var FRAGMENT_SHADER_MAIN$1 = "\nvoid main() {\n  float outerBorder = vBorderWidth[0];\n  float innerBorder = vBorderWidth[1];\n  float borderPadding = outerBorder * 2.0;\n  float w = vTopRight.x - vBotLeft.x - borderPadding;\n  float h = vTopRight.y - vBotLeft.y - borderPadding;\n  vec2 b = vec2(w / 2.0, h / 2.0);\n  vec2 p = vPosition - vec2(\n    vTopRight.x - b.x - outerBorder,\n    vTopRight.y - b.y - outerBorder\n  );\n\n  float d = computeSDF(p, b, vShape, vCornerRadius);\n\n  vec4 fillColor = unpackColor(vColor);\n  vec4 borderColor = unpackColor(vBorderColor);\n\n  #ifdef PICKING_MODE\n    // In picking mode, discard transparent pixels\n    if(d > outerBorder) discard;\n    outColor = unpackColor(vPickId);\n  #else\n    if(d > 0.0) {\n      if(d > outerBorder) {\n        discard;\n      } else {\n        outColor = distInterp(borderColor, vec4(0), d - outerBorder);\n      }\n    } else {\n      if(d > innerBorder) {\n        vec4 outerColor = outerBorder == 0.0 ? vec4(0) : borderColor;\n        vec4 innerBorderColor = blend(borderColor, fillColor);\n        outColor = distInterp(innerBorderColor, outerColor, d);\n      } else {\n        vec4 outerColor;\n        if(innerBorder == 0.0 && outerBorder == 0.0) {\n          outerColor = vec4(0);\n        } else if(innerBorder == 0.0) {\n          outerColor = borderColor;\n        } else {\n          outerColor = blend(borderColor, fillColor);\n        }\n        outColor = distInterp(fillColor, outerColor, d - innerBorder);\n      }\n    }\n    // Discard fully transparent pixels (e.g. when background-color is transparent)\n    if(outColor.a < 0.004) discard;\n  #endif\n}\n";
+var FRAGMENT_SHADER_SOURCE$1 = FRAGMENT_SHADER_HEADER$1 + FRAGMENT_SHADER_MAIN$1;
+var FRAGMENT_SHADER_PICKING_SOURCE$1 = FRAGMENT_SHADER_HEADER$1 + '#define PICKING_MODE\n' + FRAGMENT_SHADER_MAIN$1;
+var NodeSDFProgram = /*#__PURE__*/function () {
+  function NodeSDFProgram() {
+    _classCallCheck(this, NodeSDFProgram);
+    this.buffer = null; // Float32Array
+    this.capacity = 0;
+    this.count = 0;
+    this.needsUpload = false;
+    this._dirtyMin = Infinity; // dirty range tracking (slot indices)
+    this._dirtyMax = -1;
+    this.glBuffer = null; // WebGL buffer object
+    this._gpuBufferSize = 0; // current GPU buffer size in floats
+    this.quadBuffer = null; // WebGL buffer for unit quad
+    this.vao = null; // WebGL VAO
+    this.screenProgram = null;
+    this.pickingProgram = null;
+  }
+
+  /** Initialize GL resources. Called once. */
+  return _createClass(NodeSDFProgram, [{
+    key: "init",
+    value: function init(gl) {
+      // Compile shader programs
+      this.screenProgram = createProgram(gl, VERTEX_SHADER_SOURCE$2, FRAGMENT_SHADER_SOURCE$1);
+      this.pickingProgram = createProgram(gl, VERTEX_SHADER_SOURCE$2, FRAGMENT_SHADER_PICKING_SOURCE$1);
+
+      // Cache uniform locations on both programs
+      for (var _i = 0, _arr = [this.screenProgram, this.pickingProgram]; _i < _arr.length; _i++) {
+        var prog = _arr[_i];
+        prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
+        prog.uZoom = gl.getUniformLocation(prog, 'uZoom');
+      }
+
+      // Create instance data buffer
+      this.glBuffer = gl.createBuffer();
+
+      // Create VAO
+      this.vao = gl.createVertexArray();
+      gl.bindVertexArray(this.vao);
+
+      // --- Unit quad (non-instanced) ---
+      this.quadBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+
+      // Fixed attribute locations (must match layout qualifiers in vertex shader)
+      var LOC_VERTEX = 0;
+      var LOC_NODE_POS = 1;
+      var LOC_NODE_SIZE = 2;
+      var LOC_COLOR = 3;
+      var LOC_BORDER_COLOR = 4;
+      var LOC_BORDER_WIDTH = 5;
+      var LOC_SHAPE = 6;
+      var LOC_CORNER_RAD = 7;
+      var LOC_BORDER_POS = 8;
+      var LOC_PICK_ID = 9;
+      gl.enableVertexAttribArray(LOC_VERTEX);
+      gl.vertexAttribPointer(LOC_VERTEX, 2, gl.FLOAT, false, 0, 0);
+      // divisor = 0 (default, per-vertex)
+
+      // --- Per-instance attributes from the interleaved buffer ---
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      var stride = NODE_STRIDE * 4; // bytes per instance
+
+      var attribs = [{
+        loc: LOC_NODE_POS,
+        size: 2,
+        offset: 0
+      }, {
+        loc: LOC_NODE_SIZE,
+        size: 2,
+        offset: 2
+      }, {
+        loc: LOC_COLOR,
+        size: 1,
+        offset: 4
+      }, {
+        loc: LOC_BORDER_COLOR,
+        size: 1,
+        offset: 5
+      }, {
+        loc: LOC_BORDER_WIDTH,
+        size: 1,
+        offset: 6
+      }, {
+        loc: LOC_SHAPE,
+        size: 1,
+        offset: 7
+      }, {
+        loc: LOC_CORNER_RAD,
+        size: 1,
+        offset: 8
+      }, {
+        loc: LOC_BORDER_POS,
+        size: 1,
+        offset: 9
+      }, {
+        loc: LOC_PICK_ID,
+        size: 1,
+        offset: 10
+      }];
+      for (var _i2 = 0, _attribs = attribs; _i2 < _attribs.length; _i2++) {
+        var attr = _attribs[_i2];
+        gl.enableVertexAttribArray(attr.loc);
+        gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+        gl.vertexAttribDivisor(attr.loc, 1); // per-instance
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindVertexArray(null);
+    }
+
+    /** Ensure buffer can hold `count` nodes. */
+  }, {
+    key: "reallocate",
+    value: function reallocate(count) {
+      if (count <= this.capacity) return;
+      var newCap = Math.max(count, this.capacity * 2, 256);
+      var newBuffer = new Float32Array(newCap * NODE_STRIDE);
+      if (this.buffer) newBuffer.set(this.buffer);
+      this.buffer = newBuffer;
+      this.capacity = newCap;
+      this.needsUpload = true;
+    }
+
+    /** Pack one node's data into the buffer. Called during process(). */
+  }, {
+    key: "processNode",
+    value: function processNode(slot, node, pickIndex) {
+      var buf = this.buffer;
+      var off = slot * NODE_STRIDE;
+      var pos = node.position();
+      var ow = node.outerWidth();
+      var oh = node.outerHeight();
+      buf[off + 0] = pos.x;
+      buf[off + 1] = pos.y;
+      buf[off + 2] = ow;
+      buf[off + 3] = oh;
+      var bgColor = node.pstyle('background-color').value;
+      var bgOpacity = node.pstyle('background-opacity').value;
+      // Honor alpha from color tuple (e.g. 'transparent' → [0,0,0,0])
+      if (bgColor.length > 3 && bgColor[3] < 1) {
+        bgOpacity *= bgColor[3];
+      }
+      buf[off + 4] = packPremulColor(bgColor, bgOpacity);
+      var bw = node.pstyle('border-width').value;
+      var bop = node.pstyle('border-opacity').value;
+      if (bw > 0 && bop > 0) {
+        var bc = node.pstyle('border-color').value;
+        if (bc.length > 3 && bc[3] < 1) bop *= bc[3];
+        buf[off + 5] = packPremulColor(bc, bop);
+      } else {
+        buf[off + 5] = packColor(0, 0, 0, 0);
+      }
+      buf[off + 6] = bw;
+      var shape = node.pstyle('shape').value;
+      buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
+      var cr = node.pstyle('corner-radius');
+      buf[off + 8] = cr.value === 'auto' ? getRoundRectangleRadius(ow, oh) : cr.pfValue;
+      var bp = node.pstyle('border-position').value;
+      buf[off + 9] = bp === 'inside' ? 1 : bp === 'outside' ? 2 : 0;
+      buf[off + 10] = packPickIndex(pickIndex);
+      this._markDirty(slot);
+    }
+
+    /** Upload buffer to GPU if dirty. Uses dirty range for partial uploads. */
+  }, {
+    key: "upload",
+    value: function upload(gl) {
+      if (!this.needsUpload || !this.buffer || this.count === 0) return;
+      var dataSize = this.count * NODE_STRIDE;
+
+      // If GPU buffer is too small, delete and recreate it, then rebind in VAO
+      if (dataSize > this._gpuBufferSize) {
+        var data = this.buffer.subarray(0, dataSize);
+        gl.deleteBuffer(this.glBuffer);
+        this.glBuffer = gl.createBuffer();
+        this._gpuBufferSize = dataSize;
+        gl.bindVertexArray(this.vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+        var stride = NODE_STRIDE * 4;
+        var attribs = [{
+          loc: 1,
+          size: 2,
+          offset: 0
+        },
+        // aNodePos
+        {
+          loc: 2,
+          size: 2,
+          offset: 2
+        },
+        // aNodeSize
+        {
+          loc: 3,
+          size: 1,
+          offset: 4
+        },
+        // aColor
+        {
+          loc: 4,
+          size: 1,
+          offset: 5
+        },
+        // aBorderColor
+        {
+          loc: 5,
+          size: 1,
+          offset: 6
+        },
+        // aBorderWidth
+        {
+          loc: 6,
+          size: 1,
+          offset: 7
+        },
+        // aShape
+        {
+          loc: 7,
+          size: 1,
+          offset: 8
+        },
+        // aCornerRadius
+        {
+          loc: 8,
+          size: 1,
+          offset: 9
+        },
+        // aBorderPos
+        {
+          loc: 9,
+          size: 1,
+          offset: 10
+        } // aPickId
+        ];
+        for (var _i3 = 0, _attribs2 = attribs; _i3 < _attribs2.length; _i3++) {
+          var attr = _attribs2[_i3];
+          gl.enableVertexAttribArray(attr.loc);
+          gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+          gl.vertexAttribDivisor(attr.loc, 1);
+        }
+        gl.bindVertexArray(null);
+      } else if (this._dirtyMin <= this._dirtyMax) {
+        // Partial upload: only the dirty range
+        var startFloat = this._dirtyMin * NODE_STRIDE;
+        var endFloat = (this._dirtyMax + 1) * NODE_STRIDE;
+        var dirtyData = this.buffer.subarray(startFloat, Math.min(endFloat, dataSize));
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, dirtyData);
+      } else {
+        // Full upload (e.g. after process())
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, dataSize));
+      }
+      this._dirtyMin = Infinity;
+      this._dirtyMax = -1;
+      this.needsUpload = false;
+    }
+
+    /** Draw all nodes. */
+  }, {
+    key: "draw",
+    value: function draw(gl, panZoomMatrix, isPicking, zoom) {
+      if (this.count === 0 || !this.buffer) return;
+      var program = isPicking ? this.pickingProgram : this.screenProgram;
+      gl.useProgram(program);
+      gl.bindVertexArray(this.vao);
+      gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
+      // For picking, disable LOD culling so nodes remain clickable at any zoom
+      gl.uniform1f(program.uZoom, isPicking ? 1e6 : zoom || 1.0);
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+      gl.bindVertexArray(null);
+    }
+
+    /** Update just position (for drag). */
+  }, {
+    key: "updatePosition",
+    value: function updatePosition(slot, x, y) {
+      var off = slot * NODE_STRIDE;
+      this.buffer[off + 0] = x;
+      this.buffer[off + 1] = y;
+      this._markDirty(slot);
+    }
+
+    /** Mark a slot as dirty for partial upload. */
+  }, {
+    key: "_markDirty",
+    value: function _markDirty(slot) {
+      if (slot < this._dirtyMin) this._dirtyMin = slot;
+      if (slot > this._dirtyMax) this._dirtyMax = slot;
+      this.needsUpload = true;
+    }
+
+    /** Clean up GL resources. */
+  }, {
+    key: "destroy",
+    value: function destroy(gl) {
+      if (this.vao) {
+        gl.deleteVertexArray(this.vao);
+        this.vao = null;
+      }
+      if (this.glBuffer) {
+        gl.deleteBuffer(this.glBuffer);
+        this.glBuffer = null;
+      }
+      if (this.quadBuffer) {
+        gl.deleteBuffer(this.quadBuffer);
+        this.quadBuffer = null;
+      }
+      if (this.screenProgram) {
+        gl.deleteProgram(this.screenProgram);
+        this.screenProgram = null;
+      }
+      if (this.pickingProgram) {
+        gl.deleteProgram(this.pickingProgram);
+        this.pickingProgram = null;
+      }
+      this.buffer = null;
+      this.capacity = 0;
+      this.count = 0;
+    }
+  }]);
+}();
+
+var NODE_TEX_STRIDE = 11; // floats per textured node
+
+// ---- Shader Sources ----
+
+var VERTEX_SHADER_SOURCE$1 = "#version 300 es\nprecision highp float;\n\nuniform mat3 uPanZoomMatrix;\nuniform float uZoom;\n\nlayout(location = 0) in vec2 aVertex;\n\nlayout(location = 1) in vec2 aNodePos;\nlayout(location = 2) in vec2 aNodeSize;\nlayout(location = 3) in float aColor;\nlayout(location = 4) in vec2 aTexXY;\nlayout(location = 5) in vec2 aTexSize;\nlayout(location = 6) in float aTexPageIndex;\nlayout(location = 7) in float aPickId;\n\nout vec2 vTexCoord;\nflat out float vColor;\nflat out float vTexPageIndex;\nflat out float vPickId;\n\nvoid main() {\n  // LOD cull: skip bg-image when node is too small for detail to be visible\n  float screenSize = max(aNodeSize.x, aNodeSize.y) * uZoom;\n  if(screenSize < 10.0) {\n    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);\n    return;\n  }\n\n  vec2 modelPos = aNodePos + (aVertex - 0.5) * aNodeSize;\n  gl_Position = vec4((uPanZoomMatrix * vec3(modelPos, 1.0)).xy, 0.0, 1.0);\n\n  vTexCoord = aTexXY + aVertex * aTexSize;\n  vColor = aColor;\n  vTexPageIndex = aTexPageIndex;\n  vPickId = aPickId;\n}\n";
+
+/**
+ * Generate fragment shader source for a given page count.
+ * Dynamically recompiled when the texture page count changes (sigma.js approach).
+ */
+function getFragmentShaderSource(pageCount) {
+  var maxPages = Math.max(pageCount, 1);
+
+  // Build the if-else chain for page selection
+  var pageSelection = '';
+  for (var i = 0; i < maxPages; i++) {
+    var cond = i === 0 ? 'if' : 'else if';
+    pageSelection += "    ".concat(cond, "(pageIndex == ").concat(i, ") texel = texture(u_atlas[").concat(i, "], vTexCoord);\n");
+  }
+  return "#version 300 es\nprecision highp float;\n\nin vec2 vTexCoord;\nflat in float vColor;\nflat in float vTexPageIndex;\nflat in float vPickId;\n\nuniform sampler2D u_atlas[".concat(maxPages, "];\n\nout vec4 outColor;\n\nvec4 unpackColor(float f) {\n  int v = floatBitsToInt(f);\n  return vec4(\n    float(v & 0xFF) / 255.0,\n    float((v >> 8) & 0xFF) / 255.0,\n    float((v >> 16) & 0xFF) / 255.0,\n    float((v >> 24) & 0xFF) / 255.0\n  );\n}\n\nvoid main() {\n  int pageIndex = int(vTexPageIndex);\n  vec4 texel = vec4(0.0);\n\n").concat(pageSelection, "\n  #ifdef PICKING_MODE\n    if(texel.a < 0.01) discard;\n    outColor = unpackColor(vPickId);\n  #else\n    // Only render where the texture has content (alpha > 0).\n    // Transparent areas are discarded \u2014 the SDF shape behind shows through.\n    if(texel.a < 0.01) discard;\n    outColor = texel;\n  #endif\n}\n");
+}
+function getPickingFragmentShaderSource(pageCount) {
+  var base = getFragmentShaderSource(pageCount);
+  // Insert #define PICKING_MODE after the #version line
+  return base.replace('precision highp float;', '#define PICKING_MODE\nprecision highp float;');
+}
+var NodeTextureProgram = /*#__PURE__*/function () {
+  function NodeTextureProgram() {
+    _classCallCheck(this, NodeTextureProgram);
+    this.buffer = null; // Float32Array
+    this.capacity = 0;
+    this.count = 0;
+    this.needsUpload = false;
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
+    this.glBuffer = null; // WebGL buffer object
+    this.quadBuffer = null; // WebGL buffer for unit quad
+    this.vao = null; // WebGL VAO
+    this.screenProgram = null;
+    this.pickingProgram = null;
+    this._compiledPageCount = 0;
+    this._textureManager = null;
+    this._gpuBufferSize = 0;
+  }
+
+  /** Set reference to the TexturePageManager. */
+  return _createClass(NodeTextureProgram, [{
+    key: "setTextureManager",
+    value: function setTextureManager(mgr) {
+      this._textureManager = mgr;
+    }
+
+    /** Initialize GL resources. Called once. */
+  }, {
+    key: "init",
+    value: function init(gl) {
+      this._gl = gl;
+      this._compileShaders(gl, 1); // start with 1 page
+
+      // Create instance data buffer
+      this.glBuffer = gl.createBuffer();
+
+      // Create VAO
+      this.vao = gl.createVertexArray();
+      gl.bindVertexArray(this.vao);
+
+      // --- Unit quad (non-instanced) ---
+      this.quadBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+      var LOC_VERTEX = 0;
+      var LOC_NODE_POS = 1;
+      var LOC_NODE_SIZE = 2;
+      var LOC_COLOR = 3;
+      var LOC_TEX_XY = 4;
+      var LOC_TEX_SIZE = 5;
+      var LOC_TEX_PAGE = 6;
+      var LOC_PICK_ID = 7;
+      gl.enableVertexAttribArray(LOC_VERTEX);
+      gl.vertexAttribPointer(LOC_VERTEX, 2, gl.FLOAT, false, 0, 0);
+      // divisor = 0 (default, per-vertex)
+
+      // --- Per-instance attributes from the interleaved buffer ---
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      var stride = NODE_TEX_STRIDE * 4; // bytes per instance
+
+      var attribs = [{
+        loc: LOC_NODE_POS,
+        size: 2,
+        offset: 0
+      }, {
+        loc: LOC_NODE_SIZE,
+        size: 2,
+        offset: 2
+      }, {
+        loc: LOC_COLOR,
+        size: 1,
+        offset: 4
+      }, {
+        loc: LOC_TEX_XY,
+        size: 2,
+        offset: 5
+      }, {
+        loc: LOC_TEX_SIZE,
+        size: 2,
+        offset: 7
+      }, {
+        loc: LOC_TEX_PAGE,
+        size: 1,
+        offset: 9
+      }, {
+        loc: LOC_PICK_ID,
+        size: 1,
+        offset: 10
+      }];
+      for (var _i = 0, _attribs = attribs; _i < _attribs.length; _i++) {
+        var attr = _attribs[_i];
+        gl.enableVertexAttribArray(attr.loc);
+        gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+        gl.vertexAttribDivisor(attr.loc, 1); // per-instance
+      }
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindVertexArray(null);
+    }
+
+    /** Compile/recompile shaders for the given page count. */
+  }, {
+    key: "_compileShaders",
+    value: function _compileShaders(gl, pageCount) {
+      // Delete old programs
+      if (this.screenProgram) gl.deleteProgram(this.screenProgram);
+      if (this.pickingProgram) gl.deleteProgram(this.pickingProgram);
+      var fragSrc = getFragmentShaderSource(pageCount);
+      var pickFragSrc = getPickingFragmentShaderSource(pageCount);
+      this.screenProgram = createProgram(gl, VERTEX_SHADER_SOURCE$1, fragSrc);
+      this.pickingProgram = createProgram(gl, VERTEX_SHADER_SOURCE$1, pickFragSrc);
+
+      // Cache uniform locations on both programs
+      for (var _i2 = 0, _arr = [this.screenProgram, this.pickingProgram]; _i2 < _arr.length; _i2++) {
+        var prog = _arr[_i2];
+        prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
+        prog.uZoom = gl.getUniformLocation(prog, 'uZoom');
+        prog.uAtlas = [];
+        for (var i = 0; i < pageCount; i++) {
+          prog.uAtlas.push(gl.getUniformLocation(prog, "u_atlas[".concat(i, "]")));
+        }
+      }
+      this._compiledPageCount = pageCount;
+    }
+
+    /** Ensure buffer can hold `count` nodes. */
+  }, {
+    key: "reallocate",
+    value: function reallocate(count) {
+      if (count <= this.capacity) return;
+      var newCap = Math.max(count, this.capacity * 2, 256);
+      var newBuffer = new Float32Array(newCap * NODE_TEX_STRIDE);
+      if (this.buffer) newBuffer.set(this.buffer);
+      this.buffer = newBuffer;
+      this.capacity = newCap;
+      this.needsUpload = true;
+    }
+
+    /**
+     * Pack one textured node's data into the buffer.
+     * @param {number} slot - Buffer slot index
+     * @param {object} node - Cytoscape node
+     * @param {number} pickIndex - Picking identifier
+     * @param {object} textureManager - TexturePageManager instance
+     */
+  }, {
+    key: "processNode",
+    value: function processNode(slot, node, pickIndex, textureManager) {
+      var buf = this.buffer;
+      var off = slot * NODE_TEX_STRIDE;
+      var pos = node.position();
+      buf[off + 0] = pos.x;
+      buf[off + 1] = pos.y;
+      buf[off + 2] = node.outerWidth();
+      buf[off + 3] = node.outerHeight();
+
+      // Node background color (premultiplied alpha)
+      var texBgColor = node.pstyle('background-color').value;
+      var texBgOpacity = node.pstyle('background-opacity').value;
+      if (texBgColor.length > 3 && texBgColor[3] < 1) {
+        texBgOpacity *= texBgColor[3];
+      }
+      buf[off + 4] = packPremulColor(texBgColor, texBgOpacity);
+
+      // Atlas coordinates
+      var imgUrl = node.pstyle('background-image').strValue;
+      var entry = textureManager ? textureManager.getEntry(imgUrl) : null;
+      var pageSize = textureManager ? textureManager.maxPageSize : 4096;
+      if (entry) {
+        // Normalize atlas coordinates to [0,1] range
+        buf[off + 5] = entry.x / pageSize;
+        buf[off + 6] = entry.y / pageSize;
+        buf[off + 7] = entry.size / pageSize;
+        buf[off + 8] = entry.size / pageSize;
+        buf[off + 9] = entry.pageIndex;
+      } else {
+        buf[off + 5] = 0;
+        buf[off + 6] = 0;
+        buf[off + 7] = 0;
+        buf[off + 8] = 0;
+        buf[off + 9] = 0;
+      }
+      buf[off + 10] = packPickIndex(pickIndex);
+      this._markDirty(slot);
+    }
+
+    /** Upload buffer to GPU if dirty. */
+  }, {
+    key: "upload",
+    value: function upload(gl) {
+      if (!this.needsUpload || !this.buffer || this.count === 0) return;
+      var dataSize = this.count * NODE_TEX_STRIDE;
+      var data = this.buffer.subarray(0, dataSize);
+      if (dataSize > this._gpuBufferSize) {
+        gl.deleteBuffer(this.glBuffer);
+        this.glBuffer = gl.createBuffer();
+        this._gpuBufferSize = dataSize;
+        gl.bindVertexArray(this.vao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+        var stride = NODE_TEX_STRIDE * 4;
+        var attribs = [{
+          loc: 1,
+          size: 2,
+          offset: 0
+        },
+        // aNodePos
+        {
+          loc: 2,
+          size: 2,
+          offset: 2
+        },
+        // aNodeSize
+        {
+          loc: 3,
+          size: 1,
+          offset: 4
+        },
+        // aColor
+        {
+          loc: 4,
+          size: 2,
+          offset: 5
+        },
+        // aTexXY
+        {
+          loc: 5,
+          size: 2,
+          offset: 7
+        },
+        // aTexSize
+        {
+          loc: 6,
+          size: 1,
+          offset: 9
+        },
+        // aTexPageIndex
+        {
+          loc: 7,
+          size: 1,
+          offset: 10
+        } // aPickId
+        ];
+        for (var _i3 = 0, _attribs2 = attribs; _i3 < _attribs2.length; _i3++) {
+          var attr = _attribs2[_i3];
+          gl.enableVertexAttribArray(attr.loc);
+          gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+          gl.vertexAttribDivisor(attr.loc, 1);
+        }
+        gl.bindVertexArray(null);
+      } else if (this._dirtyMin <= this._dirtyMax) {
+        // Partial upload: only the dirty range
+        var startFloat = this._dirtyMin * NODE_TEX_STRIDE;
+        var endFloat = (this._dirtyMax + 1) * NODE_TEX_STRIDE;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, this.buffer.subarray(startFloat, Math.min(endFloat, dataSize)));
+      } else {
+        // Full upload
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
+      }
+      this._dirtyMin = Infinity;
+      this._dirtyMax = -1;
+      this.needsUpload = false;
+    }
+
+    /** Draw all textured nodes. */
+  }, {
+    key: "draw",
+    value: function draw(gl, panZoomMatrix, isPicking, zoom) {
+      if (this.count === 0 || !this.buffer) return;
+
+      // Recompile shaders if page count changed
+      var mgr = this._textureManager;
+      var pageCount = mgr ? mgr.getPageCount() : 1;
+      if (pageCount !== this._compiledPageCount && pageCount > 0) {
+        this._compileShaders(gl, pageCount);
+      }
+      var program = isPicking ? this.pickingProgram : this.screenProgram;
+      gl.useProgram(program);
+      gl.bindVertexArray(this.vao);
+      gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
+      gl.uniform1f(program.uZoom, zoom || 1.0);
+
+      // Bind all texture pages
+      if (mgr) {
+        var pages = mgr.getPages();
+        for (var i = 0; i < pages.length; i++) {
+          gl.activeTexture(gl.TEXTURE0 + i);
+          if (pages[i].glTexture) {
+            gl.bindTexture(gl.TEXTURE_2D, pages[i].glTexture);
+          }
+          if (program.uAtlas[i] !== undefined) {
+            gl.uniform1i(program.uAtlas[i], i);
+          }
+        }
+      }
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+      gl.bindVertexArray(null);
+    }
+
+    /** Update just position (for drag). */
+  }, {
+    key: "updatePosition",
+    value: function updatePosition(slot, x, y) {
+      var off = slot * NODE_TEX_STRIDE;
+      this.buffer[off + 0] = x;
+      this.buffer[off + 1] = y;
+      this._markDirty(slot);
+    }
+  }, {
+    key: "_markDirty",
+    value: function _markDirty(slot) {
+      if (slot < this._dirtyMin) this._dirtyMin = slot;
+      if (slot > this._dirtyMax) this._dirtyMax = slot;
+      this.needsUpload = true;
+    }
+
+    /** Clean up GL resources. */
+  }, {
+    key: "destroy",
+    value: function destroy(gl) {
+      if (this.vao) {
+        gl.deleteVertexArray(this.vao);
+        this.vao = null;
+      }
+      if (this.glBuffer) {
+        gl.deleteBuffer(this.glBuffer);
+        this.glBuffer = null;
+      }
+      if (this.quadBuffer) {
+        gl.deleteBuffer(this.quadBuffer);
+        this.quadBuffer = null;
+      }
+      if (this.screenProgram) {
+        gl.deleteProgram(this.screenProgram);
+        this.screenProgram = null;
+      }
+      if (this.pickingProgram) {
+        gl.deleteProgram(this.pickingProgram);
+        this.pickingProgram = null;
+      }
+      this.buffer = null;
+      this.capacity = 0;
+      this.count = 0;
+      this._textureManager = null;
+    }
+  }]);
+}();
+
+var EDGE_STRIDE = 11; // floats per edge instance
+
+// Vertex type constants
+var EDGE_STRAIGHT = 0;
+var EDGE_CURVE_SEGMENT = 1;
+var EDGE_ARROW = 2;
+
+// Number of segments for bezier subdivision
+var BEZIER_SEGMENTS = 16;
+
+// ---- Shader Sources ----
+
+var VERTEX_SHADER_SOURCE = "#version 300 es\nprecision highp float;\n\nuniform mat3 uPanZoomMatrix;\n\n// Unit quad vertex (not instanced)\nlayout(location = 0) in vec2 aVertex;\n\n// Per-instance float attributes (divisor=1)\nlayout(location = 1) in vec4 aPointAB;\nlayout(location = 2) in vec4 aPointCD;\nlayout(location = 3) in float aColor;\nlayout(location = 4) in float aWidth;\nlayout(location = 5) in float aPickId;\n\n// Per-instance int attribute (divisor=1, separate buffer)\nlayout(location = 6) in int aVertType;\n\n// To fragment shader\nflat out float vColor;\nflat out int vVertType;\nflat out float vPickId;\n\nvoid main() {\n  vec2 position = aVertex;\n  int vid = gl_VertexID % 6;\n\n  if(aVertType == 0) { // EDGE_STRAIGHT\n    vec2 source = aPointAB.xy;\n    vec2 target = aPointAB.zw;\n    position.y -= 0.5;\n    vec2 xBasis = target - source;\n    vec2 yBasis = normalize(vec2(-xBasis.y, xBasis.x));\n    vec2 point = source + xBasis * position.x + yBasis * aWidth * position.y;\n    gl_Position = vec4((uPanZoomMatrix * vec3(point, 1.0)).xy, 0.0, 1.0);\n  } else if(aVertType == 1) { // EDGE_CURVE_SEGMENT\n    vec2 pointA = aPointAB.xy;\n    vec2 pointB = aPointAB.zw;\n    vec2 pointC = aPointCD.xy;\n    vec2 pointD = aPointCD.zw;\n    position.y -= 0.5;\n\n    // Left side (position.x == 0): compute perpendicular at B using A-B-C\n    // Right side (position.x == 1): compute perpendicular at C using B-C-D (flipped)\n    vec2 p0, p1, p2;\n    float posY;\n    if(position.x == 0.0) {\n      p0 = pointA; p1 = pointB; p2 = pointC;\n      posY = position.y;\n    } else {\n      p0 = pointD; p1 = pointC; p2 = pointB;\n      posY = -position.y;\n    }\n\n    vec2 p01 = p1 - p0;\n    vec2 p12 = p2 - p1;\n    vec2 p21 = p1 - p2;\n    vec2 tangent = normalize(normalize(p12) + normalize(p01));\n    vec2 normal = vec2(-tangent.y, tangent.x);\n    vec2 p01Norm = normalize(vec2(-p01.y, p01.x));\n    float sigma = sign(dot(p01 + p21, normal));\n    float w = aWidth;\n\n    if(sign(posY) == -sigma) {\n      vec2 point = 0.5 * w * normal * -sigma / dot(normal, p01Norm);\n      gl_Position = vec4((uPanZoomMatrix * vec3(p1 + point, 1.0)).xy, 0.0, 1.0);\n    } else {\n      vec2 point = 0.5 * w * normal * sigma * dot(normal, p01Norm);\n      gl_Position = vec4((uPanZoomMatrix * vec3(p1 + point, 1.0)).xy, 0.0, 1.0);\n    }\n  } else if(aVertType == 2 && vid < 3) { // EDGE_ARROW\n    float arrowX = aPointAB.x;\n    float arrowY = aPointAB.y;\n    float arrowSize = aPointAB.z;\n    float arrowAngle = aPointAB.w;\n    vec2 triPos;\n    if(vid == 0) triPos = vec2(-0.15, -0.3);\n    else if(vid == 1) triPos = vec2(0.0, 0.0);\n    else triPos = vec2(0.15, -0.3);\n    float c = cos(arrowAngle);\n    float s = sin(arrowAngle);\n    vec2 rotated = vec2(triPos.x*c - triPos.y*s, triPos.x*s + triPos.y*c) * arrowSize;\n    gl_Position = vec4((uPanZoomMatrix * vec3(vec2(arrowX, arrowY) + rotated, 1.0)).xy, 0.0, 1.0);\n  } else {\n    gl_Position = vec4(0.0); // degenerate, invisible\n  }\n\n  vColor = aColor;\n  vVertType = aVertType;\n  vPickId = aPickId;\n}\n";
+var FRAGMENT_SHADER_HEADER = "#version 300 es\nprecision highp float;\n\nflat in float vColor;\nflat in int vVertType;\nflat in float vPickId;\n\nuniform vec4 uBGColor;\n\nout vec4 outColor;\n\nvec4 unpackColor(float f) {\n  int v = floatBitsToInt(f);\n  return vec4(\n    float(v & 0xFF) / 255.0,\n    float((v >> 8) & 0xFF) / 255.0,\n    float((v >> 16) & 0xFF) / 255.0,\n    float((v >> 24) & 0xFF) / 255.0\n  );\n}\n\nvec4 blend(vec4 top, vec4 bot) {\n  return vec4(\n    top.rgb + (bot.rgb * (1.0 - top.a)),\n    top.a + (bot.a * (1.0 - top.a))\n  );\n}\n";
+var FRAGMENT_SHADER_MAIN = "\nvoid main() {\n  #ifdef PICKING_MODE\n    outColor = unpackColor(vPickId);\n  #else\n    if(vVertType == 2) {\n      outColor = blend(unpackColor(vColor), uBGColor);\n      outColor.a = 1.0;\n    } else {\n      outColor = unpackColor(vColor);\n    }\n  #endif\n}\n";
+var FRAGMENT_SHADER_SOURCE = FRAGMENT_SHADER_HEADER + FRAGMENT_SHADER_MAIN;
+var FRAGMENT_SHADER_PICKING_SOURCE = FRAGMENT_SHADER_HEADER + '#define PICKING_MODE\n' + FRAGMENT_SHADER_MAIN;
+var EdgeProgram = /*#__PURE__*/function () {
+  function EdgeProgram() {
+    _classCallCheck(this, EdgeProgram);
+    this.buffer = null; // Float32Array (instance data)
+    this.typeBuffer = null; // Int32Array (vertex types per instance)
+    this.capacity = 0;
+    this.count = 0; // total instances across all edges
+    this.needsUpload = false;
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
+    this.glBuffer = null; // WebGL buffer for float instance data
+    this.glTypeBuffer = null; // WebGL buffer for int vertex types
+    this._gpuFloatSize = 0;
+    this._gpuTypeSize = 0;
+    this.quadBuffer = null; // WebGL buffer for unit quad
+    this.vao = null;
+    this.screenProgram = null;
+    this.pickingProgram = null;
+    // Picking resources on the node GL context (separate from edge GL context)
+    this._pickVao = null;
+    this._pickGlBuffer = null;
+    this._pickGlTypeBuffer = null;
+    this._pickQuadBuffer = null;
+    this._pickProgram = null;
+    this._pickGpuFloatSize = 0;
+    this._pickGpuTypeSize = 0;
+  }
+
+  /** Initialize GL resources. Called once. */
+  return _createClass(EdgeProgram, [{
+    key: "init",
+    value: function init(gl) {
+      this.screenProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
+      this.pickingProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE);
+      for (var _i = 0, _arr = [this.screenProgram, this.pickingProgram]; _i < _arr.length; _i++) {
+        var prog = _arr[_i];
+        prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
+        prog.uBGColor = gl.getUniformLocation(prog, 'uBGColor');
+      }
+      this.glBuffer = gl.createBuffer();
+      this.glTypeBuffer = gl.createBuffer();
+      this.vao = gl.createVertexArray();
+      gl.bindVertexArray(this.vao);
+
+      // --- Unit quad (non-instanced) ---
+      this.quadBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+      var LOC_VERTEX = 0;
+      var LOC_POINT_AB = 1;
+      var LOC_POINT_CD = 2;
+      var LOC_COLOR = 3;
+      var LOC_WIDTH = 4;
+      var LOC_PICK_ID = 5;
+      var LOC_VERT_TYPE = 6;
+      gl.enableVertexAttribArray(LOC_VERTEX);
+      gl.vertexAttribPointer(LOC_VERTEX, 2, gl.FLOAT, false, 0, 0);
+      // divisor = 0 (default, per-vertex)
+
+      // --- Per-instance float attributes from the interleaved buffer ---
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      var stride = EDGE_STRIDE * 4; // bytes per instance
+
+      var floatAttribs = [{
+        loc: LOC_POINT_AB,
+        size: 4,
+        offset: 0
+      },
+      // pointAx, pointAy, pointBx, pointBy
+      {
+        loc: LOC_POINT_CD,
+        size: 4,
+        offset: 4
+      },
+      // pointCx, pointCy, pointDx, pointDy
+      {
+        loc: LOC_COLOR,
+        size: 1,
+        offset: 8
+      }, {
+        loc: LOC_WIDTH,
+        size: 1,
+        offset: 9
+      }, {
+        loc: LOC_PICK_ID,
+        size: 1,
+        offset: 10
+      }];
+      for (var _i2 = 0, _floatAttribs = floatAttribs; _i2 < _floatAttribs.length; _i2++) {
+        var attr = _floatAttribs[_i2];
+        gl.enableVertexAttribArray(attr.loc);
+        gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+        gl.vertexAttribDivisor(attr.loc, 1); // per-instance
+      }
+
+      // --- Per-instance int attribute from the type buffer ---
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
+      gl.enableVertexAttribArray(LOC_VERT_TYPE);
+      gl.vertexAttribIPointer(LOC_VERT_TYPE, 1, gl.INT, 0, 0);
+      gl.vertexAttribDivisor(LOC_VERT_TYPE, 1); // per-instance
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindVertexArray(null);
+    }
+
+    /** Initialize picking resources on a DIFFERENT GL context (the node GL context)
+     *  so edges can be drawn into the node-context picking framebuffer. */
+  }, {
+    key: "initPicking",
+    value: function initPicking(gl) {
+      this._pickProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE);
+      this._pickProgram.uPanZoomMatrix = gl.getUniformLocation(this._pickProgram, 'uPanZoomMatrix');
+      this._pickProgram.uBGColor = gl.getUniformLocation(this._pickProgram, 'uBGColor');
+      this._pickGlBuffer = gl.createBuffer();
+      this._pickGlTypeBuffer = gl.createBuffer();
+      this._pickVao = gl.createVertexArray();
+      gl.bindVertexArray(this._pickVao);
+      this._pickQuadBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickQuadBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+      gl.enableVertexAttribArray(0);
+      gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+      // Instance float attribs (same layout as init)
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+      var stride = EDGE_STRIDE * 4;
+      var floatAttribs = [{
+        loc: 1,
+        size: 4,
+        offset: 0
+      }, {
+        loc: 2,
+        size: 4,
+        offset: 4
+      }, {
+        loc: 3,
+        size: 1,
+        offset: 8
+      }, {
+        loc: 4,
+        size: 1,
+        offset: 9
+      }, {
+        loc: 5,
+        size: 1,
+        offset: 10
+      }];
+      for (var _i3 = 0, _floatAttribs2 = floatAttribs; _i3 < _floatAttribs2.length; _i3++) {
+        var attr = _floatAttribs2[_i3];
+        gl.enableVertexAttribArray(attr.loc);
+        gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+        gl.vertexAttribDivisor(attr.loc, 1);
+      }
+
+      // Instance type attrib
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlTypeBuffer);
+      gl.enableVertexAttribArray(6);
+      gl.vertexAttribIPointer(6, 1, gl.INT, 0, 0);
+      gl.vertexAttribDivisor(6, 1);
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindVertexArray(null);
+    }
+
+    /** Upload edge data to the picking GL context. */
+  }, {
+    key: "uploadPicking",
+    value: function uploadPicking(gl) {
+      if (!this._pickGlBuffer || !this.buffer || this.count === 0) return;
+      var floatSize = this.count * EDGE_STRIDE;
+      var typeSize = this.count;
+      if (floatSize > this._pickGpuFloatSize || typeSize > this._pickGpuTypeSize) {
+        this._pickGpuFloatSize = floatSize;
+        this._pickGpuTypeSize = typeSize;
+        gl.bindVertexArray(this._pickVao);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.buffer.subarray(0, floatSize), gl.DYNAMIC_DRAW);
+        var stride = EDGE_STRIDE * 4;
+        var floatAttribs = [{
+          loc: 1,
+          size: 4,
+          offset: 0
+        }, {
+          loc: 2,
+          size: 4,
+          offset: 4
+        }, {
+          loc: 3,
+          size: 1,
+          offset: 8
+        }, {
+          loc: 4,
+          size: 1,
+          offset: 9
+        }, {
+          loc: 5,
+          size: 1,
+          offset: 10
+        }];
+        for (var _i4 = 0, _floatAttribs3 = floatAttribs; _i4 < _floatAttribs3.length; _i4++) {
+          var attr = _floatAttribs3[_i4];
+          gl.enableVertexAttribArray(attr.loc);
+          gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+          gl.vertexAttribDivisor(attr.loc, 1);
+        }
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlTypeBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, this.typeBuffer.subarray(0, typeSize), gl.DYNAMIC_DRAW);
+        gl.bindVertexArray(null);
+      } else {
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, floatSize));
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlTypeBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.typeBuffer.subarray(0, typeSize));
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      }
+    }
+
+    /** Draw edges for picking on the node GL context. */
+  }, {
+    key: "drawPicking",
+    value: function drawPicking(gl, panZoomMatrix, zoom) {
+      if (this.count === 0 || !this.buffer || !this._pickProgram) return;
+      gl.useProgram(this._pickProgram);
+      gl.bindVertexArray(this._pickVao);
+      gl.uniformMatrix3fv(this._pickProgram.uPanZoomMatrix, false, panZoomMatrix);
+      if (this._pickProgram.uBGColor !== null) {
+        gl.uniform4fv(this._pickProgram.uBGColor, [1.0, 1.0, 1.0, 1.0]);
+      }
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+      gl.bindVertexArray(null);
+    }
+
+    /** Ensure buffers can hold `instanceCount` instances. */
+  }, {
+    key: "reallocate",
+    value: function reallocate(instanceCount) {
+      if (instanceCount <= this.capacity) return;
+      var newCap = Math.max(instanceCount, this.capacity * 2, 256);
+      var newBuffer = new Float32Array(newCap * EDGE_STRIDE);
+      var newTypeBuffer = new Int32Array(newCap);
+      if (this.buffer) newBuffer.set(this.buffer);
+      if (this.typeBuffer) newTypeBuffer.set(this.typeBuffer);
+      this.buffer = newBuffer;
+      this.typeBuffer = newTypeBuffer;
+      this.capacity = newCap;
+      this.needsUpload = true;
+    }
+
+    /**
+     * Process one edge. Writes segment instances + arrow instances to the buffer.
+     * Returns the next available slot index.
+     * Called during process() only -- NOT per frame.
+     */
+  }, {
+    key: "processEdge",
+    value: function processEdge(startSlot, edge, pickIndex, r) {
+      var rs = edge._private.rscratch;
+      if (!rs || !rs.allpts) return startSlot;
+      var controlPoints = rs.allpts;
+      var combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+      var color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
+      var width = edge.pstyle('width').pfValue;
+      var pickId = packPickIndex(pickIndex);
+      var slot = startSlot;
+      if (controlPoints.length === 4) {
+        // Straight line: 1 instance
+        this._writeInstance(slot, EDGE_STRAIGHT, controlPoints[0], controlPoints[1], controlPoints[2], controlPoints[3], 0, 0, 0, 0, color, width, pickId);
+        slot++;
+      } else {
+        // Bezier: pre-compute segment points, write N instances
+        var segmentPoints = this._computeSegments(controlPoints, BEZIER_SEGMENTS);
+        for (var i = 0; i < segmentPoints.length - 2; i += 2) {
+          var pAx = segmentPoints[i - 2],
+            pAy = segmentPoints[i - 1];
+          var pBx = segmentPoints[i],
+            pBy = segmentPoints[i + 1];
+          var pCx = segmentPoints[i + 2],
+            pCy = segmentPoints[i + 3];
+          var pDx = segmentPoints[i + 4],
+            pDy = segmentPoints[i + 5];
+          if (i === 0) {
+            pAx = 2 * pBx - pCx + 0.001;
+            pAy = 2 * pBy - pCy + 0.001;
+          }
+          if (i === segmentPoints.length - 4) {
+            pDx = 2 * pCx - pBx + 0.001;
+            pDy = 2 * pCy - pBy + 0.001;
+          }
+          this._writeInstance(slot, EDGE_CURVE_SEGMENT, pAx, pAy, pBx, pBy, pCx, pCy, pDx, pDy, color, width, pickId);
+          slot++;
+        }
+      }
+
+      // Arrows
+      var srcShape = edge.pstyle('source-arrow-shape').value;
+      if (srcShape !== 'none') {
+        slot = this._writeArrow(slot, edge, 'source', color, width, pickId, r, combinedOpacity);
+      }
+      var tgtShape = edge.pstyle('target-arrow-shape').value;
+      if (tgtShape !== 'none') {
+        slot = this._writeArrow(slot, edge, 'target', color, width, pickId, r, combinedOpacity);
+      }
+      return slot;
+    }
+  }, {
+    key: "_writeInstance",
+    value: function _writeInstance(slot, type, ax, ay, bx, by, cx, cy, dx, dy, color, width, pickId) {
+      var off = slot * EDGE_STRIDE;
+      this.buffer[off + 0] = ax;
+      this.buffer[off + 1] = ay;
+      this.buffer[off + 2] = bx;
+      this.buffer[off + 3] = by;
+      this.buffer[off + 4] = cx;
+      this.buffer[off + 5] = cy;
+      this.buffer[off + 6] = dx;
+      this.buffer[off + 7] = dy;
+      this.buffer[off + 8] = color;
+      this.buffer[off + 9] = width;
+      this.buffer[off + 10] = pickId;
+      this.typeBuffer[slot] = type;
+      this._markDirty(slot);
+    }
+  }, {
+    key: "_markDirty",
+    value: function _markDirty(slot) {
+      if (slot < this._dirtyMin) this._dirtyMin = slot;
+      if (slot > this._dirtyMax) this._dirtyMax = slot;
+      this.needsUpload = true;
+    }
+  }, {
+    key: "_writeArrow",
+    value: function _writeArrow(slot, edge, prefix, edgeColor, edgeWidth, pickId, r, combinedOpacity) {
+      var rs = edge._private.rscratch;
+      var x, y, angle;
+      if (prefix === 'source') {
+        x = rs.arrowStartX;
+        y = rs.arrowStartY;
+        angle = rs.srcArrowAngle;
+      } else {
+        x = rs.arrowEndX;
+        y = rs.arrowEndY;
+        angle = rs.tgtArrowAngle;
+      }
+      if (isNaN(x) || isNaN(y) || isNaN(angle)) return slot;
+      var scale = edge.pstyle('arrow-scale').value;
+      var arrowColor = packPremulColor(edge.pstyle(prefix + '-arrow-color').value, combinedOpacity);
+      var size = r.getArrowWidth(edgeWidth, scale);
+      this._writeInstance(slot, EDGE_ARROW, x, y, size, angle, 0, 0, 0, 0, arrowColor, edgeWidth, pickId);
+      return slot + 1;
+    }
+
+    /**
+     * Compute subdivision points along a bezier curve using De Casteljau's algorithm.
+     * Returns an array of (numSegments+1) * 2 values (x,y pairs).
+     */
+  }, {
+    key: "_computeSegments",
+    value: function _computeSegments(controlPoints, numSegments) {
+      var n = controlPoints.length;
+      // Reuse pre-allocated arrays to avoid GC pressure (called per bezier edge)
+      var resultLen = (numSegments + 1) * 2;
+      if (!this._segResult || this._segResult.length < resultLen) {
+        this._segResult = new Array(resultLen);
+      }
+      if (!this._segWork || this._segWork.length < n) {
+        this._segWork = new Array(n);
+      }
+      var result = this._segResult;
+      var work = this._segWork;
+      result[0] = controlPoints[0];
+      result[1] = controlPoints[1];
+      result[numSegments * 2] = controlPoints[n - 2];
+      result[numSegments * 2 + 1] = controlPoints[n - 1];
+      for (var s = 1; s < numSegments; s++) {
+        var t = s / numSegments;
+        var omt = 1 - t;
+        for (var j = 0; j < n; j++) work[j] = controlPoints[j];
+        for (var level = n; level > 2; level -= 2) {
+          for (var _j = 0; _j < level - 2; _j += 2) {
+            work[_j] = omt * work[_j] + t * work[_j + 2];
+            work[_j + 1] = omt * work[_j + 1] + t * work[_j + 3];
+          }
+        }
+        result[s * 2] = work[0];
+        result[s * 2 + 1] = work[1];
+      }
+      return result;
+    }
+
+    /** Upload buffers to GPU if dirty. */
+  }, {
+    key: "upload",
+    value: function upload(gl) {
+      if (!this.needsUpload || !this.buffer || this.count === 0) return;
+      var floatSize = this.count * EDGE_STRIDE;
+      var typeSize = this.count;
+      var floatData = this.buffer.subarray(0, floatSize);
+      var typeData = this.typeBuffer.subarray(0, typeSize);
+      var needsRebind = floatSize > this._gpuFloatSize || typeSize > this._gpuTypeSize;
+      if (needsRebind) {
+        // Recreate buffers and rebind in VAO
+        gl.deleteBuffer(this.glBuffer);
+        gl.deleteBuffer(this.glTypeBuffer);
+        this.glBuffer = gl.createBuffer();
+        this.glTypeBuffer = gl.createBuffer();
+        this._gpuFloatSize = floatSize;
+        this._gpuTypeSize = typeSize;
+        gl.bindVertexArray(this.vao);
+
+        // Float buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, floatData, gl.DYNAMIC_DRAW);
+        var stride = EDGE_STRIDE * 4;
+        var floatAttribs = [{
+          loc: 1,
+          size: 4,
+          offset: 0
+        },
+        // aPointAB
+        {
+          loc: 2,
+          size: 4,
+          offset: 4
+        },
+        // aPointCD
+        {
+          loc: 3,
+          size: 1,
+          offset: 8
+        },
+        // aColor
+        {
+          loc: 4,
+          size: 1,
+          offset: 9
+        },
+        // aWidth
+        {
+          loc: 5,
+          size: 1,
+          offset: 10
+        } // aPickId
+        ];
+        for (var _i5 = 0, _floatAttribs4 = floatAttribs; _i5 < _floatAttribs4.length; _i5++) {
+          var attr = _floatAttribs4[_i5];
+          gl.enableVertexAttribArray(attr.loc);
+          gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+          gl.vertexAttribDivisor(attr.loc, 1);
+        }
+
+        // Type buffer
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, typeData, gl.DYNAMIC_DRAW);
+        gl.enableVertexAttribArray(6);
+        gl.vertexAttribIPointer(6, 1, gl.INT, 0, 0);
+        gl.vertexAttribDivisor(6, 1);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        gl.bindVertexArray(null);
+      } else if (this._dirtyMin <= this._dirtyMax) {
+        // Partial upload: only the dirty range
+        var startFloat = this._dirtyMin * EDGE_STRIDE;
+        var endFloat = (this._dirtyMax + 1) * EDGE_STRIDE;
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, this.buffer.subarray(startFloat, Math.min(endFloat, floatSize)));
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, this._dirtyMin * 4, this.typeBuffer.subarray(this._dirtyMin, Math.min(this._dirtyMax + 1, typeSize)));
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      } else {
+        // Full upload
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, floatData);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
+        gl.bufferSubData(gl.ARRAY_BUFFER, 0, typeData);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      }
+      this._dirtyMin = Infinity;
+      this._dirtyMax = -1;
+      this.needsUpload = false;
+    }
+
+    /** Draw all edge instances. */
+  }, {
+    key: "draw",
+    value: function draw(gl, panZoomMatrix, isPicking, zoom, bgColor) {
+      if (this.count === 0 || !this.buffer) return;
+      var program = isPicking ? this.pickingProgram : this.screenProgram;
+      gl.useProgram(program);
+      gl.bindVertexArray(this.vao);
+      gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
+      if (program.uBGColor !== null) {
+        gl.uniform4fv(program.uBGColor, bgColor || [1.0, 1.0, 1.0, 1.0]);
+      }
+      gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+      gl.bindVertexArray(null);
+    }
+
+    /** Update edge endpoint positions for drag. */
+  }, {
+    key: "updateEdgeEndpoints",
+    value: function updateEdgeEndpoints(slot, instanceCount, edge) {
+      var rs = edge._private.rscratch;
+      if (!rs || rs.badLine || !rs.allpts) return;
+      var controlPoints = rs.allpts;
+      var s = slot;
+      if (controlPoints.length === 4) {
+        var off = s * EDGE_STRIDE;
+        this.buffer[off + 0] = controlPoints[0];
+        this.buffer[off + 1] = controlPoints[1];
+        this.buffer[off + 2] = controlPoints[2];
+        this.buffer[off + 3] = controlPoints[3];
+        s++;
+      } else {
+        var segmentPoints = this._computeSegments(controlPoints, BEZIER_SEGMENTS);
+        for (var i = 0; i < segmentPoints.length - 2; i += 2) {
+          var pAx = segmentPoints[i - 2],
+            pAy = segmentPoints[i - 1];
+          var pBx = segmentPoints[i],
+            pBy = segmentPoints[i + 1];
+          var pCx = segmentPoints[i + 2],
+            pCy = segmentPoints[i + 3];
+          var pDx = segmentPoints[i + 4],
+            pDy = segmentPoints[i + 5];
+          if (i === 0) {
+            pAx = 2 * pBx - pCx + 0.001;
+            pAy = 2 * pBy - pCy + 0.001;
+          }
+          if (i === segmentPoints.length - 4) {
+            pDx = 2 * pCx - pBx + 0.001;
+            pDy = 2 * pCy - pBy + 0.001;
+          }
+          var _off = s * EDGE_STRIDE;
+          this.buffer[_off + 0] = pAx;
+          this.buffer[_off + 1] = pAy;
+          this.buffer[_off + 2] = pBx;
+          this.buffer[_off + 3] = pBy;
+          this.buffer[_off + 4] = pCx;
+          this.buffer[_off + 5] = pCy;
+          this.buffer[_off + 6] = pDx;
+          this.buffer[_off + 7] = pDy;
+          s++;
+        }
+      }
+
+      // Update arrow positions
+      if (s < slot + instanceCount) {
+        var srcShape = edge.pstyle('source-arrow-shape').value;
+        if (srcShape !== 'none') {
+          var _off2 = s * EDGE_STRIDE;
+          this.buffer[_off2 + 0] = rs.arrowStartX;
+          this.buffer[_off2 + 1] = rs.arrowStartY;
+          // size and angle kept from processEdge, but angle may change
+          this.buffer[_off2 + 3] = rs.srcArrowAngle;
+          s++;
+        }
+      }
+      if (s < slot + instanceCount) {
+        var tgtShape = edge.pstyle('target-arrow-shape').value;
+        if (tgtShape !== 'none') {
+          var _off3 = s * EDGE_STRIDE;
+          this.buffer[_off3 + 0] = rs.arrowEndX;
+          this.buffer[_off3 + 1] = rs.arrowEndY;
+          this.buffer[_off3 + 3] = rs.tgtArrowAngle;
+          s++;
+        }
+      }
+
+      // Mark dirty range for partial upload
+      if (slot < this._dirtyMin) this._dirtyMin = slot;
+      var endSlot = slot + instanceCount - 1;
+      if (endSlot > this._dirtyMax) this._dirtyMax = endSlot;
+      this.needsUpload = true;
+    }
+
+    /** Clean up GL resources. */
+  }, {
+    key: "destroy",
+    value: function destroy(gl) {
+      if (this.vao) {
+        gl.deleteVertexArray(this.vao);
+        this.vao = null;
+      }
+      if (this.glBuffer) {
+        gl.deleteBuffer(this.glBuffer);
+        this.glBuffer = null;
+      }
+      if (this.glTypeBuffer) {
+        gl.deleteBuffer(this.glTypeBuffer);
+        this.glTypeBuffer = null;
+      }
+      if (this.quadBuffer) {
+        gl.deleteBuffer(this.quadBuffer);
+        this.quadBuffer = null;
+      }
+      if (this.screenProgram) {
+        gl.deleteProgram(this.screenProgram);
+        this.screenProgram = null;
+      }
+      if (this.pickingProgram) {
+        gl.deleteProgram(this.pickingProgram);
+        this.pickingProgram = null;
+      }
+      this.buffer = null;
+      this.typeBuffer = null;
+      this.capacity = 0;
+      this.count = 0;
+    }
+
+    /** Clean up picking GL resources (on a DIFFERENT GL context than destroy). */
+  }, {
+    key: "destroyPicking",
+    value: function destroyPicking(gl) {
+      if (this._pickVao) {
+        gl.deleteVertexArray(this._pickVao);
+        this._pickVao = null;
+      }
+      if (this._pickGlBuffer) {
+        gl.deleteBuffer(this._pickGlBuffer);
+        this._pickGlBuffer = null;
+      }
+      if (this._pickGlTypeBuffer) {
+        gl.deleteBuffer(this._pickGlTypeBuffer);
+        this._pickGlTypeBuffer = null;
+      }
+      if (this._pickQuadBuffer) {
+        gl.deleteBuffer(this._pickQuadBuffer);
+        this._pickQuadBuffer = null;
+      }
+      if (this._pickProgram) {
+        gl.deleteProgram(this._pickProgram);
+        this._pickProgram = null;
+      }
+    }
+  }]);
+}();
+
+/**
+ * TexturePageManager
+ *
+ * An image-URL-keyed texture atlas manager (adapted from sigma.js @sigma/node-image).
+ *
+ * Key design decisions:
+ * - Atlas is keyed by image URL, not style key. 50K nodes sharing one URL = 1 atlas entry.
+ * - Multiple texture pages: when one page fills up, a new one is created.
+ * - Each page is a Canvas2D offscreen canvas (maxPageSize x maxPageSize).
+ * - Images are loaded asynchronously; atlas is rebuilt when images become ready.
+ * - Debounced rebuild (100ms) to batch multiple image loads.
+ */
+var TexturePageManager = /*#__PURE__*/function () {
+  function TexturePageManager() {
+    var opts = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    _classCallCheck(this, TexturePageManager);
+    this.maxPageSize = opts.maxPageSize || 4096;
+    this.maxImageSize = opts.maxImageSize || 512;
+    this.pages = []; // Array of { canvas, glTexture }
+    this.atlas = {}; // imageURL -> { x, y, size, pageIndex }
+    this.imageStates = {}; // imageURL -> 'loading' | 'ready' | 'error'
+    this.images = {}; // imageURL -> HTMLImageElement
+    this._onUpdateCallback = null;
+    this._rebuildTimer = null;
+  }
+
+  /** Register an image URL. Loads async, triggers atlas rebuild when ready. */
+  return _createClass(TexturePageManager, [{
+    key: "registerImage",
+    value: function registerImage(url) {
+      var _this = this;
+      if (this.imageStates[url]) return; // already registered
+      this.imageStates[url] = 'loading';
+
+      // In Node.js / headless environments, Image may not exist
+      if (typeof Image === 'undefined') return;
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        _this.imageStates[url] = 'ready';
+        _this.images[url] = img;
+        _this._scheduleRebuild();
+      };
+      img.onerror = function () {
+        _this.imageStates[url] = 'error';
+      };
+      img.src = url;
+    }
+
+    /** Get atlas entry for a URL. Returns { x, y, size, pageIndex } or null. */
+  }, {
+    key: "getEntry",
+    value: function getEntry(url) {
+      return this.atlas[url] || null;
+    }
+
+    /** Get all texture pages (array of { canvas, glTexture }). */
+  }, {
+    key: "getPages",
+    value: function getPages() {
+      return this.pages;
+    }
+
+    /** Get page count. */
+  }, {
+    key: "getPageCount",
+    value: function getPageCount() {
+      return this.pages.length;
+    }
+
+    /** Set callback for when atlas is rebuilt. */
+  }, {
+    key: "onUpdate",
+    value: function onUpdate(fn) {
+      this._onUpdateCallback = fn;
+    }
+
+    /** Rebuild atlas from all ready images. */
+  }, {
+    key: "rebuild",
+    value: function rebuild() {
+      var _this2 = this;
+      var maxSize = this.maxPageSize;
+      var maxImgSize = this.maxImageSize;
+      this.atlas = {};
+      this.pages = [];
+      this._texturesUploaded = false;
+
+      // Collect ready images
+      var readyUrls = Object.keys(this.imageStates).filter(function (url) {
+        return _this2.imageStates[url] === 'ready';
+      });
+      if (readyUrls.length === 0) return;
+      var page = this._createPage();
+      this.pages.push(page);
+      var cursorX = 0,
+        cursorY = 0,
+        rowHeight = 0;
+      var _iterator = _createForOfIteratorHelper(readyUrls),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var url = _step.value;
+          var img = this.images[url];
+          var size = Math.min(maxImgSize, Math.max(img.width, img.height));
+
+          // Does it fit in current row?
+          if (cursorX + size > maxSize) {
+            // Move to next row
+            cursorX = 0;
+            cursorY += rowHeight;
+            rowHeight = 0;
+          }
+
+          // Does it fit in current page?
+          if (cursorY + size > maxSize) {
+            // New page
+            page = this._createPage();
+            this.pages.push(page);
+            cursorX = 0;
+            cursorY = 0;
+            rowHeight = 0;
+          }
+
+          // Draw image to page canvas (when canvas has a real 2D context)
+          if (page.canvas.getContext) {
+            var ctx = page.canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, img.width, img.height, cursorX, cursorY, size, size);
+          }
+          this.atlas[url] = {
+            x: cursorX,
+            y: cursorY,
+            size: size,
+            pageIndex: this.pages.length - 1
+          };
+          cursorX += size + 1; // 1px margin
+          rowHeight = Math.max(rowHeight, size + 1);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      if (this._onUpdateCallback) this._onUpdateCallback();
+    }
+  }, {
+    key: "_createPage",
+    value: function _createPage() {
+      // In Node.js tests, document may not exist -- handle gracefully
+      var canvas;
+      if (typeof document !== 'undefined') {
+        canvas = document.createElement('canvas');
+        canvas.width = this.maxPageSize;
+        canvas.height = this.maxPageSize;
+      } else {
+        // Stub for headless / test environments
+        canvas = {
+          width: this.maxPageSize,
+          height: this.maxPageSize
+        };
+      }
+      return {
+        canvas: canvas,
+        glTexture: null
+      };
+    }
+  }, {
+    key: "_scheduleRebuild",
+    value: function _scheduleRebuild() {
+      var _this3 = this;
+      if (this._rebuildTimer) return;
+      this._rebuildTimer = setTimeout(function () {
+        _this3._rebuildTimer = null;
+        _this3.rebuild();
+      }, 100);
+    }
+
+    /**
+     * Upload all page canvases to WebGL textures.
+     * Must be called with a GL context before drawing.
+     */
+  }, {
+    key: "uploadTextures",
+    value: function uploadTextures(gl) {
+      var _iterator2 = _createForOfIteratorHelper(this.pages),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var page = _step2.value;
+          if (!page.canvas || !page.canvas.getContext) continue;
+          if (!page.glTexture) {
+            page.glTexture = gl.createTexture();
+          }
+          gl.bindTexture(gl.TEXTURE_2D, page.glTexture);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+          gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, page.canvas);
+          gl.bindTexture(gl.TEXTURE_2D, null);
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+      this._texturesUploaded = true;
+    }
+
+    /** Check if textures need uploading. */
+  }, {
+    key: "needsTextureUpload",
+    value: function needsTextureUpload() {
+      return !this._texturesUploaded || this.pages.some(function (p) {
+        return !p.glTexture;
+      });
+    }
+
+    /** Get total memory used by atlas pages in bytes (RGBA). */
+  }, {
+    key: "getMemoryBytes",
+    value: function getMemoryBytes() {
+      return this.pages.length * this.maxPageSize * this.maxPageSize * 4;
+    }
+
+    /** Clean up all resources. Pass the GL context to delete GPU textures. */
+  }, {
+    key: "destroy",
+    value: function destroy(gl) {
+      if (this._rebuildTimer) clearTimeout(this._rebuildTimer);
+      if (gl) {
+        var _iterator3 = _createForOfIteratorHelper(this.pages),
+          _step3;
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var page = _step3.value;
+            if (page.glTexture) {
+              gl.deleteTexture(page.glTexture);
+            }
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+      }
+      this.pages = [];
+      this.atlas = {};
+      this.imageStates = {};
+      this.images = {};
+      this._onUpdateCallback = null;
+    }
+  }]);
+}();
+
+/**
+ * Spatial density grid for label culling (adapted from sigma.js).
+ * Divides the viewport into cells. Each cell shows the top-N labels
+ * sorted by node screen-size (largest first).
+ */
+var LabelGrid = /*#__PURE__*/function () {
+  function LabelGrid() {
+    var cellSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 100;
+    _classCallCheck(this, LabelGrid);
+    this.cellSize = cellSize;
+    this._cells = new Map();
+    this._result = [];
+    this._topBuffer = [];
+  }
+  return _createClass(LabelGrid, [{
+    key: "getLabelsToDisplay",
+    value: function getLabelsToDisplay(candidates, zoom, viewportWidth, viewportHeight) {
+      var minScreenSize = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 4;
+      var cellSize = this.cellSize;
+      var cells = this._cells;
+      cells.clear();
+
+      // Density: more labels per cell when zoomed in
+      var maxPerCell = Math.max(1, Math.ceil(3 * zoom));
+      var _iterator = _createForOfIteratorHelper(candidates),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var candidate = _step.value;
+          if (candidate.screenSize < minScreenSize) continue;
+          var screenX = candidate.screenX,
+            screenY = candidate.screenY;
+
+          // Skip if outside viewport (with margin)
+          if (screenX < -150 || screenX > viewportWidth + 150) continue;
+          if (screenY < -50 || screenY > viewportHeight + 50) continue;
+
+          // Use model-space grid coordinates for cell assignment (stable during pan).
+          // This prevents labels from flickering at cell boundaries as the viewport moves.
+          var gx = candidate.gridX !== undefined ? candidate.gridX : screenX;
+          var gy = candidate.gridY !== undefined ? candidate.gridY : screenY;
+          var cx = Math.floor(gx / cellSize);
+          var cy = Math.floor(gy / cellSize);
+          var key = cx & 0xFFFF | (cy & 0xFFFF) << 16;
+          var cell = cells.get(key);
+          if (!cell) {
+            cell = [];
+            cells.set(key, cell);
+          }
+          cell.push(candidate);
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      var result = this._result;
+      result.length = 0;
+      var _iterator2 = _createForOfIteratorHelper(cells.values()),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var _cell = _step2.value;
+          if (_cell.length <= maxPerCell) {
+            // All fit — no selection needed
+            for (var i = 0; i < _cell.length; i++) result.push(_cell[i]);
+          } else {
+            // Top-N selection: O(N*k) where k = maxPerCell (typically 3)
+            // Much faster than O(N log N) sort for small k
+            var top = this._topBuffer;
+            top.length = maxPerCell;
+            for (var _i = 0; _i < maxPerCell; _i++) top[_i] = _cell[_i];
+            top.sort(function (a, b) {
+              return b.screenSize - a.screenSize;
+            });
+            for (var _i2 = maxPerCell; _i2 < _cell.length; _i2++) {
+              if (_cell[_i2].screenSize > top[maxPerCell - 1].screenSize) {
+                top[maxPerCell - 1] = _cell[_i2];
+                // Insertion sort the replaced element into correct position
+                for (var j = maxPerCell - 1; j > 0 && top[j].screenSize > top[j - 1].screenSize; j--) {
+                  var tmp = top[j];
+                  top[j] = top[j - 1];
+                  top[j - 1] = tmp;
+                }
+              }
+            }
+            for (var _i3 = 0; _i3 < top.length; _i3++) result.push(top[_i3]);
+          }
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+      return result;
+    }
+  }]);
+}();
+
+var WHITE_RGBA = [1.0, 1.0, 1.0, 1.0]; // reused for edge bgColor uniform
+
+/**
+ * WebGLRenderLoop — the main orchestrator for the new WebGL renderer.
+ *
+ * process(): reads element styles, packs into typed arrays. O(N), runs on data change.
+ * render(): sets camera uniform, issues draw calls. O(1), runs every frame.
+ * renderPicking(): same buffers, picking shader. O(1), no buffer overwrite.
+ * renderLabels(): Canvas 2D labels with LabelGrid culling.
+ */
+var WebGLRenderLoop = /*#__PURE__*/function () {
+  function WebGLRenderLoop(r) {
+    var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    _classCallCheck(this, WebGLRenderLoop);
+    this.r = r; // canvas renderer reference
+    this.nodeSDFProgram = new NodeSDFProgram();
+    this.nodeTexProgram = new NodeTextureProgram();
+    this.edgeProgram = new EdgeProgram();
+    this.texturePageManager = new TexturePageManager({
+      maxPageSize: opts.webglTexSize || 4096,
+      maxImageSize: opts.maxImageSize || 512
+    });
+    this.labelGrid = new LabelGrid(opts.labelGridCellSize || 100);
+    this.needsProcess = true; // true on first frame and after data changes
+    this._hasProcessed = false; // false until first process() completes
+    this._overlayDirty = true; // set by notify('style'), gates refreshOverlayColors O(N) scan
+    this._activeEdges = []; // edges with :active state, rebuilt by refreshOverlayColors
+    this._initialized = false;
+
+    // Label data for Canvas 2D rendering
+    this._labelCandidates = [];
+  }
+
+  /** Initialize GL resources. Called once when WebGL context is available. */
+  return _createClass(WebGLRenderLoop, [{
+    key: "init",
+    value: function init(glNode, glEdge) {
+      var _this = this;
+      // glNode = WebGL2 context for node canvas layer
+      // glEdge = WebGL2 context for edge canvas layer
+      this.glNode = glNode;
+      this.glEdge = glEdge;
+      this.nodeSDFProgram.init(glNode);
+      this.nodeTexProgram.init(glNode);
+      this.edgeProgram.init(glEdge);
+      this.edgeProgram.initPicking(glNode); // edge picking on node GL context
+
+      // Wire texture page manager to the node texture program
+      this.nodeTexProgram.setTextureManager(this.texturePageManager);
+
+      // Wire texture page manager updates
+      this.texturePageManager.onUpdate(function () {
+        _this.nodeTexProgram.needsUpload = true;
+        _this.needsProcess = true; // re-process to update atlas coordinates
+        _this._texturesUploaded = false;
+        // Trigger a redraw so the render loop picks up the new textures
+        if (_this.r && _this.r.data) {
+          _this.r.data.canvasNeedsRedraw[_this.r.NODE] = true;
+          _this.r.redraw();
+        }
+      });
+      this._initialized = true;
+    }
+
+    /**
+     * Process all elements — rebuild typed arrays from element data.
+     * This is O(N) and runs ONLY on data changes (add/remove/style).
+     * All pstyle() calls happen here, not in render().
+     */
+  }, {
+    key: "process",
+    value: function process() {
+      var r = this.r;
+
+      // Ensure edge control points (rs.allpts) are computed before we read them.
+      var useCache = this._hasProcessed;
+      var allEles = r.cy.mutableElements();
+      r.recalculateRenderedStyle(allEles, useCache);
+      this._hasProcessed = true;
+      var eles = r.getCachedZSortedEles();
+
+      // Count elements by type
+      var nodeCount = 0;
+      var texturedNodeCount = 0;
+      var edgeInstanceCount = 0;
+      var overlaySlotCount = 0; // extra SDF instances for overlay/underlay
+
+      // Single counting pass to determine buffer sizes
+      for (var i = 0; i < eles.length; i++) {
+        var ele = eles[i];
+        if (ele.isNode()) {
+          nodeCount++;
+          var bgImg = ele.pstyle('background-image');
+          if (bgImg && bgImg.strValue && bgImg.strValue !== 'none') {
+            texturedNodeCount++;
+            this.texturePageManager.registerImage(bgImg.strValue);
+          }
+          overlaySlotCount++; // overlay always pre-allocated
+          if (ele.pstyle('underlay-opacity').value > 0) overlaySlotCount++;
+        } else {
+          var rs = ele._private.rscratch;
+          if (rs && rs.allpts) {
+            edgeInstanceCount += rs.allpts.length === 4 ? 1 : 16;
+            if (ele.pstyle('source-arrow-shape').value !== 'none') edgeInstanceCount++;
+            if (ele.pstyle('target-arrow-shape').value !== 'none') edgeInstanceCount++;
+          }
+        }
+      }
+
+      // Reallocate buffers
+      this.nodeSDFProgram.reallocate(nodeCount + overlaySlotCount);
+      this.nodeTexProgram.reallocate(texturedNodeCount);
+      this.nodeTexProgram.count = texturedNodeCount;
+      this.edgeProgram.reallocate(Math.ceil(edgeInstanceCount * 1.1));
+
+      // Pack data
+      var nodeSlot = 0;
+      var texNodeSlot = 0;
+      var edgeSlot = 0;
+      var pickIndex = 1;
+      this._labelCandidates = [];
+      for (var _i = 0; _i < eles.length; _i++) {
+        var _ele = eles[_i];
+        if (_ele.isNode()) {
+          // Track all SDF slots for this node (body + underlay + overlay)
+          var nodeSlots = [];
+
+          // Pack underlay (drawn before/behind the node body)
+          var underlayOpacity = _ele.pstyle('underlay-opacity').value;
+          if (underlayOpacity > 0) {
+            this._packOverlayInstance(nodeSlot, _ele, 'underlay', pickIndex);
+            nodeSlots.push(nodeSlot);
+            nodeSlot++;
+          }
+
+          // Check if node has bg-image
+          var _bgImg = _ele.pstyle('background-image');
+          var hasTexture = _bgImg && _bgImg.strValue && _bgImg.strValue !== 'none';
+
+          // Pack SDF node (renders background-color shape for all nodes)
+          this.nodeSDFProgram.processNode(nodeSlot, _ele, pickIndex);
+          if (hasTexture) {
+            // Texture overlay renders the bg-image on top of the SDF shape.
+            // With transparent SVGs, the SDF background-color shows through.
+            this.nodeTexProgram.processNode(texNodeSlot, _ele, pickIndex, this.texturePageManager);
+            _ele._private._webglTexSlot = texNodeSlot;
+            texNodeSlot++;
+          } else {
+            _ele._private._webglTexSlot = undefined;
+          }
+          nodeSlots.push(nodeSlot);
+          nodeSlot++;
+
+          // Always pack overlay slot (transparent if inactive, discarded by fragment shader)
+          this._packOverlayInstance(nodeSlot, _ele, 'overlay', pickIndex);
+          _ele._private._webglOverlaySlot = nodeSlot;
+          nodeSlots.push(nodeSlot);
+          nodeSlot++;
+
+          // Store all SDF slots for position update during drag
+          _ele._private._webglNodeSlots = nodeSlots;
+
+          // Collect label candidate
+          var label = _ele.pstyle('label');
+          if (label && label.value) {
+            this._labelCandidates.push({
+              ele: _ele,
+              screenX: 0,
+              screenY: 0,
+              // filled in renderLabels()
+              baseSize: _ele.outerWidth(),
+              screenSize: 0,
+              fontSize: _ele.pstyle('font-size').pfValue,
+              isNode: true
+            });
+          }
+        } else {
+          var prevSlot = edgeSlot;
+          edgeSlot = this.edgeProgram.processEdge(edgeSlot, _ele, pickIndex, r);
+          _ele._private._webglEdgeSlot = prevSlot;
+          _ele._private._webglEdgeInstances = edgeSlot - prevSlot;
+
+          // Collect edge label candidate
+          var _label = _ele.pstyle('label');
+          if (_label && _label.value) {
+            // Use a screenSize proportional to edge length so edge labels
+            // compete fairly with node labels in the LabelGrid.
+            // Approximate edge length from source/target positions.
+            var _rs = _ele._private.rscratch;
+            var edgeScreenSize = 20;
+            if (_rs && _rs.allpts && _rs.allpts.length >= 4) {
+              var dx = _rs.allpts[_rs.allpts.length - 2] - _rs.allpts[0];
+              var dy = _rs.allpts[_rs.allpts.length - 1] - _rs.allpts[1];
+              edgeScreenSize = Math.sqrt(dx * dx + dy * dy) * 0.5; // half of edge length
+            }
+            this._labelCandidates.push({
+              ele: _ele,
+              screenX: 0,
+              screenY: 0,
+              baseSize: edgeScreenSize,
+              screenSize: 0,
+              fontSize: _ele.pstyle('font-size').pfValue,
+              isNode: false
+            });
+          }
+        }
+
+        // pickIndex is encoded into buffers via packColor; no need to store on element
+        pickIndex++;
+      }
+      this.nodeSDFProgram.count = nodeSlot;
+      this.edgeProgram.count = edgeSlot;
+      this.nodeSDFProgram.needsUpload = true;
+      this.nodeTexProgram.needsUpload = true;
+      this.edgeProgram.needsUpload = true;
+      this.needsProcess = false;
+    }
+
+    /**
+     * Pack an overlay or underlay SDF instance for a node.
+     * Uses the same shape as the node body but with expanded size and overlay/underlay color.
+     * @param {number} slot - buffer slot index
+     * @param {object} node - Cytoscape element
+     * @param {string} prefix - 'overlay' or 'underlay'
+     * @param {number} pickIndex - pick index (same as the parent node)
+     */
+  }, {
+    key: "_packOverlayInstance",
+    value: function _packOverlayInstance(slot, node, prefix, pickIndex) {
+      var buf = this.nodeSDFProgram.buffer;
+      var off = slot * NODE_STRIDE;
+      var pos = node.position();
+      var padding = node.pstyle("".concat(prefix, "-padding")).pfValue;
+      var opacity = node.pstyle("".concat(prefix, "-opacity")).value;
+      var color = node.pstyle("".concat(prefix, "-color")).value;
+      var shape = node.pstyle("".concat(prefix, "-shape")).value;
+      var cornerRadius = node.pstyle("".concat(prefix, "-corner-radius"));
+      buf[off + 0] = pos.x;
+      buf[off + 1] = pos.y;
+      var nodePadding = node.padding();
+      var overlayW = node.width() + 2 * nodePadding + padding * 2;
+      var overlayH = node.height() + 2 * nodePadding + padding * 2;
+      buf[off + 2] = overlayW;
+      buf[off + 3] = overlayH;
+      // Use ele._private.active directly — pstyle('overlay-opacity') may be stale
+      // because updateStyle() defers style.apply().
+      if (prefix === 'overlay') {
+        var isActive = node._private.active;
+        buf[off + 4] = isActive ? packPremulColor(color, opacity > 0 ? opacity : 0.25) : packPremulColor([0, 0, 0], 0);
+      } else {
+        buf[off + 4] = packPremulColor(color, opacity);
+      }
+      buf[off + 5] = packColor(0, 0, 0, 0);
+      buf[off + 6] = 0;
+      buf[off + 7] = SHAPE_ENUM[shape] !== undefined ? SHAPE_ENUM[shape] : 0;
+      buf[off + 8] = cornerRadius.value === 'auto' ? getRoundRectangleRadius(overlayW, overlayH) : cornerRadius.pfValue;
+      buf[off + 9] = 0; // border position: center (irrelevant with no border)
+      buf[off + 10] = packPickIndex(pickIndex);
+      this.nodeSDFProgram._markDirty(slot);
+    }
+
+    /**
+     * Render one frame — O(1).
+     * Sets camera uniform, uploads dirty buffers, issues draw calls.
+     */
+  }, {
+    key: "render",
+    value: function render(panZoomMatrix, zoom) {
+      if (!this._initialized) return;
+      if (this.needsProcess) {
+        this.process();
+      }
+
+      // Fix overlay colors AFTER process() — process() uses stale pstyle() cache
+      // (because updateStyle() defers style.apply()), so we override with the
+      // authoritative ele._private.active flag.
+      this.refreshOverlayColors();
+
+      // Upload dirty buffers to GPU — each program checks its own needsUpload flag
+      this.edgeProgram.upload(this.glEdge);
+      this.nodeSDFProgram.upload(this.glNode);
+      this.nodeTexProgram.upload(this.glNode);
+
+      // Upload atlas page textures to GPU if needed
+      if (this.texturePageManager.needsTextureUpload()) {
+        this.texturePageManager.uploadTextures(this.glNode);
+      }
+
+      // (needsUpload is tracked per-program, not on the render loop)
+
+      // Clear and set GL state
+      var glEdge = this.glEdge;
+      var glNode = this.glNode;
+
+      // Edge canvas
+      glEdge.clearColor(0, 0, 0, 0);
+      glEdge.enable(glEdge.BLEND);
+      glEdge.blendFunc(glEdge.ONE, glEdge.ONE_MINUS_SRC_ALPHA);
+      glEdge.clear(glEdge.COLOR_BUFFER_BIT);
+      glEdge.viewport(0, 0, glEdge.canvas.width, glEdge.canvas.height);
+
+      // Node canvas
+      glNode.clearColor(0, 0, 0, 0);
+      glNode.enable(glNode.BLEND);
+      glNode.blendFunc(glNode.ONE, glNode.ONE_MINUS_SRC_ALPHA);
+      glNode.clear(glNode.COLOR_BUFFER_BIT);
+      glNode.viewport(0, 0, glNode.canvas.width, glNode.canvas.height);
+
+      // Draw edges (on edge canvas)
+      var bgColor = this._getBGColor();
+      this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor);
+
+      // Draw edge :active overlays (wider semi-transparent line on top)
+      this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom);
+
+      // Draw nodes (on node canvas)
+      this.nodeSDFProgram.draw(glNode, panZoomMatrix, false, zoom);
+      this.nodeTexProgram.draw(glNode, panZoomMatrix, false, zoom);
+    }
+
+    /**
+     * Render picking — O(1), uses SAME buffers, different shader output.
+     * Does NOT overwrite screen buffer data.
+     *
+     * Known limitation: edge picking requires the edge GL context but
+     * the picking framebuffer is on the node GL context. This will be
+     * addressed in Task 8 (integration). For now, only nodes are picked.
+     */
+  }, {
+    key: "renderPicking",
+    value: function renderPicking(pickingFrameBuffer, panZoomMatrix, zoom) {
+      if (!this._initialized) return;
+      var glNode = this.glNode;
+
+      // Picking renders to an offscreen framebuffer
+      glNode.bindFramebuffer(glNode.FRAMEBUFFER, pickingFrameBuffer);
+      glNode.disable(glNode.BLEND);
+      glNode.clearColor(0, 0, 0, 0);
+      glNode.clear(glNode.COLOR_BUFFER_BIT);
+      glNode.viewport(0, 0, glNode.canvas.width, glNode.canvas.height);
+
+      // Unbind all textures to prevent feedback loop
+      for (var i = 0; i < 16; i++) {
+        glNode.activeTexture(glNode.TEXTURE0 + i);
+        glNode.bindTexture(glNode.TEXTURE_2D, null);
+      }
+
+      // Draw edges first (behind nodes) for picking
+      this.edgeProgram.drawPicking(glNode, panZoomMatrix, zoom);
+
+      // Draw nodes on top for picking
+      this.nodeSDFProgram.draw(glNode, panZoomMatrix, true, zoom);
+
+      // NOTE: do NOT unbind the framebuffer here — the caller (findNearestElementsWebgl)
+      // needs it bound for readPixels. The caller manages the framebuffer lifecycle.
+    }
+
+    /**
+     * Render labels on a Canvas 2D context using LabelGrid culling.
+     */
+  }, {
+    key: "renderLabels",
+    value: function renderLabels(context, pan, zoom, viewportWidth, viewportHeight) {
+      var r = this.r;
+
+      // Update screen coordinates for label candidates.
+      // Use model-space position for grid cell assignment (stable during pan).
+      // screenSize uses zoom for LOD but screenX/screenY are model-space × zoom
+      // with a FIXED grid origin (not pan-dependent) to prevent cell-boundary flicker.
+      var _iterator = _createForOfIteratorHelper(this._labelCandidates),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var candidate = _step.value;
+          var px = void 0,
+            py = void 0;
+          if (candidate.ele.isNode()) {
+            var p = candidate.ele.position();
+            px = p.x;
+            py = p.y;
+          } else {
+            var rs = candidate.ele._private.rscratch;
+            if (rs && rs.midX !== undefined) {
+              px = rs.midX;
+              py = rs.midY;
+            } else if (rs && rs.allpts && rs.allpts.length >= 4) {
+              var pts = rs.allpts;
+              px = (pts[0] + pts[pts.length - 2]) / 2;
+              py = (pts[1] + pts[pts.length - 1]) / 2;
+            } else {
+              px = 0;
+              py = 0;
+            }
+          }
+          candidate.screenX = px * zoom + pan.x;
+          candidate.screenY = py * zoom + pan.y;
+          candidate.gridX = px * zoom;
+          candidate.gridY = py * zoom;
+          // screenSize scales with zoom for LOD (use baseSize to avoid exponential growth)
+          candidate.screenSize = candidate.baseSize * zoom;
+        }
+
+        // Get visible labels from LabelGrid
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      var visible = this.labelGrid.getLabelsToDisplay(this._labelCandidates, zoom, viewportWidth, viewportHeight, 4);
+
+      // Draw labels on Canvas 2D
+      var _iterator2 = _createForOfIteratorHelper(visible),
+        _step2;
+      try {
+        for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+          var item = _step2.value;
+          r.drawElementText(context, item.ele, null, true);
+        }
+      } catch (err) {
+        _iterator2.e(err);
+      } finally {
+        _iterator2.f();
+      }
+    }
+
+    /** Mark that element data has changed — triggers process() on next render. */
+  }, {
+    key: "invalidate",
+    value: function invalidate() {
+      this.needsProcess = true;
+    }
+
+    /** Incrementally update visual style (color/border) for specific elements. O(k).
+     *  Avoids full O(N) process() for activate/select/unactivate style changes. */
+  }, {
+    key: "updateStyleIncremental",
+    value: function updateStyleIncremental(eles) {
+      if (!this._initialized || !this.nodeSDFProgram.buffer) return;
+      var nodeBuf = this.nodeSDFProgram.buffer;
+      for (var i = 0; i < eles.length; i++) {
+        var ele = eles[i];
+        if (ele.isNode && ele.isNode()) {
+          var slots = ele._private._webglNodeSlots;
+          if (!slots || slots.length === 0) continue;
+          var bodySlot = slots.length > 2 ? slots[1] : slots[0];
+          var off = bodySlot * NODE_STRIDE;
+          var bgColor = ele.pstyle('background-color').value;
+          var bgOpacity = ele.pstyle('background-opacity').value;
+          if (bgColor.length > 3 && bgColor[3] < 1) bgOpacity *= bgColor[3];
+          nodeBuf[off + 4] = packPremulColor(bgColor, bgOpacity);
+          var bw = ele.pstyle('border-width').value;
+          var bop = ele.pstyle('border-opacity').value;
+          if (bw > 0 && bop > 0) {
+            var bc = ele.pstyle('border-color').value;
+            if (bc.length > 3 && bc[3] < 1) bop *= bc[3];
+            nodeBuf[off + 5] = packPremulColor(bc, bop);
+          }
+          this.nodeSDFProgram._markDirty(bodySlot);
+        } else if (ele.isEdge && ele.isEdge()) {
+          this._updateEdgeColor(ele);
+        }
+      }
+    }
+
+    /** Update a single edge's line-color in the buffer (for :selected style change). */
+  }, {
+    key: "_updateEdgeColor",
+    value: function _updateEdgeColor(edge) {
+      var edgeBuf = this.edgeProgram.buffer;
+      var slot = edge._private._webglEdgeSlot;
+      var count = edge._private._webglEdgeInstances;
+      if (slot === undefined || !count || !edgeBuf) return;
+      var combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+      var color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
+      for (var j = 0; j < count; j++) {
+        edgeBuf[(slot + j) * EDGE_STRIDE + 8] = color;
+      }
+      this.edgeProgram._markDirty(slot);
+      if (count > 1) this.edgeProgram._markDirty(slot + count - 1);
+    }
+
+    /** Refresh overlay colors from live ele._private.active state.
+     *  Gated by _overlayDirty flag to avoid O(N) scan every frame. */
+  }, {
+    key: "refreshOverlayColors",
+    value: function refreshOverlayColors() {
+      if (!this._overlayDirty) return false;
+      this._overlayDirty = false;
+      this._activeEdges = [];
+      var buf = this.nodeSDFProgram.buffer;
+      if (!buf || !this._initialized) return false;
+      var changed = false;
+      var eles = this.r.getCachedZSortedEles();
+      for (var i = 0; i < eles.length; i++) {
+        var ele = eles[i];
+        if (ele.isNode()) {
+          var overlaySlot = ele._private._webglOverlaySlot;
+          if (overlaySlot === undefined) continue;
+          var off = overlaySlot * NODE_STRIDE;
+          var isActive = ele._private.active;
+          var packed = isActive ? packPremulColor(ele.pstyle('overlay-color').value || [0, 0, 0], 0.25) : packPremulColor([0, 0, 0], 0);
+          if (buf[off + 4] !== packed) {
+            buf[off + 4] = packed;
+            this.nodeSDFProgram._markDirty(overlaySlot);
+            changed = true;
+          }
+        } else {
+          // Track active edges for overlay drawing
+          if (ele._private.active) {
+            this._activeEdges.push(ele);
+            changed = true;
+          }
+        }
+      }
+      return changed;
+    }
+
+    /** Draw edge :active overlays — a wider semi-transparent line on top of normal edges.
+     *  Only draws for edges in _activeEdges (typically 0-3 edges). */
+  }, {
+    key: "_drawEdgeOverlays",
+    value: function _drawEdgeOverlays(gl, panZoomMatrix, zoom) {
+      if (this._activeEdges.length === 0) return;
+      var edgeBuf = this.edgeProgram.buffer;
+      if (!edgeBuf) return;
+
+      // Save original color+width, replace with overlay values, draw, restore
+      var saved = [];
+      var _iterator3 = _createForOfIteratorHelper(this._activeEdges),
+        _step3;
+      try {
+        for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+          var edge = _step3.value;
+          var slot = edge._private._webglEdgeSlot;
+          var count = edge._private._webglEdgeInstances;
+          if (slot === undefined || !count) continue;
+          var overlayColor = edge.pstyle('overlay-color').value || [0, 0, 0];
+          var overlayOpacity = edge.pstyle('overlay-opacity').value || 0.25;
+          var overlayPadding = edge.pstyle('overlay-padding').pfValue || 10;
+          var packedOverlay = packPremulColor(overlayColor, overlayOpacity);
+          var overlayWidth = 2 * overlayPadding;
+          var typeBuf = this.edgeProgram.typeBuffer;
+          for (var j = 0; j < count; j++) {
+            if (typeBuf[slot + j] === 2) continue; // skip arrows — Canvas 2D only overlays the line
+            var off = (slot + j) * EDGE_STRIDE;
+            saved.push({
+              off: off,
+              color: edgeBuf[off + 8],
+              width: edgeBuf[off + 9]
+            });
+            edgeBuf[off + 8] = packedOverlay;
+            edgeBuf[off + 9] = overlayWidth;
+          }
+        }
+      } catch (err) {
+        _iterator3.e(err);
+      } finally {
+        _iterator3.f();
+      }
+      if (saved.length === 0) return;
+
+      // Upload just the modified range and draw
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeProgram.glBuffer);
+      var minOff = saved[0].off;
+      var maxOff = saved[saved.length - 1].off;
+      var startByte = minOff * 4;
+      gl.bufferSubData(gl.ARRAY_BUFFER, startByte, edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
+      var bgColor = this._getBGColor();
+      this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
+
+      // Restore original values
+      for (var _i2 = 0, _saved = saved; _i2 < _saved.length; _i2++) {
+        var s = _saved[_i2];
+        edgeBuf[s.off + 8] = s.color;
+        edgeBuf[s.off + 9] = s.width;
+      }
+
+      // Re-upload restored data
+      gl.bufferSubData(gl.ARRAY_BUFFER, startByte, edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
+
+    /** Update just one node's position (for drag). O(1). */
+  }, {
+    key: "updateNodePosition",
+    value: function updateNodePosition(node) {
+      var slots = node._private._webglNodeSlots;
+      var texSlot = node._private._webglTexSlot;
+      if (!slots && texSlot === undefined) return; // no slot assigned yet
+
+      var pos = node.position();
+
+      // Update ALL SDF slots (body + underlay + overlay)
+      if (slots) {
+        for (var i = 0; i < slots.length; i++) {
+          this.nodeSDFProgram.updatePosition(slots[i], pos.x, pos.y);
+        }
+      }
+
+      // Also update texture overlay position
+      if (texSlot !== undefined) {
+        this.nodeTexProgram.updatePosition(texSlot, pos.x, pos.y);
+      }
+
+      // (needsUpload set per-program via _markDirty)
+    }
+
+    /** Update a dragged node's connected edges. O(degree). */
+  }, {
+    key: "updateConnectedEdges",
+    value: function updateConnectedEdges(node) {
+      var edges = node.connectedEdges();
+      for (var i = 0; i < edges.length; i++) {
+        var edge = edges[i];
+        var slot = edge._private._webglEdgeSlot;
+        var instanceCount = edge._private._webglEdgeInstances;
+        if (slot !== undefined && instanceCount !== undefined) {
+          this.edgeProgram.updateEdgeEndpoints(slot, instanceCount, edge);
+        }
+      }
+      // (needsUpload set per-program via _markDirty)
+    }
+  }, {
+    key: "_getBGColor",
+    value: function _getBGColor() {
+      return WHITE_RGBA;
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      // Delete all GPU resources
+      if (this.glNode) {
+        this.nodeSDFProgram.destroy(this.glNode);
+        this.nodeTexProgram.destroy(this.glNode);
+        this.edgeProgram.destroyPicking(this.glNode);
+      }
+      if (this.glEdge) {
+        this.edgeProgram.destroy(this.glEdge);
+      }
+      this.texturePageManager.destroy(this.glNode);
+
+      // Release CPU-side typed arrays (large buffers — up to 100+ MB)
+      this.nodeSDFProgram.buffer = null;
+      this.nodeTexProgram.buffer = null;
+      this.edgeProgram.buffer = null;
+      this.edgeProgram.typeBuffer = null;
+
+      // Clear label candidates (up to 275K objects)
+      this._labelCandidates = null;
+      this._activeEdges = null;
+
+      // Clear element references to allow GC of WebGL slot data
+      var eles = this.r.cy.mutableElements();
+      for (var i = 0; i < eles.length; i++) {
+        var p = eles[i]._private;
+        delete p._webglNodeSlots;
+        delete p._webglOverlaySlot;
+        delete p._webglTexSlot;
+        delete p._webglEdgeSlot;
+        delete p._webglEdgeInstances;
+      }
+
+      // Null GL context references
+      this.glNode = null;
+      this.glEdge = null;
+      this.r = null;
+      this._initialized = false;
+    }
+  }]);
+}();
+
+/**
+ * Common utilities
+ * @module glMatrix
+ */
+// Configuration Constants
+var ARRAY_TYPE = typeof Float32Array !== 'undefined' ? Float32Array : Array;
+if (!Math.hypot) Math.hypot = function () {
+  var y = 0,
+      i = arguments.length;
+
+  while (i--) {
+    y += arguments[i] * arguments[i];
+  }
+
+  return Math.sqrt(y);
+};
+
+/**
+ * 3x3 Matrix
+ * @module mat3
+ */
+
+/**
+ * Creates a new identity mat3
+ *
+ * @returns {mat3} a new 3x3 matrix
+ */
+
+function create() {
+  var out = new ARRAY_TYPE(9);
+
+  if (ARRAY_TYPE != Float32Array) {
+    out[1] = 0;
+    out[2] = 0;
+    out[3] = 0;
+    out[5] = 0;
+    out[6] = 0;
+    out[7] = 0;
+  }
+
+  out[0] = 1;
+  out[4] = 1;
+  out[8] = 1;
+  return out;
+}
+/**
+ * Set a mat3 to the identity matrix
+ *
+ * @param {mat3} out the receiving matrix
+ * @returns {mat3} out
+ */
+
+function identity(out) {
+  out[0] = 1;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  out[4] = 1;
+  out[5] = 0;
+  out[6] = 0;
+  out[7] = 0;
+  out[8] = 1;
+  return out;
+}
+/**
+ * Multiplies two mat3's
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {ReadonlyMat3} a the first operand
+ * @param {ReadonlyMat3} b the second operand
+ * @returns {mat3} out
+ */
+
+function multiply(out, a, b) {
+  var a00 = a[0],
+      a01 = a[1],
+      a02 = a[2];
+  var a10 = a[3],
+      a11 = a[4],
+      a12 = a[5];
+  var a20 = a[6],
+      a21 = a[7],
+      a22 = a[8];
+  var b00 = b[0],
+      b01 = b[1],
+      b02 = b[2];
+  var b10 = b[3],
+      b11 = b[4],
+      b12 = b[5];
+  var b20 = b[6],
+      b21 = b[7],
+      b22 = b[8];
+  out[0] = b00 * a00 + b01 * a10 + b02 * a20;
+  out[1] = b00 * a01 + b01 * a11 + b02 * a21;
+  out[2] = b00 * a02 + b01 * a12 + b02 * a22;
+  out[3] = b10 * a00 + b11 * a10 + b12 * a20;
+  out[4] = b10 * a01 + b11 * a11 + b12 * a21;
+  out[5] = b10 * a02 + b11 * a12 + b12 * a22;
+  out[6] = b20 * a00 + b21 * a10 + b22 * a20;
+  out[7] = b20 * a01 + b21 * a11 + b22 * a21;
+  out[8] = b20 * a02 + b21 * a12 + b22 * a22;
+  return out;
+}
+/**
+ * Translate a mat3 by the given vector
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {ReadonlyMat3} a the matrix to translate
+ * @param {ReadonlyVec2} v vector to translate by
+ * @returns {mat3} out
+ */
+
+function translate(out, a, v) {
+  var a00 = a[0],
+      a01 = a[1],
+      a02 = a[2],
+      a10 = a[3],
+      a11 = a[4],
+      a12 = a[5],
+      a20 = a[6],
+      a21 = a[7],
+      a22 = a[8],
+      x = v[0],
+      y = v[1];
+  out[0] = a00;
+  out[1] = a01;
+  out[2] = a02;
+  out[3] = a10;
+  out[4] = a11;
+  out[5] = a12;
+  out[6] = x * a00 + y * a10 + a20;
+  out[7] = x * a01 + y * a11 + a21;
+  out[8] = x * a02 + y * a12 + a22;
+  return out;
+}
+/**
+ * Scales the mat3 by the dimensions in the given vec2
+ *
+ * @param {mat3} out the receiving matrix
+ * @param {ReadonlyMat3} a the matrix to rotate
+ * @param {ReadonlyVec2} v the vec2 to scale the matrix by
+ * @returns {mat3} out
+ **/
+
+function scale(out, a, v) {
+  var x = v[0],
+      y = v[1];
+  out[0] = x * a[0];
+  out[1] = x * a[1];
+  out[2] = x * a[2];
+  out[3] = y * a[3];
+  out[4] = y * a[4];
+  out[5] = y * a[5];
+  out[6] = a[6];
+  out[7] = a[7];
+  out[8] = a[8];
+  return out;
+}
+/**
+ * Generates a 2D projection matrix with the given bounds
+ *
+ * @param {mat3} out mat3 frustum matrix will be written into
+ * @param {number} width Width of your gl context
+ * @param {number} height Height of gl context
+ * @returns {mat3} out
+ */
+
+function projection(out, width, height) {
+  out[0] = 2 / width;
+  out[1] = 0;
+  out[2] = 0;
+  out[3] = 0;
+  out[4] = -2 / height;
+  out[5] = 0;
+  out[6] = -1;
+  out[7] = 1;
+  out[8] = 1;
+  return out;
+}
+
+var CRp$4 = {};
+
+// Pre-allocated mat3 arrays reused every frame (avoids 3 typed-array allocs per frame)
+var _transform = create();
+var _projection = create();
+var _product = create();
+var _translateVec = [0, 0]; // reused by createPanZoomMatrix
+var _scaleVec = [0, 0];
+var PICK_SIZE = 6;
+var PICK_PIXELS = PICK_SIZE * PICK_SIZE;
+var _pickData = new Uint8Array(PICK_PIXELS * 4);
+var _pickIndexes = new Set(); // reused per pick call
+
+/**
+ * Initialize the new WebGL rendering mode after the Canvas renderer has been set up.
+ *
+ * This replaces the old drawing-redraw-webgl.mjs init. The new architecture:
+ * - process() reads all styles once (O(N)), triggered by data change events
+ * - render() sets the camera uniform and draws (O(1)), runs every frame
+ * - renderPicking() uses the SAME buffers, different shader output
+ * - Labels are drawn on a separate Canvas 2D layer with LabelGrid culling
+ */
+CRp$4.initWebgl = function (opts) {
+  var r = this;
+  var glNode = r.data.contexts[r.NODE_WEBGL];
+  var glEdge = r.data.contexts[r.EDGE_WEBGL];
+  if (!glNode || !glEdge) return;
+
+  // Create the render loop (reads styles via pstyle(), no callback functions needed)
+  r.renderLoop = new WebGLRenderLoop(r, opts);
+  r.renderLoop.init(glNode, glEdge);
+
+  // Create picking framebuffer on the node GL context
+  r.pickingFrameBuffer = createPickingFrameBuffer(glNode);
+  r.pickingFrameBuffer.needsDraw = true;
+
+  // Override canvas renderer functions to use the new render loop
+  overrideRendererFunctions(r);
+};
+
+/**
+ * Build the combined projection * pan/zoom matrix for WebGL.
+ */
+function createPanZoomMatrix(r) {
+  var width = r.canvasWidth;
+  var height = r.canvasHeight;
+  var _util$getEffectivePan = getEffectivePanZoom(r),
+    pan = _util$getEffectivePan.pan,
+    zoom = _util$getEffectivePan.zoom;
+  _translateVec[0] = pan.x;
+  _translateVec[1] = pan.y;
+  _scaleVec[0] = zoom;
+  _scaleVec[1] = zoom;
+  identity(_transform);
+  translate(_transform, _transform, _translateVec);
+  scale(_transform, _transform, _scaleVec);
+  projection(_projection, width, height);
+  multiply(_product, _projection, _transform);
+  return _product;
+}
+
+/**
+ * Set the 2D canvas context transform to match the current pan/zoom.
+ */
+function setContextTransform(r, context) {
+  var width = r.canvasWidth;
+  var height = r.canvasHeight;
+  var _util$getEffectivePan2 = getEffectivePanZoom(r),
+    pan = _util$getEffectivePan2.pan,
+    zoom = _util$getEffectivePan2.zoom;
+  context.setTransform(1, 0, 0, 1, 0, 0);
+  context.clearRect(0, 0, width, height);
+  context.translate(pan.x, pan.y);
+  context.scale(zoom, zoom);
+}
+
+/**
+ * Plug into the canvas renderer by dynamically overriding key functions.
+ * This approach requires minimal changes to the canvas renderer source.
+ */
+function overrideRendererFunctions(r) {
+  // --- Override render ---
+  r.render;
+  r.render = function (options) {
+    if (r.destroyed || !r.renderLoop) return;
+    options = options || {};
+    clearCanvasLayers(r);
+    renderWebgl(r, options);
+  };
+
+  // --- Override matchCanvasSize ---
+  var baseMatchCanvas = r.matchCanvasSize;
+  r.matchCanvasSize = function (container) {
+    baseMatchCanvas.call(r, container);
+    if (r.pickingFrameBuffer) {
+      r.pickingFrameBuffer.setFramebufferAttachmentSizes(r.canvasWidth, r.canvasHeight);
+      r.pickingFrameBuffer.needsDraw = true;
+    }
+  };
+
+  // --- Override findNearestElements for WebGL picking ---
+  r.findNearestElements = function (x, y) {
+    return findNearestElementsWebgl(r, x, y);
+  };
+
+  // --- Override invalidateCachedZSortedEles ---
+  var baseInvalidateZ = r.invalidateCachedZSortedEles;
+  r.invalidateCachedZSortedEles = function () {
+    baseInvalidateZ.call(r);
+    r.pickingFrameBuffer.needsDraw = true;
+    r.renderLoop.invalidate();
+  };
+
+  // --- Override notify ---
+  var baseNotify = r.notify;
+  r.notify = function (eventName, eles) {
+    baseNotify.call(r, eventName, eles);
+
+    // After 'destroy', all resources are freed — skip further processing
+    if (r.destroyed || !r.renderLoop) return;
+    if (eventName === 'viewport') {
+      // Camera changed — picking buffer is stale but NO buffer rebuild
+      r.pickingFrameBuffer.needsDraw = true;
+    } else if (eventName === 'bounds') {
+      // Position change (drag) — update just the moved elements
+      r.pickingFrameBuffer.needsDraw = true;
+      if (eles) {
+        for (var i = 0; i < eles.length; i++) {
+          var ele = eles[i];
+          if (ele.isNode && ele.isNode()) {
+            r.renderLoop.updateNodePosition(ele);
+            r.renderLoop.updateConnectedEdges(ele);
+          }
+        }
+      }
+    } else if (eventName === 'add' || eventName === 'remove') {
+      // Structural change — full process() on next render
+      r.renderLoop.invalidate();
+      r.pickingFrameBuffer.needsDraw = true;
+    } else if (eventName === 'style') {
+      // Overlay: update immediately via _private.active (O(k) for affected elements)
+      r.renderLoop._overlayDirty = true;
+      r.renderLoop.refreshOverlayColors();
+      // Style: incrementally update affected elements' colors in the buffer (O(k))
+      // instead of full O(N) process() rebuild
+      if (eles && eles.length > 0) {
+        r.renderLoop.updateStyleIncremental(eles);
+      } else {
+        r.renderLoop.invalidate();
+      }
+      r.pickingFrameBuffer.needsDraw = true;
+    } else if (eventName === 'background') {
+      // Background image finished loading — rebuild textures
+      r.renderLoop.invalidate();
+      r.pickingFrameBuffer.needsDraw = true;
+    }
+  };
+
+  // --- onUpdateEleCalcs: NO-OP for rendering ---
+  // The new architecture does NOT re-read styles on every frame.
+  // Style reads happen only in process(), triggered by data change events.
+  // This callback fires on every viewport change; rebuilding would be O(N) per frame.
+  // We intentionally do nothing here — atlas GC is handled via the renderLoop's
+  // own invalidation events (add/remove/style).
+  r.onUpdateEleCalcs(function (willDraw, eles) {
+    // No-op: do not invalidate renderLoop or rebuild buffers here.
+  });
+
+  // --- Override destroy to clean up ALL WebGL + renderer resources ---
+  var baseDestroy = r.destroy;
+  r.destroy = function () {
+    // 1. WebGL render loop — frees GPU buffers, CPU typed arrays, element slot refs
+    if (r.renderLoop) {
+      r.renderLoop.destroy();
+      r.renderLoop = null;
+    }
+
+    // 2. Picking framebuffer — frees FB + color texture
+    if (r.pickingFrameBuffer) {
+      r.pickingFrameBuffer.destroy();
+      r.pickingFrameBuffer = null;
+    }
+
+    // 3. Label offscreen canvas
+    r._labelBuffer = null;
+
+    // 4. Lose WebGL contexts to release GPU memory immediately
+    var glNode = r.data && r.data.contexts && r.data.contexts[r.NODE_WEBGL];
+    var glEdge = r.data && r.data.contexts && r.data.contexts[r.EDGE_WEBGL];
+    if (glNode) {
+      var ext = glNode.getExtension('WEBGL_lose_context');
+      if (ext) ext.loseContext();
+    }
+    if (glEdge) {
+      var _ext = glEdge.getExtension('WEBGL_lose_context');
+      if (_ext) _ext.loseContext();
+    }
+
+    // 5. Clear texture caches (Canvas 2D renderer caches — canvas tiles + element refs)
+    if (r.data) {
+      ['eleTxrCache', 'lblTxrCache', 'slbTxrCache', 'tlbTxrCache', 'lyrTxrCache'].forEach(function (key) {
+        if (r.data[key]) {
+          if (r.data[key].invalidateElements) {
+            r.data[key].invalidateElements(r.cy.mutableElements());
+          }
+          r.data[key] = null;
+        }
+      });
+
+      // 6. Null canvas/context references
+      r.data.canvases = null;
+      r.data.contexts = null;
+      r.data.bufferCanvases = null;
+      r.data.bufferContexts = null;
+    }
+
+    // 7. Clear element traversal caches + style data to free retained Collections
+    var eles = r.cy.mutableElements();
+    for (var i = 0; i < eles.length; i++) {
+      var p = eles[i]._private;
+      p.traversalCache = null;
+      p.bbCache = null;
+      p.bodyBounds = null;
+      p.overlayBounds = null;
+      p.labelBounds = null;
+      p.arrowBounds = null;
+    }
+    baseDestroy.call(r);
+  };
+}
+
+/**
+ * Clear the Canvas 2D node/drag layers (they are behind WebGL layers).
+ */
+function clearCanvasLayers(r) {
+  var clear = function clear(context) {
+    if (!context) return;
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
+    context.restore();
+  };
+  clear(r.data.contexts[r.NODE]);
+  clear(r.data.contexts[r.DRAG]);
+}
+
+/**
+ * Render one frame via the new WebGL render loop.
+ */
+function renderWebgl(r, options) {
+  if (r.data.canvasNeedsRedraw[r.SELECT_BOX]) {
+    r.drawSelectionRectangle(options, function (context) {
+      return setContextTransform(r, context);
+    });
+  }
+
+  // Compute pan/zoom once for all render paths (avoids 3 redundant getEffectivePanZoom calls)
+  var _util$getEffectivePan3 = getEffectivePanZoom(r),
+    pan = _util$getEffectivePan3.pan,
+    zoom = _util$getEffectivePan3.zoom;
+  if (r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG] || r.renderLoop.needsProcess) {
+    var panZoomMatrix = createPanZoomMatrix(r);
+    r.renderLoop.render(panZoomMatrix, zoom);
+    r.data.canvasNeedsRedraw[r.NODE] = false;
+    r.data.canvasNeedsRedraw[r.DRAG] = false;
+  }
+  var labelCtx = r.data.contexts[r.LABELS];
+  if (labelCtx) {
+    if (!r._labelBuffer || r._labelBuffer.width !== r.canvasWidth || r._labelBuffer.height !== r.canvasHeight) {
+      r._labelBuffer = r.makeOffscreenCanvas(r.canvasWidth, r.canvasHeight);
+    }
+    var bufCtx = r._labelBuffer.getContext('2d');
+    bufCtx.setTransform(1, 0, 0, 1, 0, 0);
+    bufCtx.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
+    bufCtx.translate(pan.x, pan.y);
+    bufCtx.scale(zoom, zoom);
+    r.renderLoop.renderLabels(bufCtx, pan, zoom, r.canvasWidth, r.canvasHeight);
+
+    // Atomic blit: 'copy' replaces all pixels in one operation
+    labelCtx.save();
+    labelCtx.setTransform(1, 0, 0, 1, 0, 0);
+    labelCtx.globalCompositeOperation = 'copy';
+    labelCtx.drawImage(r._labelBuffer, 0, 0);
+    labelCtx.globalCompositeOperation = 'source-over';
+    labelCtx.restore();
+  }
+}
+
+/**
+ * Pick elements under or near the cursor using the WebGL picking framebuffer.
+ * Arguments (x, y) are in model coordinates.
+ */
+function findNearestElementsWebgl(r, x, y) {
+  var _util$getEffectivePan4 = getEffectivePanZoom(r),
+    pan = _util$getEffectivePan4.pan,
+    zoom = _util$getEffectivePan4.zoom;
+  var _util$modelToRendered = modelToRenderedPosition(r, pan, zoom, x, y),
+    _util$modelToRendered2 = _slicedToArray(_util$modelToRendered, 2),
+    rx = _util$modelToRendered2[0],
+    ry = _util$modelToRendered2[1];
+  var gl = r.data.contexts[r.NODE_WEBGL];
+  gl.bindFramebuffer(gl.FRAMEBUFFER, r.pickingFrameBuffer);
+  if (r.pickingFrameBuffer.needsDraw) {
+    // Ensure GPU buffers are current before picking
+    var glEdge = r.data.contexts[r.EDGE_WEBGL];
+    r.renderLoop.nodeSDFProgram.upload(gl);
+    r.renderLoop.nodeTexProgram.upload(gl);
+    r.renderLoop.edgeProgram.upload(glEdge);
+    r.renderLoop.edgeProgram.uploadPicking(gl); // edge data on node GL context for picking
+
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    var panZoomMatrix = createPanZoomMatrix(r);
+    r.renderLoop.renderPicking(r.pickingFrameBuffer, panZoomMatrix, zoom);
+    r.pickingFrameBuffer.needsDraw = false;
+  }
+
+  // Read a 6x6 pixel area around the cursor
+  var px = Math.round(rx - PICK_SIZE / 2);
+  var py = Math.round(ry - PICK_SIZE / 2);
+  gl.readPixels(px, py, PICK_SIZE, PICK_SIZE, gl.RGBA, gl.UNSIGNED_BYTE, _pickData);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+
+  // Decode pick indices (read directly from buffer, no slice)
+  _pickIndexes.clear();
+  for (var i = 0; i < PICK_PIXELS; i++) {
+    var off = i * 4;
+    var index = (_pickData[off] | _pickData[off + 1] << 8 | _pickData[off + 2] << 16 | _pickData[off + 3] << 24) - 1;
+    if (index >= 0) {
+      _pickIndexes.add(index);
+    }
+  }
+
+  // Map indices to elements
+  var eles = r.getCachedZSortedEles();
+  var node, edge;
+  var _iterator = _createForOfIteratorHelper(_pickIndexes),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var _index = _step.value;
+      var ele = eles[_index];
+      if (ele) {
+        if (!node && ele.isNode()) {
+          node = ele;
+        }
+        if (!edge && ele.isEdge()) {
+          edge = ele;
+        }
+        if (node && edge) {
+          break;
+        }
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return [node, edge].filter(Boolean);
+}
 
 var CRp$3 = {};
 
@@ -30472,6 +34987,7 @@ CRp$3.drawEllipsePath = function (context, centerX, centerY, width, height) {
 };
 
 /* global atob, ArrayBuffer, Uint8Array, Blob */
+
 var CRp$2 = {};
 CRp$2.createBuffer = function (w, h) {
   var buffer = document.createElement('canvas'); // eslint-disable-line no-undef
@@ -30523,27 +35039,34 @@ CRp$2.bufferCanvasImage = function (options) {
   if (width > 0 && height > 0) {
     buffCxt.clearRect(0, 0, width, height);
     buffCxt.globalCompositeOperation = 'source-over';
-    var zsortedEles = this.getCachedZSortedEles();
-    if (options.full) {
-      // draw the full bounds of the graph
-      buffCxt.translate(-bb.x1 * scale, -bb.y1 * scale);
-      buffCxt.scale(scale, scale);
-      this.drawElements(buffCxt, zsortedEles);
-      buffCxt.scale(1 / scale, 1 / scale);
-      buffCxt.translate(bb.x1 * scale, bb.y1 * scale);
+
+    // WebGL export path: composite the multi-canvas layers
+    if (this.webgl && this.renderLoop && this.data.contexts[this.NODE_WEBGL]) {
+      this._bufferCanvasImageWebgl(buffCxt, options, width, height, scale, bb);
     } else {
-      // draw the current view
-      var pan = cy.pan();
-      var translation = {
-        x: pan.x * scale,
-        y: pan.y * scale
-      };
-      scale *= cy.zoom();
-      buffCxt.translate(translation.x, translation.y);
-      buffCxt.scale(scale, scale);
-      this.drawElements(buffCxt, zsortedEles);
-      buffCxt.scale(1 / scale, 1 / scale);
-      buffCxt.translate(-translation.x, -translation.y);
+      // Canvas 2D fallback export path
+      var zsortedEles = this.getCachedZSortedEles();
+      if (options.full) {
+        // draw the full bounds of the graph
+        buffCxt.translate(-bb.x1 * scale, -bb.y1 * scale);
+        buffCxt.scale(scale, scale);
+        this.drawElements(buffCxt, zsortedEles);
+        buffCxt.scale(1 / scale, 1 / scale);
+        buffCxt.translate(bb.x1 * scale, bb.y1 * scale);
+      } else {
+        // draw the current view
+        var pan = cy.pan();
+        var translation = {
+          x: pan.x * scale,
+          y: pan.y * scale
+        };
+        scale *= cy.zoom();
+        buffCxt.translate(translation.x, translation.y);
+        buffCxt.scale(scale, scale);
+        this.drawElements(buffCxt, zsortedEles);
+        buffCxt.scale(1 / scale, 1 / scale);
+        buffCxt.translate(-translation.x, -translation.y);
+      }
     }
 
     // need to fill bg at end like this in order to fill cleared transparent pixels in jpgs
@@ -30555,6 +35078,34 @@ CRp$2.bufferCanvasImage = function (options) {
     }
   }
   return buffCanvas;
+};
+
+/**
+ * WebGL export path: force a full render, then composite edge canvas,
+ * node canvas, and label canvas onto the export buffer in the correct order.
+ */
+CRp$2._bufferCanvasImageWebgl = function (buffCxt, options, width, height, scale, bb) {
+  // Force a full process + render so all canvases are up to date
+  this.renderLoop.invalidate();
+  // Mark canvases as needing redraw to trigger the full render path
+  this.data.canvasNeedsRedraw[this.NODE] = true;
+  this.data.canvasNeedsRedraw[this.DRAG] = true;
+  this.render({});
+  buffCxt.save();
+  if (options.full) {
+    buffCxt.translate(-bb.x1 * scale, -bb.y1 * scale);
+    // Scale from rendered pixels back to model coordinates, then apply export scale
+    buffCxt.scale(scale / this.getPixelRatio(), scale / this.getPixelRatio());
+  }
+
+  // Composite layers in order: edges (bottom) -> nodes (middle) -> labels (top)
+  var edgeCanvas = this.data.canvases[this.EDGE_WEBGL];
+  var nodeCanvas = this.data.canvases[this.NODE_WEBGL];
+  var labelCanvas = this.data.canvases[this.LABELS];
+  if (edgeCanvas) buffCxt.drawImage(edgeCanvas, 0, 0);
+  if (nodeCanvas) buffCxt.drawImage(nodeCanvas, 0, 0);
+  if (labelCanvas) buffCxt.drawImage(labelCanvas, 0, 0);
+  buffCxt.restore();
 };
 function b64ToBlob(b64, mimeType) {
   var bytes = atob(b64);
@@ -30636,6 +35187,7 @@ CRp.CANVAS_LAYERS = 3;
 CRp.SELECT_BOX = 0;
 CRp.DRAG = 1;
 CRp.NODE = 2;
+CRp.CANVAS_TYPES = ['2d', '2d', '2d'];
 CRp.BUFFER_COUNT = 3;
 //
 CRp.TEXTURE_BUFFER = 0;
@@ -30643,6 +35195,46 @@ CRp.MOTIONBLUR_BUFFER_NODE = 1;
 CRp.MOTIONBLUR_BUFFER_DRAG = 2;
 function CanvasRenderer(options) {
   var r = this;
+  var containerWindow = r.cy.window();
+  var document = containerWindow.document;
+
+  // Auto-enable WebGL when not explicitly set: try creating a test WebGL2 context.
+  // The default in core/renderer.mjs is false (safe for headless/Node.js tests).
+  // Here in the canvas renderer (which has a real DOM), we auto-detect.
+  if (options.webgl === false) ; else {
+    // Auto-detect: try to get a WebGL2 context
+    try {
+      var testCanvas = document.createElement('canvas');
+      var testCtx = testCanvas.getContext('webgl2');
+      if (testCtx) {
+        options.webgl = true;
+        r.webgl = true;
+      }
+      testCanvas = null;
+      testCtx = null;
+    } catch (e) {
+      // WebGL2 not available
+    }
+  }
+  if (options.webgl) {
+    // WebGL layer stack:
+    //   0 (SELECT_BOX): 2d context, z-index 6 (top - mouse events)
+    //   1 (DRAG):       2d context, z-index 5
+    //   2 (NODE_WEBGL): webgl2 context, z-index 4 (SDF shapes + texture overlays)
+    //   3 (LABELS):     2d context, z-index 3 (Canvas 2D labels with LabelGrid)
+    //   4 (EDGE_WEBGL): webgl2 context, z-index 2 (edges + arrows)
+    //   5 (NODE):       2d context, z-index 1 (Canvas 2D fallback for nodes, used by export)
+    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 6;
+    CRp.SELECT_BOX = r.SELECT_BOX = 0;
+    CRp.DRAG = r.DRAG = 1;
+    CRp.NODE_WEBGL = r.NODE_WEBGL = 2;
+    CRp.WEBGL = r.WEBGL = 2; // backward compat
+    CRp.LABELS = r.LABELS = 3;
+    CRp.EDGE_WEBGL = r.EDGE_WEBGL = 4;
+    CRp.NODE = r.NODE = 5;
+    CRp.CANVAS_TYPES = ['2d', '2d', 'webgl2', '2d', 'webgl2', '2d'];
+    console.log('webgl rendering enabled');
+  }
   r.data = {
     canvases: new Array(CRp.CANVAS_LAYERS),
     contexts: new Array(CRp.CANVAS_LAYERS),
@@ -30672,9 +35264,21 @@ function CanvasRenderer(options) {
     styleMap['-ms-touch-action'] = 'none';
     styleMap['touch-action'] = 'none';
   }
+  r.data.webglFailed = false;
   for (var i = 0; i < CRp.CANVAS_LAYERS; i++) {
     var canvas = r.data.canvases[i] = document.createElement('canvas'); // eslint-disable-line no-undef
-    r.data.contexts[i] = canvas.getContext('2d');
+    var type = CRp.CANVAS_TYPES[i];
+    r.data.contexts[i] = canvas.getContext(type);
+    if (!r.data.contexts[i]) {
+      if (type === 'webgl2') {
+        error('WebGL2 context creation failed for layer ' + i + '; falling back to Canvas 2D rendering');
+        r.data.webglFailed = true;
+        // Create a 2d fallback context so the canvas is still usable
+        r.data.contexts[i] = canvas.getContext('2d');
+      } else {
+        error('Could not create canvas of type ' + type);
+      }
+    }
     Object.keys(styleMap).forEach(function (k) {
       canvas.style[k] = styleMap[k];
     });
@@ -30685,9 +35289,14 @@ function CanvasRenderer(options) {
     r.data.canvasNeedsRedraw[i] = false;
   }
   r.data.topCanvas = r.data.canvases[0];
-  r.data.canvases[CRp.NODE].setAttribute('data-id', 'layer' + CRp.NODE + '-node');
   r.data.canvases[CRp.SELECT_BOX].setAttribute('data-id', 'layer' + CRp.SELECT_BOX + '-selectbox');
   r.data.canvases[CRp.DRAG].setAttribute('data-id', 'layer' + CRp.DRAG + '-drag');
+  r.data.canvases[CRp.NODE].setAttribute('data-id', 'layer' + CRp.NODE + '-node');
+  if (options.webgl) {
+    r.data.canvases[CRp.LABELS].setAttribute('data-id', 'layer' + CRp.LABELS + '-labels');
+    r.data.canvases[CRp.NODE_WEBGL].setAttribute('data-id', 'layer' + CRp.NODE_WEBGL + '-node-webgl');
+    r.data.canvases[CRp.EDGE_WEBGL].setAttribute('data-id', 'layer' + CRp.EDGE_WEBGL + '-edge-webgl');
+  }
   for (var i = 0; i < CRp.BUFFER_COUNT; i++) {
     r.data.bufferCanvases[i] = document.createElement('canvas'); // eslint-disable-line no-undef
     r.data.bufferContexts[i] = r.data.bufferCanvases[i].getContext('2d');
@@ -30697,7 +35306,6 @@ function CanvasRenderer(options) {
     r.data.bufferCanvases[i].style.visibility = 'hidden';
     //r.data.canvasContainer.appendChild(r.data.bufferCanvases[i]);
   }
-
   r.pathsEnabled = true;
   var emptyBb = makeBoundingBox();
   var getBoxCenter = function getBoxCenter(bb) {
@@ -30801,18 +35409,18 @@ function CanvasRenderer(options) {
     if (ele.isNode()) {
       switch (ele.pstyle('text-halign').value) {
         case 'left':
-          p.x = -bb.w;
+          p.x = -bb.w - (bb.leftPad || 0);
           break;
         case 'right':
-          p.x = 0;
+          p.x = -(bb.rightPad || 0);
           break;
       }
       switch (ele.pstyle('text-valign').value) {
         case 'top':
-          p.y = -bb.h;
+          p.y = -bb.h - (bb.topPad || 0);
           break;
         case 'bottom':
-          p.y = 0;
+          p.y = -(bb.botPad || 0);
           break;
       }
     }
@@ -30878,6 +35486,9 @@ function CanvasRenderer(options) {
   lblTxrCache.onDequeue(refineInLayers);
   slbTxrCache.onDequeue(refineInLayers);
   tlbTxrCache.onDequeue(refineInLayers);
+  if (options.webgl && !r.data.webglFailed) {
+    r.initWebgl(options);
+  }
 }
 CRp.redrawHint = function (group, bool) {
   var r = this;
@@ -30890,6 +35501,9 @@ CRp.redrawHint = function (group, bool) {
       break;
     case 'select':
       r.data.canvasNeedsRedraw[CRp.SELECT_BOX] = bool;
+      break;
+    case 'gc':
+      r.data.gc = true;
       break;
   }
 };
@@ -30926,13 +35540,15 @@ CRp.makeOffscreenCanvas = function (width, height) {
   if ((typeof OffscreenCanvas === "undefined" ? "undefined" : _typeof(OffscreenCanvas)) !== ("undefined" )) {
     canvas = new OffscreenCanvas(width, height);
   } else {
+    var containerWindow = this.cy.window();
+    var document = containerWindow.document;
     canvas = document.createElement('canvas'); // eslint-disable-line no-undef
     canvas.width = width;
     canvas.height = height;
   }
   return canvas;
 };
-[CRp$a, CRp$9, CRp$8, CRp$7, CRp$6, CRp$5, CRp$4, CRp$3, CRp$2, CRp$1].forEach(function (props) {
+[CRp$b, CRp$a, CRp$9, CRp$8, CRp$7, CRp$6, CRp$5, CRp$4, CRp$3, CRp$2, CRp$1].forEach(function (props) {
   extend(CRp, props);
 });
 
@@ -31110,11 +35726,9 @@ function setExtension(type, name, registrant) {
       }
       proto[pName] = pVal; // take impl from base
     }
-
     for (var _pName in rProto) {
       proto[_pName] = rProto[_pName]; // take impl from registrant
     }
-
     bProto.clientFunctions.forEach(function (name) {
       proto[name] = proto[name] || function () {
         error('Renderer does not implement `renderer.' + name + '()` on its prototype');
@@ -31186,13 +35800,13 @@ incExts.forEach(function (group) {
 
 // a dummy stylesheet object that doesn't need a reference to the core
 // (useful for init)
-var Stylesheet = function Stylesheet() {
-  if (!(this instanceof Stylesheet)) {
-    return new Stylesheet();
+var _Stylesheet = function Stylesheet() {
+  if (!(this instanceof _Stylesheet)) {
+    return new _Stylesheet();
   }
   this.length = 0;
 };
-var sheetfn = Stylesheet.prototype;
+var sheetfn = _Stylesheet.prototype;
 sheetfn.instanceString = function () {
   return 'stylesheet';
 };
@@ -31224,7 +35838,7 @@ sheetfn.css = function (name, value) {
       if (mapVal == null) {
         continue;
       }
-      var prop = Style.properties[key] || Style.properties[dash2camel(key)];
+      var prop = _Style.properties[key] || _Style.properties[dash2camel(key)];
       if (prop == null) {
         continue;
       }
@@ -31238,12 +35852,11 @@ sheetfn.css = function (name, value) {
   }
   return this; // chaining
 };
-
 sheetfn.style = sheetfn.css;
 
 // generate a real style object from the dummy stylesheet
 sheetfn.generateStyle = function (cy) {
-  var style = new Style(cy);
+  var style = new _Style(cy);
   return this.appendToStyle(style);
 };
 
@@ -31260,11 +35873,10 @@ sheetfn.appendToStyle = function (style) {
       style.css(prop.name, prop.value); // apply property
     }
   }
-
   return style;
 };
 
-var version = "3.29.1";
+var version = "snapshot";
 
 var cytoscape = function cytoscape(options) {
   // if no options specified, use default
@@ -31300,6 +35912,6 @@ cytoscape.warnings = function (bool) {
 cytoscape.version = version;
 
 // expose public apis (mostly for extensions)
-cytoscape.stylesheet = cytoscape.Stylesheet = Stylesheet;
+cytoscape.stylesheet = cytoscape.Stylesheet = _Stylesheet;
 
 export { cytoscape as default };
