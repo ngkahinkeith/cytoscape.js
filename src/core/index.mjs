@@ -225,25 +225,43 @@ util.extend( corefn, {
 
     cy._private.destroyed = true;
 
-    // Release all elements to free memory (275K elements = 100+ MB)
+    // Release all elements to free memory immediately
     let _p = cy._private;
     if(_p.elements) {
-      // Clear per-element back-references and caches
       for(let i = 0; i < _p.elements.length; i++) {
-        let ep = _p.elements[i]._private;
+        let ele = _p.elements[i];
+        let ep = ele._private;
+        // Null all large/reference fields
         ep.cy = null;
-        ep.traversalCache = null;
+        ep.data = null;
+        ep.position = null;
         ep.style = null;
         ep.rstyle = null;
+        ep.rscratch = null;
+        ep.styleKeys = null;
         ep.edges = null;
         ep.children = null;
         ep.parent = null;
+        ep.traversalCache = null;
+        ep.scratch = null;
+        ep.animation = null;
+        ep.classes = null;
+        ep.labelBounds = null;
+        ep.arrowBounds = null;
+        ep.bbCache = null;
+        ep.bodyBounds = null;
+        ep.overlayBounds = null;
+        if(ep.emitter) { ep.emitter.listeners = null; ep.emitter = null; }
+        // Break self-reference and collection identity
+        ele[0] = null;
+        ele._private = null;
       }
       _p.elements = null;
     }
     _p.byGroup = null;
     _p.listeners = [];
     _p.emitter = null;
+    _p.styleEnabled = false;
 
     return cy;
   },

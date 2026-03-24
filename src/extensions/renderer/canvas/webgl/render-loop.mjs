@@ -47,17 +47,14 @@ export class WebGLRenderLoop {
 
   /** Initialize GL resources. Called once when WebGL context is available. */
   init(glNode, glEdge) {
-    // glNode = WebGL2 context for node canvas layer
-    // glEdge = WebGL2 context for edge canvas layer
+    // Unified GL context: glNode === glEdge (single WebGL2 context for everything)
     this.glNode = glNode;
     this.glEdge = glEdge;
 
     this.nodeSDFProgram.init(glNode);
     this.nodeTexProgram.init(glNode);
-    this.edgeProgram.init(glEdge);
-    this.edgeProgram.initPicking(glNode); // edge picking on node GL context
-    this.edgeCurveProgram.init(glEdge);
-    this.edgeCurveProgram.initPicking(glNode); // curve edge picking on node GL context
+    this.edgeProgram.init(glNode);
+    this.edgeCurveProgram.init(glNode);
 
     // Wire texture page manager to the node texture program
     this.nodeTexProgram.setTextureManager(this.texturePageManager);
@@ -310,82 +307,70 @@ export class WebGLRenderLoop {
     // authoritative ele._private.active flag.
     this.refreshOverlayColors();
 
-    // Upload dirty buffers to GPU — each program checks its own needsUpload flag
-    this.edgeProgram.upload(this.glEdge);
-    this.edgeCurveProgram.upload(this.glEdge);
-    this.nodeSDFProgram.upload(this.glNode);
-    this.nodeTexProgram.upload(this.glNode);
+    // Upload dirty buffers to GPU (unified context)
+    const gl = this.glNode;
+    this.edgeProgram.upload(gl);
+    this.edgeCurveProgram.upload(gl);
+    this.nodeSDFProgram.upload(gl);
+    this.nodeTexProgram.upload(gl);
 
     // Upload atlas page textures to GPU if needed
     if(this.texturePageManager.needsTextureUpload()) {
-      this.texturePageManager.uploadTextures(this.glNode);
+      this.texturePageManager.uploadTextures(gl);
     }
 
-    // (needsUpload is tracked per-program, not on the render loop)
+    // Clear and set GL state (single unified context)
+    gl.clearColor(0, 0, 0, 0);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // Clear and set GL state
-    const glEdge = this.glEdge;
-    const glNode = this.glNode;
-
-    // Edge canvas
-    glEdge.clearColor(0, 0, 0, 0);
-    glEdge.enable(glEdge.BLEND);
-    glEdge.blendFunc(glEdge.ONE, glEdge.ONE_MINUS_SRC_ALPHA);
-    glEdge.clear(glEdge.COLOR_BUFFER_BIT);
-    glEdge.viewport(0, 0, glEdge.canvas.width, glEdge.canvas.height);
-
-    // Node canvas
-    glNode.clearColor(0, 0, 0, 0);
-    glNode.enable(glNode.BLEND);
-    glNode.blendFunc(glNode.ONE, glNode.ONE_MINUS_SRC_ALPHA);
-    glNode.clear(glNode.COLOR_BUFFER_BIT);
-    glNode.viewport(0, 0, glNode.canvas.width, glNode.canvas.height);
-
-    // Draw edges (on edge canvas)
+    // Draw edges first (behind nodes via draw order)
     const bgColor = this._getBGColor();
-    this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor);
-    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom);
+    this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
+    this.edgeCurveProgram.draw(gl, panZoomMatrix, false, zoom);
 
     // Draw edge :active overlays (wider semi-transparent line on top)
-    this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom);
+    this._drawEdgeOverlays(gl, panZoomMatrix, zoom);
 
-    // Draw nodes (on node canvas)
-    this.nodeSDFProgram.draw(glNode, panZoomMatrix, false, zoom);
-    this.nodeTexProgram.draw(glNode, panZoomMatrix, false, zoom);
+    // Draw nodes on top
+    this.nodeSDFProgram.draw(gl, panZoomMatrix, false, zoom);
+    this.nodeTexProgram.draw(gl, panZoomMatrix, false, zoom);
   }
 
   /**
    * Render picking — O(1), uses SAME buffers, different shader output.
    * Does NOT overwrite screen buffer data.
    *
-   * Known limitation: edge picking requires the edge GL context but
-   * the picking framebuffer is on the node GL context. This will be
-   * addressed in Task 8 (integration). For now, only nodes are picked.
+   * Unified context: edges and nodes share the same GL context,
+   * so picking uses the normal draw(gl, ..., isPicking=true) path.
    */
   renderPicking(pickingFrameBuffer, panZoomMatrix, zoom) {
     if(!this._initialized) return;
 
-    const glNode = this.glNode;
+    const gl = this.glNode;
 
     // Picking renders to an offscreen framebuffer
-    glNode.bindFramebuffer(glNode.FRAMEBUFFER, pickingFrameBuffer);
-    glNode.disable(glNode.BLEND);
-    glNode.clearColor(0, 0, 0, 0);
-    glNode.clear(glNode.COLOR_BUFFER_BIT);
-    glNode.viewport(0, 0, glNode.canvas.width, glNode.canvas.height);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, pickingFrameBuffer);
+    gl.disable(gl.BLEND);
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
     // Unbind all textures to prevent feedback loop
     for(let i = 0; i < 16; i++) {
-      glNode.activeTexture(glNode.TEXTURE0 + i);
-      glNode.bindTexture(glNode.TEXTURE_2D, null);
+      gl.activeTexture(gl.TEXTURE0 + i);
+      gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
-    // Draw edges first (behind nodes) for picking
-    this.edgeProgram.drawPicking(glNode, panZoomMatrix, zoom);
-    this.edgeCurveProgram.drawPicking(glNode, panZoomMatrix, zoom);
+    // Draw edges first (behind nodes) for picking — same context, same buffers
+    const bgColor = this._getBGColor();
+    this.edgeProgram.draw(gl, panZoomMatrix, true, zoom, bgColor);
+    this.edgeCurveProgram.draw(gl, panZoomMatrix, true, zoom);
 
     // Draw nodes on top for picking
-    this.nodeSDFProgram.draw(glNode, panZoomMatrix, true, zoom);
+    this.nodeSDFProgram.draw(gl, panZoomMatrix, true, zoom);
 
     // NOTE: do NOT unbind the framebuffer here — the caller (findNearestElementsWebgl)
     // needs it bound for readPixels. The caller manages the framebuffer lifecycle.
@@ -695,16 +680,12 @@ export class WebGLRenderLoop {
   }
 
   destroy() {
-    // Delete all GPU resources
+    // Delete all GPU resources (unified context)
     if(this.glNode) {
       this.nodeSDFProgram.destroy(this.glNode);
       this.nodeTexProgram.destroy(this.glNode);
-      this.edgeProgram.destroyPicking(this.glNode);
-      this.edgeCurveProgram.destroyPicking(this.glNode);
-    }
-    if(this.glEdge) {
-      this.edgeProgram.destroy(this.glEdge);
-      this.edgeCurveProgram.destroy(this.glEdge);
+      this.edgeProgram.destroy(this.glNode);
+      this.edgeCurveProgram.destroy(this.glNode);
     }
     this.texturePageManager.destroy(this.glNode);
 
@@ -721,19 +702,7 @@ export class WebGLRenderLoop {
     this._lastLabelZoom = null;
     this._activeEdges = null;
 
-    // Clear element references to allow GC of WebGL slot data
-    const eles = this.r.cy.mutableElements();
-    for(let i = 0; i < eles.length; i++) {
-      const p = eles[i]._private;
-      delete p._webglNodeSlots;
-      delete p._webglOverlaySlot;
-      delete p._webglTexSlot;
-      delete p._webglEdgeSlot;
-      delete p._webglEdgeInstances;
-      delete p._webglCurveSlot;
-    }
-
-    // Null GL context references
+    // Null GL context references (element cleanup handled by cy.destroy())
     this.glNode = null;
     this.glEdge = null;
     this.r = null;

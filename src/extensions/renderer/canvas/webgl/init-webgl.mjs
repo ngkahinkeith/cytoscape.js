@@ -28,15 +28,28 @@ const _pickIndexes = new Set(); // reused per pick call
 CRp.initWebgl = function(opts) {
   const r = this;
   const glNode = r.data.contexts[r.NODE_WEBGL];
-  const glEdge = r.data.contexts[r.EDGE_WEBGL];
 
-  if(!glNode || !glEdge) return;
+  if(!glNode) return;
 
-  // Create the render loop (reads styles via pstyle(), no callback functions needed)
+  // Unified GL context: both edges and nodes render on the NODE_WEBGL canvas.
+  // Release the EDGE_WEBGL canvas — it is no longer used.
+  const edgeCanvas = r.data.canvases[r.EDGE_WEBGL];
+  if(edgeCanvas) {
+    edgeCanvas.style.display = 'none';
+    edgeCanvas.width = 1;
+    edgeCanvas.height = 1;
+    const glEdge = r.data.contexts[r.EDGE_WEBGL];
+    if(glEdge) {
+      const ext = glEdge.getExtension('WEBGL_lose_context');
+      if(ext) ext.loseContext();
+    }
+  }
+
+  // Create the render loop — same GL context for edges and nodes
   r.renderLoop = new WebGLRenderLoop(r, opts);
-  r.renderLoop.init(glNode, glEdge);
+  r.renderLoop.init(glNode, glNode);
 
-  // Create picking framebuffer on the node GL context
+  // Create picking framebuffer on the (only) GL context
   r.pickingFrameBuffer = util.createPickingFrameBuffer(glNode);
   r.pickingFrameBuffer.needsDraw = true;
 
@@ -198,48 +211,22 @@ function overrideRendererFunctions(r) {
     // 3. Label offscreen canvas
     r._labelBuffer = null;
 
-    // 4. Lose WebGL contexts to release GPU memory immediately
+    // 4. Lose WebGL context to release GPU memory immediately (unified context)
     const glNode = r.data && r.data.contexts && r.data.contexts[r.NODE_WEBGL];
-    const glEdge = r.data && r.data.contexts && r.data.contexts[r.EDGE_WEBGL];
     if(glNode) {
       const ext = glNode.getExtension('WEBGL_lose_context');
       if(ext) ext.loseContext();
     }
-    if(glEdge) {
-      const ext = glEdge.getExtension('WEBGL_lose_context');
-      if(ext) ext.loseContext();
-    }
 
-    // 5. Clear texture caches (Canvas 2D renderer caches — canvas tiles + element refs)
+    // 5. Null canvas/context references
     if(r.data) {
-      ['eleTxrCache', 'lblTxrCache', 'slbTxrCache', 'tlbTxrCache', 'lyrTxrCache'].forEach(key => {
-        if(r.data[key]) {
-          if(r.data[key].invalidateElements) {
-            r.data[key].invalidateElements(r.cy.mutableElements());
-          }
-          r.data[key] = null;
-        }
-      });
-
-      // 6. Null canvas/context references
       r.data.canvases = null;
       r.data.contexts = null;
       r.data.bufferCanvases = null;
       r.data.bufferContexts = null;
     }
 
-    // 7. Clear element traversal caches + style data to free retained Collections
-    const eles = r.cy.mutableElements();
-    for(let i = 0; i < eles.length; i++) {
-      const p = eles[i]._private;
-      p.traversalCache = null;
-      p.bbCache = null;
-      p.bodyBounds = null;
-      p.overlayBounds = null;
-      p.labelBounds = null;
-      p.arrowBounds = null;
-    }
-
+    // Element cleanup handled by cy.destroy() — don't duplicate here
     baseDestroy.call(r);
   };
 }
@@ -317,14 +304,11 @@ function findNearestElementsWebgl(r, x, y) {
   gl.bindFramebuffer(gl.FRAMEBUFFER, r.pickingFrameBuffer);
 
   if(r.pickingFrameBuffer.needsDraw) {
-    // Ensure GPU buffers are current before picking
-    const glEdge = r.data.contexts[r.EDGE_WEBGL];
+    // Ensure GPU buffers are current before picking (unified context)
     r.renderLoop.nodeSDFProgram.upload(gl);
     r.renderLoop.nodeTexProgram.upload(gl);
-    r.renderLoop.edgeProgram.upload(glEdge);
-    r.renderLoop.edgeProgram.uploadPicking(gl); // edge data on node GL context for picking
-    r.renderLoop.edgeCurveProgram.upload(glEdge);
-    r.renderLoop.edgeCurveProgram.uploadPicking(gl); // curve edge data on node GL context for picking
+    r.renderLoop.edgeProgram.upload(gl);
+    r.renderLoop.edgeCurveProgram.upload(gl);
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     const panZoomMatrix = createPanZoomMatrix(r);

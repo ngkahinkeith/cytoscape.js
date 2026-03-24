@@ -151,12 +151,6 @@ export class EdgeCurveProgram {
     this.vao = null;
     this.screenProgram = null;
     this.pickingProgram = null;
-    // Picking resources on the node GL context (separate from edge GL context)
-    this._pickVao = null;
-    this._pickGlBuffer = null;
-    this._pickQuadBuffer = null;
-    this._pickProgram = null;
-    this._pickGpuBufferSize = 0;
   }
 
   /** Initialize GL resources. Called once. */
@@ -210,64 +204,6 @@ export class EdgeCurveProgram {
       gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
       gl.vertexAttribDivisor(attr.loc, 1); // per-instance
     }
-  }
-
-  /** Initialize picking resources on a DIFFERENT GL context (the node GL context)
-   *  so edges can be drawn into the node-context picking framebuffer. */
-  initPicking(gl) {
-    this._pickProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE);
-    this._pickProgram.uPanZoomMatrix = gl.getUniformLocation(this._pickProgram, 'uPanZoomMatrix');
-    this._pickProgram.uViewportSize = gl.getUniformLocation(this._pickProgram, 'uViewportSize');
-    this._pickProgram.uZoom = gl.getUniformLocation(this._pickProgram, 'uZoom');
-
-    this._pickGlBuffer = gl.createBuffer();
-
-    this._pickVao = gl.createVertexArray();
-    gl.bindVertexArray(this._pickVao);
-
-    this._pickQuadBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickQuadBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0);
-    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-
-    // Instance attribs (same layout as init)
-    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
-    this._setupInstanceAttribs(gl);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    gl.bindVertexArray(null);
-  }
-
-  /** Upload edge data to the picking GL context. */
-  uploadPicking(gl) {
-    if(!this._pickGlBuffer || !this.buffer || this.count === 0) return;
-    const dataSize = this.count * EDGE_CURVE_STRIDE;
-
-    if(dataSize > this._pickGpuBufferSize) {
-      this._pickGpuBufferSize = dataSize;
-      gl.bindVertexArray(this._pickVao);
-      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, this.buffer.subarray(0, dataSize), gl.DYNAMIC_DRAW);
-      this._setupInstanceAttribs(gl);
-      gl.bindVertexArray(null);
-    } else {
-      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, dataSize));
-      gl.bindBuffer(gl.ARRAY_BUFFER, null);
-    }
-  }
-
-  /** Draw edges for picking on the node GL context. */
-  drawPicking(gl, panZoomMatrix, zoom) {
-    if(this.count === 0 || !this.buffer || !this._pickProgram) return;
-    gl.useProgram(this._pickProgram);
-    gl.bindVertexArray(this._pickVao);
-    gl.uniformMatrix3fv(this._pickProgram.uPanZoomMatrix, false, panZoomMatrix);
-    gl.uniform2f(this._pickProgram.uViewportSize, gl.canvas.width, gl.canvas.height);
-    gl.uniform1f(this._pickProgram.uZoom, zoom || 1.0);
-    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
-    gl.bindVertexArray(null);
   }
 
   /** Ensure buffers can hold `instanceCount` instances. */
@@ -464,11 +400,4 @@ export class EdgeCurveProgram {
     this.count = 0;
   }
 
-  /** Clean up picking GL resources (on a DIFFERENT GL context than destroy). */
-  destroyPicking(gl) {
-    if(this._pickVao) { gl.deleteVertexArray(this._pickVao); this._pickVao = null; }
-    if(this._pickGlBuffer) { gl.deleteBuffer(this._pickGlBuffer); this._pickGlBuffer = null; }
-    if(this._pickQuadBuffer) { gl.deleteBuffer(this._pickQuadBuffer); this._pickQuadBuffer = null; }
-    if(this._pickProgram) { gl.deleteProgram(this._pickProgram); this._pickProgram = null; }
-  }
 }
