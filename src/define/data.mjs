@@ -45,11 +45,13 @@ let define = {
           if( single ){
             p.beforeGet( single );
 
+            let fld = single._private[ p.field ];
+            if( fld == null ){ return undefined; }
             // check if it's path and a field with the same name doesn't exist
-            if (path && single._private[ p.field ][ name ] === undefined) {
-              ret = get(single._private[ p.field ], path);
+            if (path && fld[ name ] === undefined) {
+              ret = get(fld, path);
             } else {
-              ret = single._private[ p.field ][ name ];
+              ret = fld[ name ];
             }
           }
           return ret;
@@ -66,10 +68,12 @@ let define = {
               let ele = all[i];
 
               if( p.canSet( ele ) ){
-                if (path && single._private[ p.field ][ name ] === undefined) {
-                  set(ele._private[ p.field ], path, value);
+                let fld = ele._private[ p.field ];
+                if( fld == null ){ fld = ele._private[ p.field ] = {}; }
+                if (path && fld[ name ] === undefined) {
+                  set(fld, path, value);
                 } else {
-                  ele._private[ p.field ][ name ] = value;
+                  fld[ name ] = value;
                 }
               }
             }
@@ -104,7 +108,9 @@ let define = {
               let ele = all[j];
 
               if( p.canSet( ele ) ){
-                ele._private[ p.field ][ k ] = v;
+                let fld = ele._private[ p.field ];
+                if( fld == null ){ fld = ele._private[ p.field ] = {}; }
+                fld[ k ] = v;
               }
             }
           }
@@ -169,7 +175,8 @@ let define = {
           let valid = !p.immutableKeys[ key ]; // not valid if immutable
           if( valid ){
             for( let i_a = 0, l_a = all.length; i_a < l_a; i_a++ ){
-              all[ i_a ]._private[ p.field ][ key ] = undefined;
+              let fld = all[ i_a ]._private[ p.field ];
+              if( fld != null ){ fld[ key ] = undefined; }
             }
           }
         }
@@ -183,6 +190,7 @@ let define = {
 
         for( let i_a = 0, l_a = all.length; i_a < l_a; i_a++ ){
           let _privateFields = all[ i_a ]._private[ p.field ];
+          if( _privateFields == null ){ continue; }
           let keys = Object.keys( _privateFields );
 
           for( let i = 0; i < keys.length; i++ ){

@@ -30,19 +30,12 @@ const defaults = {
   context: null
 };
 
-let defaultsKeys = Object.keys( defaults );
 let emptyOpts = {};
 
 function Emitter( opts = emptyOpts, context ){
-  // micro-optimisation vs Object.assign() -- reduces Element instantiation time
-  for( let i = 0; i < defaultsKeys.length; i++ ){
-    let key = defaultsKeys[i];
-
-    this[key] = opts[key] || defaults[key];
-  }
-
-  this.context = context || this.context;
-  this.listeners = [];
+  this._opts = opts;  // shared reference, not copied per-instance
+  this.context = context || opts.context || null;
+  this.listeners = null; // lazily allocated on first .on() call
   this.emitting = 0;
 }
 
@@ -82,7 +75,7 @@ let forEachEvent = function( self, handler, events, qualifier, callback, conf, c
 };
 
 let makeEventObj = function( self, obj ){
-  self.addEventFields( self.context, obj );
+  (self._opts.addEventFields || defaults.addEventFields)( self.context, obj );
 
   return new Event( obj.type, obj );
 };
@@ -124,7 +117,11 @@ let forEachEventObj = function( self, handler, events ){
 p.on = p.addListener = function( events, qualifier, callback, conf, confOverrides ){
   forEachEvent( this, function( self, event, type, namespace, qualifier, callback, conf ){
     if( is.fn( callback ) ){
-      self.listeners.push( {
+      let listeners = self.listeners;
+      if( listeners === null ){
+        listeners = self.listeners = [];
+      }
+      listeners.push( {
         event: event, // full event string
         callback: callback, // callback to run
         type: type, // the event type (e.g. 'click')
@@ -143,6 +140,8 @@ p.one = function( events, qualifier, callback, conf ){
 };
 
 p.removeListener = p.off = function( events, qualifier, callback, conf ){
+  if( this.listeners === null ){ return this; } // no listeners to remove
+
   if( this.emitting !== 0 ){
     this.listeners = util.copyArray( this.listeners );
   }
@@ -156,7 +155,7 @@ p.removeListener = p.off = function( events, qualifier, callback, conf ){
       if(
         ( listener.type === type || events === '*' ) &&
         ( (!namespace && listener.namespace !== '.*') || listener.namespace === namespace ) &&
-        ( !qualifier || self.qualifierCompare( listener.qualifier, qualifier ) ) &&
+        ( !qualifier || (self._opts.qualifierCompare || defaults.qualifierCompare)( listener.qualifier, qualifier ) ) &&
         ( !callback || listener.callback === callback )
       ){
         listeners.splice( i, 1 );
@@ -175,7 +174,7 @@ p.removeAllListeners = function(){
 
 p.emit = p.trigger = function( events, extraParams, manualCallback ){
   let listeners = this.listeners;
-  let numListenersBeforeEmit = listeners.length;
+  let numListenersBeforeEmit = listeners !== null ? listeners.length : 0;
 
   this.emitting++;
 
@@ -201,7 +200,7 @@ p.emit = p.trigger = function( events, extraParams, manualCallback ){
       if(
         ( listener.type === eventObj.type ) &&
         ( !listener.namespace || listener.namespace === eventObj.namespace || listener.namespace === universalNamespace ) &&
-        ( self.eventMatches( self.context, listener, eventObj ) )
+        ( (self._opts.eventMatches || defaults.eventMatches)( self.context, listener, eventObj ) )
       ){
         let args = [ eventObj ];
 
@@ -209,16 +208,16 @@ p.emit = p.trigger = function( events, extraParams, manualCallback ){
           util.push( args, extraParams );
         }
 
-        self.beforeEmit( self.context, listener, eventObj );
+        (self._opts.beforeEmit || defaults.beforeEmit)( self.context, listener, eventObj );
 
         if( listener.conf && listener.conf.one ){
           self.listeners = self.listeners.filter( l => l !== listener );
         }
 
-        let context = self.callbackContext( self.context, listener, eventObj );
+        let context = (self._opts.callbackContext || defaults.callbackContext)( self.context, listener, eventObj );
         let ret = listener.callback.apply( context, args );
 
-        self.afterEmit( self.context, listener, eventObj );
+        (self._opts.afterEmit || defaults.afterEmit)( self.context, listener, eventObj );
 
         if( ret === false ){
           eventObj.stopPropagation();
@@ -227,8 +226,8 @@ p.emit = p.trigger = function( events, extraParams, manualCallback ){
       } // if listener matches
     } // for listener
 
-    if( self.bubble( self.context ) && !eventObj.isPropagationStopped() ){
-      self.parent( self.context ).emit( eventObj, extraParams );
+    if( (self._opts.bubble || defaults.bubble)( self.context ) && !eventObj.isPropagationStopped() ){
+      (self._opts.parent || defaults.parent)( self.context ).emit( eventObj, extraParams );
     }
   }, events );
 

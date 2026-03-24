@@ -223,6 +223,13 @@ export class NodeTextureProgram {
     this.needsUpload = true;
   }
 
+  /** Grow buffer if needed to hold at least `needed` slots. */
+  ensureCapacity(needed) {
+    if(needed > this.capacity) {
+      this.reallocate(needed);
+    }
+  }
+
   /**
    * Pack one textured node's data into the buffer.
    * @param {number} slot - Buffer slot index
@@ -251,9 +258,13 @@ export class NodeTextureProgram {
     // Atlas coordinates
     const imgUrl = node.pstyle('background-image').strValue;
     const entry = textureManager ? textureManager.getEntry(imgUrl) : null;
-    const pageSize = textureManager ? textureManager.maxPageSize : 4096;
 
     if(entry) {
+      // Use the actual page canvas size for UV normalization (may be smaller than maxPageSize)
+      const pages = textureManager.getPages();
+      const pageCanvas = pages[entry.pageIndex] ? pages[entry.pageIndex].canvas : null;
+      const pageSize = pageCanvas ? pageCanvas.width : (textureManager._activePageSize || textureManager.maxPageSize);
+
       // Normalize atlas coordinates to [0,1] range
       buf[off + 5] = entry.x / pageSize;
       buf[off + 6] = entry.y / pageSize;

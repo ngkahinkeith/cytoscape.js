@@ -17,7 +17,8 @@ let define = {
       let ele = all[0];
 
       if( ele ){
-        return ele._private.animation.current.length > 0;
+        let a = ele._private.animation;
+        return a != null && a.current.length > 0;
       }
     };
   }, // animated
@@ -33,7 +34,7 @@ let define = {
 
       for( let i = 0; i < all.length; i++ ){
         let ele = all[ i ];
-        ele._private.animation.queue = [];
+        if( ele._private.animation ){ ele._private.animation.queue = []; }
       }
 
       return this;
@@ -204,7 +205,9 @@ let define = {
       for( let i = 0; i < all.length; i++ ){
         let ele = all[ i ];
         let _p = ele._private;
-        let anis = _p.animation.current;
+        let a = _p.animation;
+        if( !a ){ continue; }
+        let anis = a.current;
 
         for( let j = 0; j < anis.length; j++ ){
           let ani = anis[ j ];
@@ -219,11 +222,11 @@ let define = {
 
         // clear the queue of future animations
         if( clearQueue ){
-          _p.animation.queue = [];
+          a.queue = [];
         }
 
         if( !jumpToEnd ){
-          _p.animation.current = [];
+          a.current = [];
         }
       }
 

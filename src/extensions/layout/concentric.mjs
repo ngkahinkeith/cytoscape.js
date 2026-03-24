@@ -69,7 +69,7 @@ ConcentricLayout.prototype.run = function(){
     } );
 
     // for style mapping
-    node._private.scratch.concentric = value;
+    (node._private.scratch || (node._private.scratch = {})).concentric = value;
   }
 
   // in case we used the `concentric` in style

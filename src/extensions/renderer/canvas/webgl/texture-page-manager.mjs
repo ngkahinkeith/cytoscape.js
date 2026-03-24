@@ -64,9 +64,44 @@ export class TexturePageManager {
     this._onUpdateCallback = fn;
   }
 
+  /** Compute the smallest power-of-2 page size that fits all images (one page worth). */
+  _computePageSize(readyUrls) {
+    const maxImgSize = this.maxImageSize;
+    const upperBound = this.maxPageSize;
+    const sizes = [256, 512, 1024, 2048, 4096];
+
+    // Compute the actual cell size for each image (max of w,h clamped to maxImgSize)
+    let maxCellSize = 0;
+    const imageCount = readyUrls.length;
+    for(const url of readyUrls) {
+      const img = this.images[url];
+      const cellSize = Math.min(maxImgSize, Math.max(img.width, img.height));
+      if(cellSize > maxCellSize) maxCellSize = cellSize;
+    }
+
+    if(imageCount === 0) return sizes[0];
+
+    // For each candidate page size, check if all images fit in one page
+    for(const pageSize of sizes) {
+      if(pageSize > upperBound) break;
+      if(pageSize < maxCellSize) continue; // can't even fit one image
+
+      const cellWithMargin = maxCellSize + 1; // 1px margin
+      const cols = Math.floor(pageSize / cellWithMargin);
+      if(cols === 0) continue;
+      const rows = Math.ceil(imageCount / cols);
+      const neededHeight = rows * cellWithMargin;
+      if(neededHeight <= pageSize) {
+        return pageSize;
+      }
+    }
+
+    // Fall back to the configured max if nothing smaller fits
+    return upperBound;
+  }
+
   /** Rebuild atlas from all ready images. */
   rebuild() {
-    const maxSize = this.maxPageSize;
     const maxImgSize = this.maxImageSize;
 
     this.atlas = {};
@@ -79,7 +114,11 @@ export class TexturePageManager {
     );
     if(readyUrls.length === 0) return;
 
-    let page = this._createPage();
+    // Compute optimal page size for the actual images
+    const pageSize = this._computePageSize(readyUrls);
+    this._activePageSize = pageSize;
+
+    let page = this._createPage(pageSize);
     this.pages.push(page);
     let cursorX = 0, cursorY = 0, rowHeight = 0;
 
@@ -88,7 +127,7 @@ export class TexturePageManager {
       const size = Math.min(maxImgSize, Math.max(img.width, img.height));
 
       // Does it fit in current row?
-      if(cursorX + size > maxSize) {
+      if(cursorX + size > pageSize) {
         // Move to next row
         cursorX = 0;
         cursorY += rowHeight;
@@ -96,9 +135,9 @@ export class TexturePageManager {
       }
 
       // Does it fit in current page?
-      if(cursorY + size > maxSize) {
+      if(cursorY + size > pageSize) {
         // New page
-        page = this._createPage();
+        page = this._createPage(pageSize);
         this.pages.push(page);
         cursorX = 0;
         cursorY = 0;
@@ -125,16 +164,17 @@ export class TexturePageManager {
     if(this._onUpdateCallback) this._onUpdateCallback();
   }
 
-  _createPage() {
+  _createPage(size) {
+    const dim = size || this.maxPageSize;
     // In Node.js tests, document may not exist -- handle gracefully
     let canvas;
     if(typeof document !== 'undefined') {
       canvas = document.createElement('canvas');
-      canvas.width = this.maxPageSize;
-      canvas.height = this.maxPageSize;
+      canvas.width = dim;
+      canvas.height = dim;
     } else {
       // Stub for headless / test environments
-      canvas = { width: this.maxPageSize, height: this.maxPageSize };
+      canvas = { width: dim, height: dim };
     }
     return { canvas, glTexture: null };
   }
@@ -178,7 +218,11 @@ export class TexturePageManager {
 
   /** Get total memory used by atlas pages in bytes (RGBA). */
   getMemoryBytes() {
-    return this.pages.length * this.maxPageSize * this.maxPageSize * 4;
+    let total = 0;
+    for(const page of this.pages) {
+      total += page.canvas.width * page.canvas.height * 4;
+    }
+    return total;
   }
 
   /** Clean up all resources. Pass the GL context to delete GPU textures. */

@@ -164,12 +164,21 @@ elesfn.unique = function(){
 };
 
 elesfn.hasElementWithId = function( id ){
+  if( this.length === 1 ){
+    return this[0]._private.data.id === '' + id;
+  }
+
   id = '' + id; // id must be string
 
   return this._private.map.has( id );
 };
 
 elesfn.getElementById = function( id ){
+  if( this.length === 1 ){
+    let ele = this[0];
+    return ele._private.data.id === '' + id ? ele : new Collection( this._private.cy );
+  }
+
   id = '' + id; // id must be string
 
   let cy = this._private.cy;
@@ -189,6 +198,10 @@ elesfn.poolIndex = function(){
 };
 
 elesfn.indexOf = function( ele ){
+  if( this.length === 1 ){
+    return this[0]._private.data.id === ele[0]._private.data.id ? 0 : -1;
+  }
+
   let id = ele[0]._private.data.id;
 
   return this._private.map.get( id ).index;
@@ -196,6 +209,10 @@ elesfn.indexOf = function( ele ){
 
 elesfn.indexOfId = function( id ){
   id = '' + id; // id must be string
+
+  if( this.length === 1 ){
+    return this[0]._private.data.id === id ? 0 : -1;
+  }
 
   return this._private.map.get( id ).index;
 };
@@ -311,8 +328,10 @@ elesfn.json = function( obj ){
 
     json.classes = '';
 
-    let i = 0;
-    p.classes.forEach( cls => json.classes += ( i++ === 0 ? cls : ' ' + cls ) );
+    if( p.classes ){
+      let i = 0;
+      p.classes.forEach( cls => json.classes += ( i++ === 0 ? cls : ' ' + cls ) );
+    }
 
     return json;
   }
@@ -474,9 +493,8 @@ elesfn.restore = function( notifyRenderer = true, addToPool = true ){
       edge._private.target = tgt;
     } // if is edge
 
-    // create mock ids / indexes maps for element so it can be used like collections
-    _private.map = new Map();
-    _private.map.set( id, { ele: ele, index: 0 } );
+    // single elements don't need a Map; hasElementWithId/getElementById use fast path
+    _private.map = null;
 
     _private.removed = false;
 
@@ -527,7 +545,7 @@ elesfn.restore = function( notifyRenderer = true, addToPool = true ){
 
         if( !selfAsParent ){
           // connect with children
-          parent[0]._private.children.push( node );
+          (parent[0]._private.children || (parent[0]._private.children = [])).push( node );
           node._private.parent = parent[0];
 
           // let the core know we have a compound graph
@@ -606,6 +624,7 @@ elesfn.remove = function( notifyRenderer = true, removeFromPool = true ){
   // add descendant nodes
   function addChildren( node ){
     let children = node._private.children;
+    if( !children ){ return; }
 
     for( let i = 0; i < children.length; i++ ){
       add( children[ i ] );
@@ -663,7 +682,7 @@ elesfn.remove = function( notifyRenderer = true, removeFromPool = true ){
     let children = parent._private.children;
     let pid = parent.id();
 
-    util.removeFromArray( children, ele ); // remove parent => child ref
+    if( children ){ util.removeFromArray( children, ele ); } // remove parent => child ref
 
     ele._private.parent = null; // remove child => parent ref
 

@@ -227,7 +227,10 @@ Click "Load Graph" or a Tier button to start.</div>
     const arrowShape = document.getElementById('arrowShape').value;
 
     log('Generating graph...');
-    if (cy) cy.destroy();
+    if (cy) {
+      cy.destroy();
+      cy = null; // release reference so GC can collect
+    }
 
     const t0 = performance.now();
     const graph = generateGraph(nodeCount, parallelCount, bgImagePct);

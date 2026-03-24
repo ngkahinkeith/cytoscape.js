@@ -64,6 +64,7 @@ util.extend( anifn, {
       // add to target's animation queue
       let q;
       let tAni = _p.target._private.animation;
+      if( !tAni ) tAni = _p.target._private.animation = { current: [], queue: [] };
       if( _p.queue ){
         q = tAni.queue;
       } else {

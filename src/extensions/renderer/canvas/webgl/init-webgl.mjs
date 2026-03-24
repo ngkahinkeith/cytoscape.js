@@ -151,15 +151,17 @@ function overrideRendererFunctions(r) {
       r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'style') {
-      // Incremental color update first (sets styleDirty so pstyle returns fresh values)
+      // Incremental color update (sets styleDirty so pstyle returns fresh values)
       if(eles && eles.length > 0 && !r.renderLoop.needsProcess) {
         r.renderLoop.updateStyleIncremental(eles);
+        // Incremental update sufficient for visual changes (click/select/activate).
+        // Don't call invalidate() — avoids full O(N) process() with expensive
+        // recalculateRenderedStyle that calls parallelEdges() for every edge.
+      } else {
+        r.renderLoop.invalidate();
       }
-      // Overlay refresh AFTER style update (reads updated pstyle for :active/:selected)
       r.renderLoop._overlayDirty = true;
       r.renderLoop.refreshOverlayColors();
-      // Schedule full process() for structural changes
-      r.renderLoop.invalidate();
       r.pickingFrameBuffer.needsDraw = true;
     } else if(eventName === 'background') {
       // Background image finished loading — rebuild textures

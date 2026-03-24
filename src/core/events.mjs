@@ -83,7 +83,8 @@ let elesfn = ({
   },
 
   emit: function( events, extraParams ){
-    this.emitter().emit( events, extraParams );
+    let em = this.emitter();
+    if( em ){ em.emit( events, extraParams ); }
 
     return this;
   },

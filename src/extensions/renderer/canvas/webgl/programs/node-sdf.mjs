@@ -534,6 +534,13 @@ export class NodeSDFProgram {
     this.needsUpload = true;
   }
 
+  /** Grow buffer if needed to hold at least `needed` slots. */
+  ensureCapacity(needed) {
+    if(needed > this.capacity) {
+      this.reallocate(needed);
+    }
+  }
+
   /** Pack one node's data into the buffer. Called during process(). */
   processNode(slot, node, pickIndex) {
     const buf = this.buffer;

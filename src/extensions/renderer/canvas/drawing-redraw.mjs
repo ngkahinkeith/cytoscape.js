@@ -196,8 +196,8 @@ CRp.matchCanvasSize = function( container ){
   var mbPxRatio = r.motionBlurPxRatio;
 
   if(
-    container === r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_NODE ] ||
-    container === r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_DRAG ]
+    r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_NODE ] && container === r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_NODE ] ||
+    r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_DRAG ] && container === r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_DRAG ]
   ){
     pixelRatio = mbPxRatio;
   }
@@ -229,6 +229,8 @@ CRp.matchCanvasSize = function( container ){
   for( var i = 0; i < r.BUFFER_COUNT; i++ ){
     canvas = data.bufferCanvases[ i ];
 
+    if( !canvas ){ continue; } // deferred buffers (motionblur) — skip if not yet created
+
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
@@ -238,7 +240,7 @@ CRp.matchCanvasSize = function( container ){
 
   r.textureMult = 1;
   if( pixelRatio <= 1 ){
-    canvas = data.bufferCanvases[ r.TEXTURE_BUFFER ];
+    canvas = r.getBufferCanvas( r.TEXTURE_BUFFER );
 
     r.textureMult = 2;
     canvas.width = canvasWidth * r.textureMult;
@@ -389,7 +391,7 @@ CRp.render = function( options ){
   function setContextTransform( context, clear ){
     var ePan, eZoom, w, h;
 
-    if( !r.clearingMotionBlur && (context === data.bufferContexts[ r.MOTIONBLUR_BUFFER_NODE ] || context === data.bufferContexts[ r.MOTIONBLUR_BUFFER_DRAG ]) ){
+    if( !r.clearingMotionBlur && (data.bufferContexts[ r.MOTIONBLUR_BUFFER_NODE ] && context === data.bufferContexts[ r.MOTIONBLUR_BUFFER_NODE ] || data.bufferContexts[ r.MOTIONBLUR_BUFFER_DRAG ] && context === data.bufferContexts[ r.MOTIONBLUR_BUFFER_DRAG ]) ){
       ePan = {
         x: pan.x * mbPxRatio,
         y: pan.y * mbPxRatio
@@ -511,7 +513,7 @@ CRp.render = function( options ){
 
   if( needDraw[ r.NODE ] || drawAllLayers || drawOnlyNodeLayer || needMbClear[ r.NODE ] ){
     var useBuffer = motionBlur && !needMbClear[ r.NODE ] && mbPxRatio !== 1;
-    var context = forcedContext || ( useBuffer ? r.data.bufferContexts[ r.MOTIONBLUR_BUFFER_NODE ] : data.contexts[ r.NODE ] );
+    var context = forcedContext || ( useBuffer ? r.getBufferContext( r.MOTIONBLUR_BUFFER_NODE ) : data.contexts[ r.NODE ] );
     var clear = motionBlur && !useBuffer ? 'motionBlur' : undefined;
 
     setContextTransform( context, clear );
@@ -533,7 +535,7 @@ CRp.render = function( options ){
 
   if( !drawOnlyNodeLayer && (needDraw[ r.DRAG ] || drawAllLayers || needMbClear[ r.DRAG ]) ){
     var useBuffer = motionBlur && !needMbClear[ r.DRAG ] && mbPxRatio !== 1;
-    var context = forcedContext || ( useBuffer ? r.data.bufferContexts[ r.MOTIONBLUR_BUFFER_DRAG ] : data.contexts[ r.DRAG ] );
+    var context = forcedContext || ( useBuffer ? r.getBufferContext( r.MOTIONBLUR_BUFFER_DRAG ) : data.contexts[ r.DRAG ] );
 
     setContextTransform( context, motionBlur && !useBuffer ? 'motionBlur' : undefined );
 
@@ -557,10 +559,10 @@ CRp.render = function( options ){
   // motionblur: blit rendered blurry frames
   if( motionBlur && mbPxRatio !== 1 ){
     var cxtNode = data.contexts[ r.NODE ];
-    var txtNode = r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_NODE ];
+    var txtNode = r.getBufferCanvas( r.MOTIONBLUR_BUFFER_NODE );
 
     var cxtDrag = data.contexts[ r.DRAG ];
-    var txtDrag = r.data.bufferCanvases[ r.MOTIONBLUR_BUFFER_DRAG ];
+    var txtDrag = r.getBufferCanvas( r.MOTIONBLUR_BUFFER_DRAG );
 
     var drawMotionBlur = function( cxt, txt, needClear ){
       cxt.setTransform( 1, 0, 0, 1, 0, 0 );

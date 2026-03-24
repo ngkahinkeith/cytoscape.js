@@ -52,6 +52,8 @@ styfn.clear = function(){
   _p.contextStyles = {};
   _p.propDiffs = {};
 
+  this._parsedPropCache = {};
+
   this.cleanElements( eles, true );
 
   eles.forEach(ele => {

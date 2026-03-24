@@ -73,6 +73,7 @@ let elesfn = ({
     for( let i = 0; i < this.length; i++ ){
       let ele = this[ i ];
       let eleChildren = ele._private.children;
+      if( !eleChildren ){ continue; }
 
       for( let j = 0; j < eleChildren.length; j++ ){
         children.push( eleChildren[j] );
@@ -90,7 +91,7 @@ let elesfn = ({
     let ele = this[0];
 
     if( ele ){
-      return ele.isNode() && ele._private.children.length !== 0;
+      return ele.isNode() && ele._private.children != null && ele._private.children.length !== 0;
     }
   },
 
@@ -98,7 +99,7 @@ let elesfn = ({
     let ele = this[0];
 
     if( ele ){
-      return ele.isNode() && ele._private.children.length === 0;
+      return ele.isNode() && (ele._private.children == null || ele._private.children.length === 0);
     }
   },
 

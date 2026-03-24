@@ -1,33 +1,10 @@
-import * as is from '../is.mjs';
-import * as util from '../util/index.mjs';
-
+// Traversal cache removed — the cached functions (source(), target(),
+// connectedEdges(), parallelEdges()) are already fast without caching (O(1) or
+// O(degree)), and the per-element cache retained ~100MB of Collection objects.
+// The wrapper is now a pass-through to preserve the call-site interface.
 let cache = function( fn, name ){
   return function traversalCache( arg1, arg2, arg3, arg4 ){
-    let selectorOrEles = arg1;
-    let eles = this;
-    let key;
-
-    if( selectorOrEles == null ){
-      key = '';
-    } else if( is.elementOrCollection( selectorOrEles ) && selectorOrEles.length === 1 ){
-      key = selectorOrEles.id();
-    }
-
-    if( eles.length === 1 && key !== undefined && key !== null ){
-      let _p = eles[0]._private;
-      let tch = _p.traversalCache = _p.traversalCache || {};
-      let ch = tch[ name ] = tch[ name ] || [];
-      let hash = util.hashString( key );
-      let cacheHit = ch[ hash ];
-
-      if( cacheHit ){
-        return cacheHit;
-      } else {
-        return ( ch[ hash ] = fn.call( eles, arg1, arg2, arg3, arg4 ) );
-      }
-    } else {
-      return fn.call( eles, arg1, arg2, arg3, arg4 );
-    }
+    return fn.call( this, arg1, arg2, arg3, arg4 );
   };
 };
 

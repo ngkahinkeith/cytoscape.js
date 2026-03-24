@@ -40,12 +40,10 @@ let Element = function( cy, params, restore = true ){
     autoHeight: undefined,
     autoPadding: undefined,
     compoundBoundsClean: false, // whether the compound dimensions need to be recalculated the next time dimensions are read
-    listeners: [], // array of bound listeners
     group: group, // string; 'nodes' or 'edges'
     style: {}, // properties as set by the style
     rstyle: {}, // properties for style sent from the renderer to the core
-    styleCxts: [], // applied style contexts from the styler
-    styleKeys: {}, // per-group keys of style property values
+    styleKeys: null, // per-group keys of style property values (Int32Array)
     removed: true, // whether it's inside the vis; true if removed (set true here since we call restore)
     selected: params.selected ? true : false, // whether it's selected
     selectable: params.selectable === undefined ? true : ( params.selectable ? true : false ), // whether it's selectable
@@ -54,34 +52,21 @@ let Element = function( cy, params, restore = true ){
     grabbable: params.grabbable === undefined ? true : ( params.grabbable ? true : false ), // whether the element can be grabbed
     pannable: params.pannable === undefined ? (group === 'edges' ? true : false) : ( params.pannable ? true : false ), // whether the element has passthrough panning enabled
     active: false, // whether the element is active from user interaction
-    classes: new Set(), // map ( className => true )
-    animation: { // object for currently-running animations
-      current: [],
-      queue: []
-    },
+    classes: null, // set of class names; lazily allocated
+    animation: null, // object for currently-running animations; lazily allocated as { current: [], queue: [] }
     rscratch: {}, // object in which the renderer can store information
-    scratch: params.scratch || {}, // scratch objects
-    edges: [], // array of connected edges
-    children: [], // array of children
+    scratch: params.scratch || null, // scratch objects; lazily allocated
+    edges: group === 'nodes' ? [] : null, // array of connected edges (only for nodes)
+    children: null, // array of children; lazily allocated for compound parents
     parent: params.parent && params.parent.isNode() ? params.parent : null, // parent ref
-    traversalCache: {}, // cache of output of traversal functions
+    traversalCache: null, // cache of output of traversal functions; lazily allocated
     backgrounding: false, // whether background images are loading
     bbCache: null, // cache of the current bounding box
-    bbCacheShift: { x: 0, y: 0 }, // shift applied to cached bb to be applied on next get
+    bbCacheShift: null, // shift applied to cached bb to be applied on next get
     bodyBounds: null, // bounds cache of element body, w/o overlay
     overlayBounds: null, // bounds cache of element body, including overlay
-    labelBounds: { // bounds cache of labels
-      all: null,
-      source: null,
-      target: null,
-      main: null
-    },
-    arrowBounds: { // bounds cache of edge arrows
-      source: null,
-      target: null,
-      'mid-source': null,
-      'mid-target': null
-    }
+    labelBounds: null, // bounds cache of labels; lazily allocated
+    arrowBounds: null // bounds cache of edge arrows; lazily allocated
   };
 
   if( _p.position.x == null ){ _p.position.x = 0; }
@@ -109,7 +94,7 @@ let Element = function( cy, params, restore = true ){
     let cls = classes[ i ];
     if( !cls || cls === '' ){ continue; }
 
-    _p.classes.add(cls);
+    (_p.classes || (_p.classes = new Set())).add(cls);
   }
 
   this.createEmitter();

@@ -246,12 +246,12 @@ BRp.findNearestElements = function( x, y, interactiveElementsOnly, isTouch ){
     }
 
     ele.boundingBox();
-    var bb = _p.labelBounds[prefix || 'main'];
+    var bb = _p.labelBounds && _p.labelBounds[prefix || 'main'];
 
     var text = ele.pstyle( prefixDash + 'label' ).value;
     var eventsEnabled = ele.pstyle( 'text-events' ).strValue === 'yes';
 
-    if( !eventsEnabled || !text ){ return; }
+    if( !eventsEnabled || !text || !bb ){ return; }
 
     var lx = preprop( _p.rscratch, 'labelX', prefix );
     var ly = preprop( _p.rscratch, 'labelY', prefix );
@@ -364,7 +364,7 @@ BRp.getAllInBox = function( x1, y1, x2, y2 ){
 
     var prefixDash = prefix ? prefix + '-' : '';
     ele.boundingBox();
-    var bb = _p.labelBounds[prefix || 'main'];
+    var bb = _p.labelBounds && _p.labelBounds[prefix || 'main'];
 
     // If the bounding box is not available, return null.
     // This indicates that the label box cannot be calculated, which is consistent

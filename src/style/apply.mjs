@@ -8,6 +8,13 @@ const styfn = {};
 const TRUE = 't';
 const FALSE = 'f';
 
+// Map group key strings to sequential indices into the flat Int32Array.
+// Lazily populated on first updateStyleHints call.
+let STYLE_GROUP_INDICES = null;
+
+// Reusable two-element seed array to avoid allocating per call in propHash
+let _seedPair = [ 0, 0 ];
+
 // (potentially expensive calculation)
 // apply the style to the element based on
 // - its bypass
@@ -238,6 +245,17 @@ styfn.updateStyleHints = function(ele){
 
   let isNode = _p.group === 'nodes';
 
+  // Lazily build STYLE_GROUP_INDICES on first call
+  if( STYLE_GROUP_INDICES === null ){
+    STYLE_GROUP_INDICES = {};
+
+    for( let i = 0; i < propGrKeys.length; i++ ){
+      STYLE_GROUP_INDICES[ propGrKeys[i] ] = i;
+    }
+  }
+
+  let grIndices = STYLE_GROUP_INDICES;
+
   // get the style key hashes per prop group
   // but lazily -- only use non-default prop values to reduce the number of hashes
   //
@@ -246,14 +264,29 @@ styfn.updateStyleHints = function(ele){
 
   propNames = Object.keys( overriddenStyles );
 
-  for( let i = 0; i < propGrKeys.length; i++ ){
-    let grKey = propGrKeys[i];
+  // Allocate or reuse a flat Int32Array instead of 21 individual [a,b] arrays
+  let totalLen = propGrKeys.length * 2;
+  let sk = _p.styleKeys;
 
-    _p.styleKeys[ grKey ] = [ util.DEFAULT_HASH_SEED, util.DEFAULT_HASH_SEED_ALT ];
+  if( sk === null || sk.length !== totalLen ){
+    sk = _p.styleKeys = new Int32Array( totalLen );
   }
 
-  let updateGrKey1 = (val, grKey) => _p.styleKeys[ grKey ][0] = util.hashInt( val, _p.styleKeys[ grKey ][0] );
-  let updateGrKey2 = (val, grKey) => _p.styleKeys[ grKey ][1] = util.hashIntAlt( val, _p.styleKeys[ grKey ][1] );
+  // Fill with default seeds
+  for( let i = 0; i < propGrKeys.length; i++ ){
+    sk[ i * 2 ]     = util.DEFAULT_HASH_SEED;
+    sk[ i * 2 + 1 ] = util.DEFAULT_HASH_SEED_ALT;
+  }
+
+  let updateGrKey1 = (val, grKey) => {
+    let idx = grIndices[ grKey ] * 2;
+    sk[ idx ] = util.hashInt( val, sk[ idx ] );
+  };
+
+  let updateGrKey2 = (val, grKey) => {
+    let idx = grIndices[ grKey ] * 2 + 1;
+    sk[ idx ] = util.hashIntAlt( val, sk[ idx ] );
+  };
 
   let updateGrKey = (val, grKey) => {
     updateGrKey1(val, grKey);
@@ -322,11 +355,8 @@ styfn.updateStyleHints = function(ele){
   let hash = [ util.DEFAULT_HASH_SEED, util.DEFAULT_HASH_SEED_ALT ];
 
   for( let i = 0; i < propGrKeys.length; i++ ){
-    let grKey = propGrKeys[i];
-    let grHash = _p.styleKeys[ grKey ];
-
-    hash[0] = util.hashInt( grHash[0], hash[0] );
-    hash[1] = util.hashIntAlt( grHash[1], hash[1] );
+    hash[0] = util.hashInt( sk[ i * 2 ], hash[0] );
+    hash[1] = util.hashIntAlt( sk[ i * 2 + 1 ], hash[1] );
   }
 
   _p.styleKey = util.combineHashes(hash[0], hash[1]);
@@ -334,40 +364,60 @@ styfn.updateStyleHints = function(ele){
   // label dims
   //
 
-  let sk = _p.styleKeys;
-  
-  _p.labelDimsKey = util.combineHashesArray(sk.labelDimensions);
+  let ldIdx = grIndices.labelDimensions * 2;
+  _p.labelDimsKey = util.combineHashes(sk[ldIdx], sk[ldIdx + 1]);
 
-  let labelKeys = propHash( ele, ['label'], sk.labelDimensions );
-  
-  _p.labelKey = util.combineHashesArray(labelKeys);
-  _p.labelStyleKey = util.combineHashesArray(util.hashArrays(sk.commonLabel, labelKeys));
+  let clIdx = grIndices.commonLabel * 2;
+  let cl0 = sk[clIdx], cl1 = sk[clIdx + 1];
+
+  _seedPair[0] = sk[ldIdx]; _seedPair[1] = sk[ldIdx + 1];
+  let labelKeys = propHash( ele, ['label'], _seedPair );
+
+  _p.labelKey = util.combineHashes(labelKeys[0], labelKeys[1]);
+  _p.labelStyleKey = util.combineHashes(
+    util.hashInt(cl0, labelKeys[0]),
+    util.hashIntAlt(cl1, labelKeys[1])
+  );
 
   if( !isNode ){
-    let sourceLabelKeys = propHash( ele, ['source-label'], sk.labelDimensions );
-    _p.sourceLabelKey = util.combineHashesArray(sourceLabelKeys);
-    _p.sourceLabelStyleKey = util.combineHashesArray(util.hashArrays(sk.commonLabel, sourceLabelKeys));
+    _seedPair[0] = sk[ldIdx]; _seedPair[1] = sk[ldIdx + 1];
+    let sourceLabelKeys = propHash( ele, ['source-label'], _seedPair );
+    _p.sourceLabelKey = util.combineHashes(sourceLabelKeys[0], sourceLabelKeys[1]);
+    _p.sourceLabelStyleKey = util.combineHashes(
+      util.hashInt(cl0, sourceLabelKeys[0]),
+      util.hashIntAlt(cl1, sourceLabelKeys[1])
+    );
 
-    let targetLabelKeys = propHash( ele, ['target-label'], sk.labelDimensions );
-    _p.targetLabelKey = util.combineHashesArray(targetLabelKeys);
-    _p.targetLabelStyleKey = util.combineHashesArray(util.hashArrays(sk.commonLabel, targetLabelKeys));
+    _seedPair[0] = sk[ldIdx]; _seedPair[1] = sk[ldIdx + 1];
+    let targetLabelKeys = propHash( ele, ['target-label'], _seedPair );
+    _p.targetLabelKey = util.combineHashes(targetLabelKeys[0], targetLabelKeys[1]);
+    _p.targetLabelStyleKey = util.combineHashes(
+      util.hashInt(cl0, targetLabelKeys[0]),
+      util.hashIntAlt(cl1, targetLabelKeys[1])
+    );
   }
 
   // node
   //
 
   if( isNode ){
-    let { nodeBody, nodeBorder, nodeOutline, backgroundImage, compound, pie, stripe } = _p.styleKeys;
+    // Compute nodeKey by folding 7 group pairs into a running hash, no temp arrays
+    let nk0 = util.DEFAULT_HASH_SEED;
+    let nk1 = util.DEFAULT_HASH_SEED_ALT;
 
-    let nodeKeys = [ nodeBody, nodeBorder, nodeOutline, backgroundImage, compound, pie, stripe ].filter(k => k != null).reduce(util.hashArrays, [
-      util.DEFAULT_HASH_SEED,
-      util.DEFAULT_HASH_SEED_ALT
-    ]);
-    _p.nodeKey = util.combineHashesArray(nodeKeys);
-    
-    _p.hasPie = pie != null && pie[0] !== util.DEFAULT_HASH_SEED && pie[1] !== util.DEFAULT_HASH_SEED_ALT;
+    let grpNames = ['nodeBody', 'nodeBorder', 'nodeOutline', 'backgroundImage', 'compound', 'pie', 'stripe'];
+    for( let gi = 0; gi < grpNames.length; gi++ ){
+      let gIdx = grIndices[grpNames[gi]] * 2;
+      nk0 = util.hashInt(sk[gIdx], nk0);
+      nk1 = util.hashIntAlt(sk[gIdx + 1], nk1);
+    }
+    _p.nodeKey = util.combineHashes(nk0, nk1);
 
-    _p.hasStripe = stripe != null && stripe[0] !== util.DEFAULT_HASH_SEED && stripe[1] !== util.DEFAULT_HASH_SEED_ALT;
+    let pieIdx = grIndices.pie * 2;
+    _p.hasPie = sk[pieIdx] !== util.DEFAULT_HASH_SEED && sk[pieIdx + 1] !== util.DEFAULT_HASH_SEED_ALT;
+
+    let stripeIdx = grIndices.stripe * 2;
+    _p.hasStripe = sk[stripeIdx] !== util.DEFAULT_HASH_SEED && sk[stripeIdx + 1] !== util.DEFAULT_HASH_SEED_ALT;
   }
 
   return oldStyleKey !== _p.styleKey;
@@ -377,7 +427,7 @@ styfn.clearStyleHints = function(ele){
   let _p = ele._private;
 
   _p.styleCxtKey = '';
-  _p.styleKeys = {};
+  _p.styleKeys = null;
   _p.styleKey = null;
   _p.labelKey = null;
   _p.labelStyleKey = null;
@@ -652,6 +702,21 @@ styfn.applyParsedProperty = function( ele, parsedProp ){
     style[ prop.name ] = prop; // and set
 
   } else { // prop is not bypass
+    // For simple literal (non-bypass, non-mapped) properties, deduplicate by
+    // caching the parsed property object.  Elements that share the same
+    // stylesheet value will reference the SAME object, saving ~112 bytes each.
+    if( !prop.bypass && !prop.mapped && prop.mapping == null ){
+      let cache = self._parsedPropCache || (self._parsedPropCache = {});
+      let cacheKey = prop.name + '\0' + prop.strValue;
+      let cached = cache[ cacheKey ];
+
+      if( cached ){
+        prop = cached;
+      } else {
+        cache[ cacheKey ] = prop;
+      }
+    }
+
     if( origPropIsBypass ){ // then keep the orig prop (since it's a bypass) and link to the new prop
       origProp.bypassed = prop;
     } else { // then just replace the old prop with the new one

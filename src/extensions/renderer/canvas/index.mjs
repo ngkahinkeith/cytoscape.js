@@ -160,14 +160,16 @@ function CanvasRenderer( options ){
     r.data.canvases[ CRp.EDGE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.EDGE_WEBGL + '-edge-webgl' );
   }
 
-  for( var i = 0; i < CRp.BUFFER_COUNT; i++ ){
+  // Only eagerly allocate the TEXTURE_BUFFER (index 0).
+  // MOTIONBLUR buffers (indices 1, 2) are deferred to first use (~100MB savings at 1080p@2x).
+  {
+    let i = r.TEXTURE_BUFFER;
     r.data.bufferCanvases[ i ] = document.createElement( 'canvas' );  // eslint-disable-line no-undef
     r.data.bufferContexts[ i ] = r.data.bufferCanvases[ i ].getContext( '2d' );
     r.data.bufferCanvases[ i ].style.position = 'absolute';
     r.data.bufferCanvases[ i ].setAttribute( 'data-id', 'buffer' + i );
     r.data.bufferCanvases[ i ].style.zIndex = String( -i - 1 );
     r.data.bufferCanvases[ i ].style.visibility = 'hidden';
-    //r.data.canvasContainer.appendChild(r.data.bufferCanvases[i]);
   }
 
   r.pathsEnabled = true;
@@ -196,9 +198,9 @@ function CanvasRenderer( options ){
   let drawTargetLabel = (context, ele, bb, scaledLabelShown, useEleOpacity) => r.drawElementText( context, ele, bb, scaledLabelShown, 'target', useEleOpacity );
 
   let getElementBox = ele => { ele.boundingBox(); return ele[0]._private.bodyBounds; };
-  let getLabelBox   = ele => { ele.boundingBox(); return ele[0]._private.labelBounds.main || emptyBb; };
-  let getSourceLabelBox = ele => { ele.boundingBox(); return ele[0]._private.labelBounds.source || emptyBb; };
-  let getTargetLabelBox = ele => { ele.boundingBox(); return ele[0]._private.labelBounds.target || emptyBb; };
+  let getLabelBox   = ele => { ele.boundingBox(); let lb = ele[0]._private.labelBounds; return (lb && lb.main) || emptyBb; };
+  let getSourceLabelBox = ele => { ele.boundingBox(); let lb = ele[0]._private.labelBounds; return (lb && lb.source) || emptyBb; };
+  let getTargetLabelBox = ele => { ele.boundingBox(); let lb = ele[0]._private.labelBounds; return (lb && lb.target) || emptyBb; };
 
   let isLabelVisibleAtScale = (ele, scaledLabelShown) => scaledLabelShown;
 
@@ -349,6 +351,34 @@ CRp.redrawHint = function( group, bool ){
 
 // whether to use Path2D caching for drawing
 var pathsImpld = typeof Path2D !== 'undefined';
+
+// Lazy accessor for buffer canvases — creates motionblur buffers on demand
+CRp.getBufferCanvas = function( index ){
+  var r = this;
+  if( !r.data.bufferCanvases[ index ] ){
+    var containerWindow = r.cy.window();
+    var document = containerWindow.document;
+    var canvas = r.data.bufferCanvases[ index ] = document.createElement( 'canvas' );
+    r.data.bufferContexts[ index ] = canvas.getContext( '2d' );
+    canvas.style.position = 'absolute';
+    canvas.setAttribute( 'data-id', 'buffer' + index );
+    canvas.style.zIndex = String( -index - 1 );
+    canvas.style.visibility = 'hidden';
+    // Match current canvas size if already set
+    if( r.canvasWidth && r.canvasHeight ){
+      canvas.width = r.canvasWidth;
+      canvas.height = r.canvasHeight;
+      canvas.style.width = (r.canvasWidth / r.pixelRatio) + 'px';
+      canvas.style.height = (r.canvasHeight / r.pixelRatio) + 'px';
+    }
+  }
+  return r.data.bufferCanvases[ index ];
+};
+
+CRp.getBufferContext = function( index ){
+  this.getBufferCanvas( index ); // ensure it exists
+  return this.data.bufferContexts[ index ];
+};
 
 CRp.path2dEnabled = function( on ){
   if( on === undefined ){

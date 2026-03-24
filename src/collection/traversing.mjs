@@ -106,11 +106,9 @@ let defineDagAllHops = function( params ){
   };
 };
 
-elesfn.clearTraversalCache = function( ){
-  for( let i = 0; i < this.length; i++ ){
-    this[i]._private.traversalCache = null;
-  }
-};
+// No-op: traversal cache has been removed (per-element cache retained ~100MB).
+// Call sites are preserved to avoid churn; this function does nothing.
+elesfn.clearTraversalCache = function( ){};
 
 util.extend( elesfn, {
   // get the root nodes in the DAG
@@ -256,6 +254,7 @@ function defineEdgesWithFunction( params ){
 
     for( let h = 0; h < otherNodes.length; h++ ){
       let edges = otherNodes[ h ]._private.edges;
+      if( !edges ){ continue; }
 
       for( let i = 0; i < edges.length; i++ ){
         let edge = edges[ i ];

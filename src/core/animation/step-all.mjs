@@ -7,8 +7,10 @@ function stepAll( now, cy ){
 
   function stepOne( ele, isCore ){
     let _p = ele._private;
-    let current = _p.animation.current;
-    let queue = _p.animation.queue;
+    let a = _p.animation;
+    if( !a ) a = _p.animation = { current: [], queue: [] };
+    let current = a.current;
+    let queue = a.queue;
     let ranAnis = false;
 
     // if nothing currently animating, get something from the queue

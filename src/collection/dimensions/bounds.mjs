@@ -353,6 +353,7 @@ let updateBoundsFromLabel = function( bounds, ele, prefix ){
 
     // always store the unrotated label bounds separately
     let bbPrefix = prefix || 'main';
+    if( !_p.labelBounds ){ _p.labelBounds = { all: null, source: null, target: null, main: null }; }
     let bbs = _p.labelBounds;
     let bb = bbs[bbPrefix] = bbs[bbPrefix] || {};
     bb.x1 = lx1;
@@ -748,7 +749,8 @@ let boundingBoxImpl = function( ele, options ){
     // handle label dimensions
     //////////////////////////
 
-    let bbLabels = _p.labelBounds = _p.labelBounds || {};
+    if( !_p.labelBounds ){ _p.labelBounds = { all: null, source: null, target: null, main: null }; }
+    let bbLabels = _p.labelBounds;
 
     if( bbLabels.all != null ){
       clearBoundingBox(bbLabels.all);
@@ -853,7 +855,7 @@ let cachedBoundingBoxImpl = function( ele, opts ){
       }
     }
 
-    if( opts.includeLabels ){
+    if( opts.includeLabels && _p.labelBounds ){
       if( opts.includeMainLabels && (!isEdge || (opts.includeSourceLabels && opts.includeTargetLabels)) ){
         updateBoundsFromBox(bb, _p.labelBounds.all);
       } else {
@@ -967,17 +969,21 @@ elesfn.dirtyBoundingBoxCache = function(){
     _p.bbCachePosKey = null;
     _p.bodyBounds = null;
     _p.overlayBounds = null;
-    _p.labelBounds.all = null;
-    _p.labelBounds.source = null;
-    _p.labelBounds.target = null;
-    _p.labelBounds.main = null;
-    _p.labelBounds.sourceRot = null;
-    _p.labelBounds.targetRot = null;
-    _p.labelBounds.mainRot = null;
-    _p.arrowBounds.source = null;
-    _p.arrowBounds.target = null;
-    _p.arrowBounds['mid-source'] = null;
-    _p.arrowBounds['mid-target'] = null;
+    if( _p.labelBounds ){
+      _p.labelBounds.all = null;
+      _p.labelBounds.source = null;
+      _p.labelBounds.target = null;
+      _p.labelBounds.main = null;
+      _p.labelBounds.sourceRot = null;
+      _p.labelBounds.targetRot = null;
+      _p.labelBounds.mainRot = null;
+    }
+    if( _p.arrowBounds ){
+      _p.arrowBounds.source = null;
+      _p.arrowBounds.target = null;
+      _p.arrowBounds['mid-source'] = null;
+      _p.arrowBounds['mid-target'] = null;
+    }
   }
 
   this.emitAndNotify('bounds');

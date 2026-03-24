@@ -36,6 +36,11 @@ export class WebGLRenderLoop {
 
     // Label data for Canvas 2D rendering
     this._labelCandidates = [];
+
+    // Label grid zoom-change optimization: cache visible labels and
+    // skip full grid rebuild on pan-only frames (zoom unchanged).
+    this._lastLabelZoom = null;
+    this._lastVisibleLabels = null;
   }
 
   /** Initialize GL resources. Called once when WebGL context is available. */
@@ -77,49 +82,33 @@ export class WebGLRenderLoop {
     const r = this.r;
 
     // Ensure edge control points (rs.allpts) are computed before we read them.
-    const useCache = this._hasProcessed;
-    const allEles = r.cy.mutableElements();
-    r.recalculateRenderedStyle(allEles, useCache);
-    this._hasProcessed = true;
+    // First call: useCache=false forces ALL edges to compute (initial load).
+    // Subsequent calls: skip entirely — the beforeRender callback already
+    // processes dirty elements via recalculateRenderedStyle(dirtyEles, true).
+    // Without traversal cache, calling recalculateRenderedStyle(allEles, true)
+    // triggers O(E × degree) parallelEdges() scans = multi-second freeze.
+    if(!this._hasProcessed) {
+      r.recalculateRenderedStyle(r.cy.mutableElements(), false);
+      this._hasProcessed = true;
+    }
 
 
     const eles = r.getCachedZSortedEles();
 
-    // Count elements by type
-    let nodeCount = 0;
-    let texturedNodeCount = 0;
-    let edgeInstanceCount = 0;
-    let overlaySlotCount = 0; // extra SDF instances for overlay/underlay
+    // Estimate buffer sizes based on element count (avoids a separate counting pass).
+    // Nodes need ~3 SDF slots each (body + overlay + possible underlay).
+    // Edges need ~10 instances each (bezier segments + arrows).
+    // The ensureCapacity() calls during packing handle any underestimate via
+    // amortized doubling, so these just need to be in the right ballpark.
+    const eleCount = eles.length || 256;
+    const estNodeSlots = eleCount * 3;
+    const estTexNodes = Math.max(Math.ceil(eleCount * 0.1), 16);
+    const estEdgeInstances = eleCount * 10;
+    this.nodeSDFProgram.reallocate(estNodeSlots);
+    this.nodeTexProgram.reallocate(estTexNodes);
+    this.edgeProgram.reallocate(estEdgeInstances);
 
-    // Single counting pass to determine buffer sizes
-    for(let i = 0; i < eles.length; i++) {
-      const ele = eles[i];
-      if(ele.isNode()) {
-        nodeCount++;
-        const bgImg = ele.pstyle('background-image');
-        if(bgImg && bgImg.strValue && bgImg.strValue !== 'none') {
-          texturedNodeCount++;
-          this.texturePageManager.registerImage(bgImg.strValue);
-        }
-        overlaySlotCount++; // overlay always pre-allocated
-        if(ele.pstyle('underlay-opacity').value > 0) overlaySlotCount++;
-      } else {
-        const rs = ele._private.rscratch;
-        if(rs && rs.allpts) {
-          edgeInstanceCount += rs.allpts.length === 4 ? 1 : 16;
-          if(ele.pstyle('source-arrow-shape').value !== 'none') edgeInstanceCount++;
-          if(ele.pstyle('target-arrow-shape').value !== 'none') edgeInstanceCount++;
-        }
-      }
-    }
-
-    // Reallocate buffers
-    this.nodeSDFProgram.reallocate(nodeCount + overlaySlotCount);
-    this.nodeTexProgram.reallocate(texturedNodeCount);
-    this.nodeTexProgram.count = texturedNodeCount;
-    this.edgeProgram.reallocate(Math.ceil(edgeInstanceCount * 1.1));
-
-    // Pack data
+    // Pack data in a single pass
     let nodeSlot = 0;
     let texNodeSlot = 0;
     let edgeSlot = 0;
@@ -134,6 +123,9 @@ export class WebGLRenderLoop {
         // Track all SDF slots for this node (body + underlay + overlay)
         const nodeSlots = [];
 
+        // Ensure capacity for up to 3 SDF slots (underlay + body + overlay)
+        this.nodeSDFProgram.ensureCapacity(nodeSlot + 3);
+
         // Pack underlay (drawn before/behind the node body)
         const underlayOpacity = ele.pstyle('underlay-opacity').value;
         if(underlayOpacity > 0) {
@@ -142,14 +134,19 @@ export class WebGLRenderLoop {
           nodeSlot++;
         }
 
-        // Check if node has bg-image
+        // Check if node has bg-image and register with texture manager
         const bgImg = ele.pstyle('background-image');
         const hasTexture = bgImg && bgImg.strValue && bgImg.strValue !== 'none';
+        if(hasTexture) {
+          this.texturePageManager.registerImage(bgImg.strValue);
+        }
 
         // Pack SDF node (renders background-color shape for all nodes)
         this.nodeSDFProgram.processNode(nodeSlot, ele, pickIndex);
 
         if(hasTexture) {
+          // Ensure texture buffer capacity
+          this.nodeTexProgram.ensureCapacity(texNodeSlot + 1);
           // Texture overlay renders the bg-image on top of the SDF shape.
           // With transparent SVGs, the SDF background-color shows through.
           this.nodeTexProgram.processNode(texNodeSlot, ele, pickIndex, this.texturePageManager);
@@ -184,6 +181,9 @@ export class WebGLRenderLoop {
           });
         }
       } else {
+        // Ensure edge buffer has room (worst case: 16 curve segments + 2 arrows)
+        this.edgeProgram.ensureCapacity(edgeSlot + 20);
+
         const prevSlot = edgeSlot;
         edgeSlot = this.edgeProgram.processEdge(edgeSlot, ele, pickIndex, r);
         ele._private._webglEdgeSlot = prevSlot;
@@ -218,6 +218,7 @@ export class WebGLRenderLoop {
     }
 
     this.nodeSDFProgram.count = nodeSlot;
+    this.nodeTexProgram.count = texNodeSlot;
     this.edgeProgram.count = edgeSlot;
 
     this.nodeSDFProgram.needsUpload = true;
@@ -364,10 +365,6 @@ export class WebGLRenderLoop {
   renderLabels(context, pan, zoom, viewportWidth, viewportHeight) {
     const r = this.r;
 
-    // Update screen coordinates for label candidates.
-    // Use model-space position for grid cell assignment (stable during pan).
-    // screenSize uses zoom for LOD but screenX/screenY are model-space × zoom
-    // with a FIXED grid origin (not pan-dependent) to prevent cell-boundary flicker.
     for(const candidate of this._labelCandidates) {
       let px, py;
       if(candidate.ele.isNode()) {
@@ -389,16 +386,13 @@ export class WebGLRenderLoop {
       candidate.screenY = py * zoom + pan.y;
       candidate.gridX = px * zoom;
       candidate.gridY = py * zoom;
-      // screenSize scales with zoom for LOD (use baseSize to avoid exponential growth)
       candidate.screenSize = candidate.baseSize * zoom;
     }
 
-    // Get visible labels from LabelGrid
     const visible = this.labelGrid.getLabelsToDisplay(
       this._labelCandidates, zoom, viewportWidth, viewportHeight, 4
     );
 
-    // Draw labels on Canvas 2D
     for(const item of visible) {
       r.drawElementText(context, item.ele, null, true);
     }
@@ -407,6 +401,8 @@ export class WebGLRenderLoop {
   /** Mark that element data has changed — triggers process() on next render. */
   invalidate() {
     this.needsProcess = true;
+    this._lastVisibleLabels = null; // force full label grid rebuild
+    this._lastLabelZoom = null;
   }
 
   /** Incrementally update visual style (color/border) for specific elements. O(k).
@@ -635,6 +631,8 @@ export class WebGLRenderLoop {
 
     // Clear label candidates (up to 275K objects)
     this._labelCandidates = null;
+    this._lastVisibleLabels = null;
+    this._lastLabelZoom = null;
     this._activeEdges = null;
 
     // Clear element references to allow GC of WebGL slot data

@@ -93,8 +93,7 @@ let corefn = ({
       let _p = ele._private;
       _p.rscratch = {};
       _p.rstyle = {};
-      _p.animation.current = [];
-      _p.animation.queue = [];
+      _p.animation = null;
     });
   },
 

@@ -8,7 +8,8 @@ let elesfn = ({
     if( classes === undefined ){
       let ret = [];
 
-      self[0]._private.classes.forEach(cls => ret.push(cls));
+      let c = self[0]._private.classes;
+      if( c ){ c.forEach(cls => ret.push(cls)); }
 
       return ret;
     } else if( !is.array( classes ) ){
@@ -29,7 +30,7 @@ let elesfn = ({
       // check if ele has all of the passed classes
       for( let i = 0; i < classes.length; i++ ){
         let cls = classes[i];
-        let eleHasClass = eleClasses.has(cls);
+        let eleHasClass = eleClasses && eleClasses.has(cls);
 
         if( !eleHasClass ){
           changedEle = true;
@@ -39,7 +40,7 @@ let elesfn = ({
 
       // check if ele has classes outside of those passed
       if( !changedEle ){
-        changedEle = eleClasses.size !== classes.length;
+        changedEle = (eleClasses ? eleClasses.size : 0) !== classes.length;
       }
 
       if( changedEle ){
@@ -66,7 +67,7 @@ let elesfn = ({
 
   hasClass: function( className ){
     let ele = this[0];
-    return ( ele != null && ele._private.classes.has(className) );
+    return ( ele != null && ele._private.classes != null && ele._private.classes.has(className) );
   },
 
   toggleClass: function( classes, toggle ){
@@ -85,14 +86,14 @@ let elesfn = ({
 
       for( let j = 0; j < classes.length; j++ ){
         let cls = classes[ j ];
-        let hasClass = eleClasses.has(cls);
+        let hasClass = eleClasses && eleClasses.has(cls);
         let changedNow = false;
 
         if( toggle || (toggleUndefd && !hasClass) ){
-          eleClasses.add(cls);
+          (eleClasses || (eleClasses = ele._private.classes = new Set())).add(cls);
           changedNow = true;
         } else if( !toggle || (toggleUndefd && hasClass) ){
-          eleClasses.delete(cls);
+          if( eleClasses ){ eleClasses.delete(cls); }
           changedNow = true;
         }
 

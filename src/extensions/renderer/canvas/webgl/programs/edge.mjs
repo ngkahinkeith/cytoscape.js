@@ -354,6 +354,13 @@ export class EdgeProgram {
     this.needsUpload = true;
   }
 
+  /** Grow buffers if needed to hold at least `needed` instances. */
+  ensureCapacity(needed) {
+    if(needed > this.capacity) {
+      this.reallocate(needed);
+    }
+  }
+
   /**
    * Process one edge. Writes segment instances + arrow instances to the buffer.
    * Returns the next available slot index.
