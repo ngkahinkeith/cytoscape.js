@@ -45,6 +45,15 @@ CRp.initWebgl = function(opts) {
     }
   }
 
+  // Labels must render ON TOP of the unified WebGL canvas.
+  // Original z-order: NODE_WEBGL=z4, LABELS=z3 (labels behind nodes, edges separate at z2).
+  // With unified context, edges+nodes both on NODE_WEBGL — labels must be above it.
+  const labelCanvas = r.data.canvases[r.LABELS];
+  const webglCanvas = r.data.canvases[r.NODE_WEBGL];
+  if(labelCanvas && webglCanvas) {
+    labelCanvas.style.zIndex = String(parseInt(webglCanvas.style.zIndex) + 1);
+  }
+
   // Create the render loop — same GL context for edges and nodes
   r.renderLoop = new WebGLRenderLoop(r, opts);
   r.renderLoop.init(glNode, glNode);
