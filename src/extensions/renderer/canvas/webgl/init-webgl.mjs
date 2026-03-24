@@ -323,6 +323,8 @@ function findNearestElementsWebgl(r, x, y) {
     r.renderLoop.nodeTexProgram.upload(gl);
     r.renderLoop.edgeProgram.upload(glEdge);
     r.renderLoop.edgeProgram.uploadPicking(gl); // edge data on node GL context for picking
+    r.renderLoop.edgeCurveProgram.upload(glEdge);
+    r.renderLoop.edgeCurveProgram.uploadPicking(gl); // curve edge data on node GL context for picking
 
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
     const panZoomMatrix = createPanZoomMatrix(r);

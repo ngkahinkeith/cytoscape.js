@@ -1,6 +1,7 @@
 import { NodeSDFProgram, NODE_STRIDE, SHAPE_ENUM } from './programs/node-sdf.mjs';
 import { NodeTextureProgram } from './programs/node-texture.mjs';
 import { EdgeProgram, EDGE_STRIDE } from './programs/edge.mjs';
+import { EdgeCurveProgram, EDGE_CURVE_STRIDE } from './programs/edge-curve.mjs';
 import { TexturePageManager } from './texture-page-manager.mjs';
 import { LabelGrid } from './label-grid.mjs';
 import { packPremulColor, packColor, packPickIndex } from './color-pack.mjs';
@@ -22,6 +23,7 @@ export class WebGLRenderLoop {
     this.nodeSDFProgram = new NodeSDFProgram();
     this.nodeTexProgram = new NodeTextureProgram();
     this.edgeProgram = new EdgeProgram();
+    this.edgeCurveProgram = new EdgeCurveProgram();
     this.texturePageManager = new TexturePageManager({
       maxPageSize: opts.webglTexSize || 4096,
       maxImageSize: opts.maxImageSize || 512,
@@ -54,6 +56,8 @@ export class WebGLRenderLoop {
     this.nodeTexProgram.init(glNode);
     this.edgeProgram.init(glEdge);
     this.edgeProgram.initPicking(glNode); // edge picking on node GL context
+    this.edgeCurveProgram.init(glEdge);
+    this.edgeCurveProgram.initPicking(glNode); // curve edge picking on node GL context
 
     // Wire texture page manager to the node texture program
     this.nodeTexProgram.setTextureManager(this.texturePageManager);
@@ -104,14 +108,17 @@ export class WebGLRenderLoop {
     const estNodeSlots = eleCount * 3;
     const estTexNodes = Math.max(Math.ceil(eleCount * 0.1), 16);
     const estEdgeInstances = eleCount * 10;
+    const estCurveInstances = Math.max(Math.ceil(eleCount * 0.5), 16);
     this.nodeSDFProgram.reallocate(estNodeSlots);
     this.nodeTexProgram.reallocate(estTexNodes);
     this.edgeProgram.reallocate(estEdgeInstances);
+    this.edgeCurveProgram.reallocate(estCurveInstances);
 
     // Pack data in a single pass
     let nodeSlot = 0;
     let texNodeSlot = 0;
     let edgeSlot = 0;
+    let curveSlot = 0;
     let pickIndex = 1;
 
     this._labelCandidates = [];
@@ -181,13 +188,33 @@ export class WebGLRenderLoop {
           });
         }
       } else {
-        // Ensure edge buffer has room (worst case: 16 curve segments + 2 arrows)
-        this.edgeProgram.ensureCapacity(edgeSlot + 20);
+        const rs = ele._private.rscratch;
+        if(rs && rs.allpts && rs.allpts.length > 4) {
+          // Bezier edge: curve body → EdgeCurveProgram, arrows → EdgeProgram
+          this.edgeCurveProgram.ensureCapacity(curveSlot + 1);
+          this.edgeCurveProgram.processCurveEdge(curveSlot, ele, pickIndex);
+          ele._private._webglCurveSlot = curveSlot;
+          curveSlot++;
 
-        const prevSlot = edgeSlot;
-        edgeSlot = this.edgeProgram.processEdge(edgeSlot, ele, pickIndex, r);
-        ele._private._webglEdgeSlot = prevSlot;
-        ele._private._webglEdgeInstances = edgeSlot - prevSlot;
+          // Arrows only via EdgeProgram
+          this.edgeProgram.ensureCapacity(edgeSlot + 2);
+          const prevSlot = edgeSlot;
+          edgeSlot = this.edgeProgram.processArrowsOnly(edgeSlot, ele, pickIndex, r);
+          ele._private._webglEdgeSlot = prevSlot;
+          ele._private._webglEdgeInstances = edgeSlot - prevSlot;
+        } else if(rs && rs.allpts) {
+          // Straight edge: line + arrows → EdgeProgram
+          this.edgeProgram.ensureCapacity(edgeSlot + 4);
+          const prevSlot = edgeSlot;
+          edgeSlot = this.edgeProgram.processEdge(edgeSlot, ele, pickIndex, r);
+          ele._private._webglEdgeSlot = prevSlot;
+          ele._private._webglEdgeInstances = edgeSlot - prevSlot;
+          ele._private._webglCurveSlot = undefined;
+        } else {
+          ele._private._webglEdgeSlot = undefined;
+          ele._private._webglEdgeInstances = 0;
+          ele._private._webglCurveSlot = undefined;
+        }
 
         // Collect edge label candidate
         const label = ele.pstyle('label');
@@ -220,10 +247,12 @@ export class WebGLRenderLoop {
     this.nodeSDFProgram.count = nodeSlot;
     this.nodeTexProgram.count = texNodeSlot;
     this.edgeProgram.count = edgeSlot;
+    this.edgeCurveProgram.count = curveSlot;
 
     this.nodeSDFProgram.needsUpload = true;
     this.nodeTexProgram.needsUpload = true;
     this.edgeProgram.needsUpload = true;
+    this.edgeCurveProgram.needsUpload = true;
     this.needsProcess = false;
   }
 
@@ -283,6 +312,7 @@ export class WebGLRenderLoop {
 
     // Upload dirty buffers to GPU — each program checks its own needsUpload flag
     this.edgeProgram.upload(this.glEdge);
+    this.edgeCurveProgram.upload(this.glEdge);
     this.nodeSDFProgram.upload(this.glNode);
     this.nodeTexProgram.upload(this.glNode);
 
@@ -314,6 +344,7 @@ export class WebGLRenderLoop {
     // Draw edges (on edge canvas)
     const bgColor = this._getBGColor();
     this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor);
+    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom);
 
     // Draw edge :active overlays (wider semi-transparent line on top)
     this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom);
@@ -351,6 +382,7 @@ export class WebGLRenderLoop {
 
     // Draw edges first (behind nodes) for picking
     this.edgeProgram.drawPicking(glNode, panZoomMatrix, zoom);
+    this.edgeCurveProgram.drawPicking(glNode, panZoomMatrix, zoom);
 
     // Draw nodes on top for picking
     this.nodeSDFProgram.draw(glNode, panZoomMatrix, true, zoom);
@@ -450,19 +482,28 @@ export class WebGLRenderLoop {
 
   /** Update a single edge's line-color in the buffer (for :selected style change). */
   _updateEdgeColor(edge) {
-    const edgeBuf = this.edgeProgram.buffer;
-    const slot = edge._private._webglEdgeSlot;
-    const count = edge._private._webglEdgeInstances;
-    if(slot === undefined || !count || !edgeBuf) return;
-
     const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
     const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
 
-    for(let j = 0; j < count; j++) {
-      edgeBuf[(slot + j) * EDGE_STRIDE + 8] = color;
+    // Update EdgeProgram instances (straight line segments + arrows)
+    const edgeBuf = this.edgeProgram.buffer;
+    const slot = edge._private._webglEdgeSlot;
+    const count = edge._private._webglEdgeInstances;
+    if(slot !== undefined && count && edgeBuf) {
+      for(let j = 0; j < count; j++) {
+        edgeBuf[(slot + j) * EDGE_STRIDE + 8] = color;
+      }
+      this.edgeProgram._markDirty(slot);
+      if(count > 1) this.edgeProgram._markDirty(slot + count - 1);
     }
-    this.edgeProgram._markDirty(slot);
-    if(count > 1) this.edgeProgram._markDirty(slot + count - 1);
+
+    // Update EdgeCurveProgram instance (bezier curve body)
+    const curveSlot = edge._private._webglCurveSlot;
+    const curveBuf = this.edgeCurveProgram.buffer;
+    if(curveSlot !== undefined && curveBuf) {
+      curveBuf[curveSlot * EDGE_CURVE_STRIDE + 6] = color;
+      this.edgeCurveProgram._markDirty(curveSlot);
+    }
   }
 
   /** Refresh overlay colors from pstyle overlay-opacity (supports :active AND :selected).
@@ -519,55 +560,88 @@ export class WebGLRenderLoop {
     if(this._activeEdges.length === 0) return;
 
     const edgeBuf = this.edgeProgram.buffer;
-    if(!edgeBuf) return;
+    const curveBuf = this.edgeCurveProgram.buffer;
 
     // Save original color+width, replace with overlay values, draw, restore
     const saved = [];
+    const savedCurve = [];
     for(const edge of this._activeEdges) {
-      const slot = edge._private._webglEdgeSlot;
-      const count = edge._private._webglEdgeInstances;
-      if(slot === undefined || !count) continue;
-
       const overlayColor = edge.pstyle('overlay-color').value || [0, 0, 0];
       const overlayOpacity = edge.pstyle('overlay-opacity').value || 0.25;
       const overlayPadding = edge.pstyle('overlay-padding').pfValue || 10;
       const packedOverlay = packPremulColor(overlayColor, overlayOpacity);
       const overlayWidth = 2 * overlayPadding;
 
-      const typeBuf = this.edgeProgram.typeBuffer;
-      for(let j = 0; j < count; j++) {
-        if(typeBuf[slot + j] === 2) continue; // skip arrows — Canvas 2D only overlays the line
-        const off = (slot + j) * EDGE_STRIDE;
-        saved.push({ off, color: edgeBuf[off + 8], width: edgeBuf[off + 9] });
-        edgeBuf[off + 8] = packedOverlay;
-        edgeBuf[off + 9] = overlayWidth;
+      // Handle EdgeProgram instances (straight line segments + arrows)
+      const slot = edge._private._webglEdgeSlot;
+      const count = edge._private._webglEdgeInstances;
+      if(slot !== undefined && count && edgeBuf) {
+        const typeBuf = this.edgeProgram.typeBuffer;
+        for(let j = 0; j < count; j++) {
+          if(typeBuf[slot + j] === 2) continue; // skip arrows — Canvas 2D only overlays the line
+          const off = (slot + j) * EDGE_STRIDE;
+          saved.push({ off, color: edgeBuf[off + 8], width: edgeBuf[off + 9] });
+          edgeBuf[off + 8] = packedOverlay;
+          edgeBuf[off + 9] = overlayWidth;
+        }
+      }
+
+      // Handle EdgeCurveProgram instances (bezier curve body)
+      const curveSlot = edge._private._webglCurveSlot;
+      if(curveSlot !== undefined && curveBuf) {
+        const off = curveSlot * EDGE_CURVE_STRIDE;
+        savedCurve.push({ off, color: curveBuf[off + 6], width: curveBuf[off + 7] });
+        curveBuf[off + 6] = packedOverlay;
+        curveBuf[off + 7] = overlayWidth;
       }
     }
 
-    if(saved.length === 0) return;
+    if(saved.length === 0 && savedCurve.length === 0) return;
 
-    // Upload just the modified range and draw
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeProgram.glBuffer);
-    const minOff = saved[0].off;
-    const maxOff = saved[saved.length - 1].off;
-    const startByte = minOff * 4;
-    const endByte = (maxOff + EDGE_STRIDE) * 4;
-    gl.bufferSubData(gl.ARRAY_BUFFER, startByte,
-      edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
+    // Upload and draw EdgeProgram overlays
+    if(saved.length > 0) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeProgram.glBuffer);
+      const minOff = saved[0].off;
+      const maxOff = saved[saved.length - 1].off;
+      gl.bufferSubData(gl.ARRAY_BUFFER, minOff * 4,
+        edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
 
-    const bgColor = this._getBGColor();
-    this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
+      const bgColor = this._getBGColor();
+      this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
 
-    // Restore original values
-    for(const s of saved) {
-      edgeBuf[s.off + 8] = s.color;
-      edgeBuf[s.off + 9] = s.width;
+      // Restore original values
+      for(const s of saved) {
+        edgeBuf[s.off + 8] = s.color;
+        edgeBuf[s.off + 9] = s.width;
+      }
+
+      // Re-upload restored data
+      gl.bufferSubData(gl.ARRAY_BUFFER, minOff * 4,
+        edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
-    // Re-upload restored data
-    gl.bufferSubData(gl.ARRAY_BUFFER, startByte,
-      edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
-    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    // Upload and draw EdgeCurveProgram overlays
+    if(savedCurve.length > 0) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.edgeCurveProgram.glBuffer);
+      const minOff = savedCurve[0].off;
+      const maxOff = savedCurve[savedCurve.length - 1].off;
+      gl.bufferSubData(gl.ARRAY_BUFFER, minOff * 4,
+        curveBuf.subarray(minOff, maxOff + EDGE_CURVE_STRIDE));
+
+      this.edgeCurveProgram.draw(gl, panZoomMatrix, false, zoom);
+
+      // Restore original values
+      for(const s of savedCurve) {
+        curveBuf[s.off + 6] = s.color;
+        curveBuf[s.off + 7] = s.width;
+      }
+
+      // Re-upload restored data
+      gl.bufferSubData(gl.ARRAY_BUFFER, minOff * 4,
+        curveBuf.subarray(minOff, maxOff + EDGE_CURVE_STRIDE));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
   }
 
   /** Update just one node's position (for drag). O(1). */
@@ -600,7 +674,16 @@ export class WebGLRenderLoop {
       const edge = edges[i];
       const slot = edge._private._webglEdgeSlot;
       const instanceCount = edge._private._webglEdgeInstances;
-      if(slot !== undefined && instanceCount !== undefined) {
+
+      if(edge._private._webglCurveSlot !== undefined) {
+        // Bezier edge: update curve body in EdgeCurveProgram
+        this.edgeCurveProgram.updateEndpoints(edge._private._webglCurveSlot, edge);
+        // Update arrow positions only in EdgeProgram
+        if(slot !== undefined && instanceCount !== undefined && instanceCount > 0) {
+          this.edgeProgram.updateArrowEndpoints(slot, instanceCount, edge);
+        }
+      } else if(slot !== undefined && instanceCount !== undefined && instanceCount > 0) {
+        // Straight edge: update line + arrows in EdgeProgram
         this.edgeProgram.updateEdgeEndpoints(slot, instanceCount, edge);
       }
     }
@@ -617,9 +700,11 @@ export class WebGLRenderLoop {
       this.nodeSDFProgram.destroy(this.glNode);
       this.nodeTexProgram.destroy(this.glNode);
       this.edgeProgram.destroyPicking(this.glNode);
+      this.edgeCurveProgram.destroyPicking(this.glNode);
     }
     if(this.glEdge) {
       this.edgeProgram.destroy(this.glEdge);
+      this.edgeCurveProgram.destroy(this.glEdge);
     }
     this.texturePageManager.destroy(this.glNode);
 
@@ -628,6 +713,7 @@ export class WebGLRenderLoop {
     this.nodeTexProgram.buffer = null;
     this.edgeProgram.buffer = null;
     this.edgeProgram.typeBuffer = null;
+    this.edgeCurveProgram.buffer = null;
 
     // Clear label candidates (up to 275K objects)
     this._labelCandidates = null;
@@ -644,6 +730,7 @@ export class WebGLRenderLoop {
       delete p._webglTexSlot;
       delete p._webglEdgeSlot;
       delete p._webglEdgeInstances;
+      delete p._webglCurveSlot;
     }
 
     // Null GL context references

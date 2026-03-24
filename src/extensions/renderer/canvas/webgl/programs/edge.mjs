@@ -362,6 +362,34 @@ export class EdgeProgram {
   }
 
   /**
+   * Process only arrow instances for an edge (no curve segments).
+   * Used for bezier edges where the curve body is handled by EdgeCurveProgram.
+   * Returns the next available slot index.
+   */
+  processArrowsOnly(startSlot, edge, pickIndex, r) {
+    const rs = edge._private.rscratch;
+    if(!rs || !rs.allpts) return startSlot;
+
+    const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+    const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
+    const width = edge.pstyle('width').pfValue;
+    const pickId = packPickIndex(pickIndex);
+
+    let slot = startSlot;
+
+    const srcShape = edge.pstyle('source-arrow-shape').value;
+    if(srcShape !== 'none') {
+      slot = this._writeArrow(slot, edge, 'source', color, width, pickId, r, combinedOpacity);
+    }
+    const tgtShape = edge.pstyle('target-arrow-shape').value;
+    if(tgtShape !== 'none') {
+      slot = this._writeArrow(slot, edge, 'target', color, width, pickId, r, combinedOpacity);
+    }
+
+    return slot;
+  }
+
+  /**
    * Process one edge. Writes segment instances + arrow instances to the buffer.
    * Returns the next available slot index.
    * Called during process() only -- NOT per frame.
@@ -593,6 +621,41 @@ export class EdgeProgram {
     }
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
     gl.bindVertexArray(null);
+  }
+
+  /** Update only arrow positions for drag (used when curve body is in EdgeCurveProgram). */
+  updateArrowEndpoints(slot, instanceCount, edge) {
+    const rs = edge._private.rscratch;
+    if(!rs || rs.badLine || !rs.allpts) return;
+
+    let s = slot;
+    if(s < slot + instanceCount) {
+      const srcShape = edge.pstyle('source-arrow-shape').value;
+      if(srcShape !== 'none') {
+        const off = s * EDGE_STRIDE;
+        this.buffer[off + 0] = rs.arrowStartX;
+        this.buffer[off + 1] = rs.arrowStartY;
+        this.buffer[off + 3] = rs.srcArrowAngle;
+        s++;
+      }
+    }
+    if(s < slot + instanceCount) {
+      const tgtShape = edge.pstyle('target-arrow-shape').value;
+      if(tgtShape !== 'none') {
+        const off = s * EDGE_STRIDE;
+        this.buffer[off + 0] = rs.arrowEndX;
+        this.buffer[off + 1] = rs.arrowEndY;
+        this.buffer[off + 3] = rs.tgtArrowAngle;
+        s++;
+      }
+    }
+
+    if(instanceCount > 0) {
+      if(slot < this._dirtyMin) this._dirtyMin = slot;
+      const endSlot = slot + instanceCount - 1;
+      if(endSlot > this._dirtyMax) this._dirtyMax = endSlot;
+      this.needsUpload = true;
+    }
   }
 
   /** Update edge endpoint positions for drag. */

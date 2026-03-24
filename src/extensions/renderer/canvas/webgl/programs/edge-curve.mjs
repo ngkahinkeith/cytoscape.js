@@ -1,0 +1,474 @@
+import { packPremulColor, packPickIndex } from '../color-pack.mjs';
+import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
+
+export const EDGE_CURVE_STRIDE = 9; // source(2) + target(2) + controlPt(2) + color(1) + width(1) + pickId(1)
+
+// ---- Shader Sources ----
+
+export const VERTEX_SHADER_SOURCE = `#version 300 es
+precision highp float;
+
+uniform mat3 uPanZoomMatrix;
+uniform vec2 uViewportSize;
+uniform float uZoom;
+
+// Unit quad vertex (not instanced)
+layout(location = 0) in vec2 aVertex; // [0,0]-[1,1] quad
+
+// Per-instance (divisor=1)
+layout(location = 1) in vec2 aSource;      // source node position (model space)
+layout(location = 2) in vec2 aTarget;      // target node position (model space)
+layout(location = 3) in vec2 aControlPt;   // bezier control point (model space)
+layout(location = 4) in float aColor;      // packed RGBA
+layout(location = 5) in float aWidth;      // line width
+layout(location = 6) in float aPickId;     // pick index
+
+out vec2 vCpA;       // control point A (source) in viewport pixels
+out vec2 vCpB;       // control point B (mid) in viewport pixels
+out vec2 vCpC;       // control point C (target) in viewport pixels
+flat out float vColor;
+flat out float vWidth;
+flat out float vPickId;
+
+vec2 toViewport(vec2 clipPos) {
+  return (clipPos + 1.0) * uViewportSize * 0.5;
+}
+
+void main() {
+  // Transform all 3 control points to clip space
+  vec2 srcClip = (uPanZoomMatrix * vec3(aSource, 1.0)).xy;
+  vec2 tgtClip = (uPanZoomMatrix * vec3(aTarget, 1.0)).xy;
+  vec2 ctlClip = (uPanZoomMatrix * vec3(aControlPt, 1.0)).xy;
+
+  // Convert to viewport pixels for fragment shader distance computation
+  vCpA = toViewport(srcClip);
+  vCpB = toViewport(ctlClip);
+  vCpC = toViewport(tgtClip);
+
+  // Scale width from model space to viewport pixels
+  float screenWidth = aWidth * uZoom;
+
+  // Compute bounding box of the 3 control points with padding
+  float padding = screenWidth + 2.0; // line width + AA margin
+  vec2 minBound = min(min(vCpA, vCpB), vCpC) - padding;
+  vec2 maxBound = max(max(vCpA, vCpB), vCpC) + padding;
+
+  // Position the quad vertex within the bounding box
+  vec2 viewportPos = mix(minBound, maxBound, aVertex);
+
+  // Convert back to clip space
+  gl_Position = vec4(viewportPos / uViewportSize * 2.0 - 1.0, 0.0, 1.0);
+
+  vColor = aColor;
+  vWidth = screenWidth;
+  vPickId = aPickId;
+}
+`;
+
+const FRAGMENT_SHADER_HEADER = `#version 300 es
+precision highp float;
+
+in vec2 vCpA;
+in vec2 vCpB;
+in vec2 vCpC;
+flat in float vColor;
+flat in float vWidth;
+flat in float vPickId;
+
+out vec4 outColor;
+
+// Unpack RGBA from single float (same as node-sdf)
+vec4 unpackColor(float f) {
+  int rgba = floatBitsToInt(f);
+  return vec4(
+    float(rgba & 0xFF) / 255.0,
+    float((rgba >> 8) & 0xFF) / 255.0,
+    float((rgba >> 16) & 0xFF) / 255.0,
+    float((rgba >> 24) & 0xFF) / 255.0
+  );
+}
+
+float det(vec2 a, vec2 b) {
+  return a.x * b.y - b.x * a.y;
+}
+
+// Compute distance from point p to quadratic bezier curve defined by b0, b1, b2.
+// Ported from sigma.js's distToQuadraticBezierCurve().
+float distToQuadraticBezierCurve(vec2 p, vec2 b0, vec2 b1, vec2 b2) {
+  vec2 b0p = b0 - p, b1p = b1 - p, b2p = b2 - p;
+  float a = det(b0p, b2p);
+  float b = 2.0 * det(b1p, b0p);
+  float d = 2.0 * det(b2p, b1p);
+  float f = b * d - a * a;
+  vec2 d21 = b2p - b1p, d10 = b1p - b0p, d20 = b2p - b0p;
+  vec2 gf = 2.0 * (b * d21 + d * d10 + a * d20);
+  gf = vec2(gf.y, -gf.x);
+  vec2 pp = -f * gf / dot(gf, gf);
+  vec2 d0p = b0p - pp;
+  float ap = det(d0p, d20);
+  float bp = 2.0 * det(d10, d0p);
+  float t = clamp((ap + bp) / (2.0 * a + b + d), 0.0, 1.0);
+  vec2 closest = mix(mix(b0p, b1p, t), mix(b1p, b2p, t), t);
+  return length(closest);
+}
+`;
+
+const FRAGMENT_SHADER_MAIN = `
+void main() {
+  float dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
+  float halfWidth = vWidth * 0.5;
+
+  if(dist > halfWidth + 1.0) {
+    discard;
+  }
+
+  #ifdef PICKING_MODE
+    outColor = unpackColor(vPickId);
+  #else
+    vec4 color = unpackColor(vColor);
+    float alpha = 1.0 - smoothstep(halfWidth - 1.0, halfWidth + 0.5, dist);
+    outColor = vec4(color.rgb * color.a * alpha, color.a * alpha);
+  #endif
+}
+`;
+
+export const FRAGMENT_SHADER_SOURCE = FRAGMENT_SHADER_HEADER + FRAGMENT_SHADER_MAIN;
+export const FRAGMENT_SHADER_PICKING_SOURCE = FRAGMENT_SHADER_HEADER + '#define PICKING_MODE\n' + FRAGMENT_SHADER_MAIN;
+
+
+export class EdgeCurveProgram {
+
+  constructor() {
+    this.buffer = null;       // Float32Array (instance data)
+    this.capacity = 0;
+    this.count = 0;           // number of curve edge instances
+    this.needsUpload = false;
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
+    this.glBuffer = null;     // WebGL buffer for instance data
+    this._gpuBufferSize = 0;  // current GPU buffer size in floats
+    this.quadBuffer = null;   // WebGL buffer for unit quad
+    this.vao = null;
+    this.screenProgram = null;
+    this.pickingProgram = null;
+    // Picking resources on the node GL context (separate from edge GL context)
+    this._pickVao = null;
+    this._pickGlBuffer = null;
+    this._pickQuadBuffer = null;
+    this._pickProgram = null;
+    this._pickGpuBufferSize = 0;
+  }
+
+  /** Initialize GL resources. Called once. */
+  init(gl) {
+    this.screenProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE);
+    this.pickingProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE);
+
+    for(const prog of [this.screenProgram, this.pickingProgram]) {
+      prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
+      prog.uViewportSize = gl.getUniformLocation(prog, 'uViewportSize');
+      prog.uZoom = gl.getUniformLocation(prog, 'uZoom');
+    }
+
+    this.glBuffer = gl.createBuffer();
+
+    this.vao = gl.createVertexArray();
+    gl.bindVertexArray(this.vao);
+
+    // --- Unit quad (non-instanced) ---
+    this.quadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    // divisor = 0 (default, per-vertex)
+
+    // --- Per-instance float attributes from the interleaved buffer ---
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+    this._setupInstanceAttribs(gl);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+  }
+
+  /** Set up per-instance attribute pointers on the currently bound VAO and ARRAY_BUFFER. */
+  _setupInstanceAttribs(gl) {
+    const stride = EDGE_CURVE_STRIDE * 4; // bytes per instance
+
+    const attribs = [
+      { loc: 1, size: 2, offset: 0 },  // aSource
+      { loc: 2, size: 2, offset: 2 },  // aTarget
+      { loc: 3, size: 2, offset: 4 },  // aControlPt
+      { loc: 4, size: 1, offset: 6 },  // aColor
+      { loc: 5, size: 1, offset: 7 },  // aWidth
+      { loc: 6, size: 1, offset: 8 },  // aPickId
+    ];
+
+    for(const attr of attribs) {
+      gl.enableVertexAttribArray(attr.loc);
+      gl.vertexAttribPointer(attr.loc, attr.size, gl.FLOAT, false, stride, attr.offset * 4);
+      gl.vertexAttribDivisor(attr.loc, 1); // per-instance
+    }
+  }
+
+  /** Initialize picking resources on a DIFFERENT GL context (the node GL context)
+   *  so edges can be drawn into the node-context picking framebuffer. */
+  initPicking(gl) {
+    this._pickProgram = createProgram(gl, VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE);
+    this._pickProgram.uPanZoomMatrix = gl.getUniformLocation(this._pickProgram, 'uPanZoomMatrix');
+    this._pickProgram.uViewportSize = gl.getUniformLocation(this._pickProgram, 'uViewportSize');
+    this._pickProgram.uZoom = gl.getUniformLocation(this._pickProgram, 'uZoom');
+
+    this._pickGlBuffer = gl.createBuffer();
+
+    this._pickVao = gl.createVertexArray();
+    gl.bindVertexArray(this._pickVao);
+
+    this._pickQuadBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickQuadBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, UNIT_QUAD, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0);
+    gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+
+    // Instance attribs (same layout as init)
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+    this._setupInstanceAttribs(gl);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    gl.bindVertexArray(null);
+  }
+
+  /** Upload edge data to the picking GL context. */
+  uploadPicking(gl) {
+    if(!this._pickGlBuffer || !this.buffer || this.count === 0) return;
+    const dataSize = this.count * EDGE_CURVE_STRIDE;
+
+    if(dataSize > this._pickGpuBufferSize) {
+      this._pickGpuBufferSize = dataSize;
+      gl.bindVertexArray(this._pickVao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, this.buffer.subarray(0, dataSize), gl.DYNAMIC_DRAW);
+      this._setupInstanceAttribs(gl);
+      gl.bindVertexArray(null);
+    } else {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this._pickGlBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, dataSize));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
+  }
+
+  /** Draw edges for picking on the node GL context. */
+  drawPicking(gl, panZoomMatrix, zoom) {
+    if(this.count === 0 || !this.buffer || !this._pickProgram) return;
+    gl.useProgram(this._pickProgram);
+    gl.bindVertexArray(this._pickVao);
+    gl.uniformMatrix3fv(this._pickProgram.uPanZoomMatrix, false, panZoomMatrix);
+    gl.uniform2f(this._pickProgram.uViewportSize, gl.canvas.width, gl.canvas.height);
+    gl.uniform1f(this._pickProgram.uZoom, zoom || 1.0);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+    gl.bindVertexArray(null);
+  }
+
+  /** Ensure buffers can hold `instanceCount` instances. */
+  reallocate(instanceCount) {
+    if(instanceCount <= this.capacity) return;
+    const newCap = Math.max(instanceCount, this.capacity * 2, 256);
+    const newBuffer = new Float32Array(newCap * EDGE_CURVE_STRIDE);
+    if(this.buffer) newBuffer.set(this.buffer);
+    this.buffer = newBuffer;
+    this.capacity = newCap;
+    this.needsUpload = true;
+  }
+
+  /** Grow buffers if needed to hold at least `needed` instances. */
+  ensureCapacity(needed) {
+    if(needed > this.capacity) {
+      this.reallocate(needed);
+    }
+  }
+
+  /**
+   * Process one bezier curve edge. Writes a single instance to the buffer.
+   * Returns the next available slot index.
+   *
+   * For quadratic beziers (allpts.length === 6): control point is at indices [2,3].
+   * For cubic beziers (allpts.length === 8): use midpoint of the two inner control
+   * points as a quadratic approximation.
+   * For multi-segment curves (allpts.length > 8): use the middle control point.
+   */
+  processCurveEdge(slot, edge, pickIndex) {
+    const rs = edge._private.rscratch;
+    if(!rs || !rs.allpts || rs.allpts.length < 6) return slot;
+
+    const pts = rs.allpts;
+    const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+    const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
+    const width = edge.pstyle('width').pfValue;
+    const pickId = packPickIndex(pickIndex);
+
+    // Source and target are always first and last pair
+    const srcX = pts[0];
+    const srcY = pts[1];
+    const tgtX = pts[pts.length - 2];
+    const tgtY = pts[pts.length - 1];
+
+    // Extract the quadratic control point
+    let ctrlX, ctrlY;
+    if(pts.length === 6) {
+      // Quadratic bezier: [srcX, srcY, cpX, cpY, tgtX, tgtY]
+      ctrlX = pts[2];
+      ctrlY = pts[3];
+    } else if(pts.length === 8) {
+      // Cubic bezier: [srcX, srcY, cp1X, cp1Y, cp2X, cp2Y, tgtX, tgtY]
+      // Approximate as quadratic using midpoint of the two inner control points
+      ctrlX = (pts[2] + pts[4]) * 0.5;
+      ctrlY = (pts[3] + pts[5]) * 0.5;
+    } else {
+      // Multi-segment: use the middle control point pair
+      const midIdx = Math.floor(pts.length / 2) & ~1; // even index
+      ctrlX = pts[midIdx];
+      ctrlY = pts[midIdx + 1];
+    }
+
+    this._writeInstance(slot, srcX, srcY, tgtX, tgtY, ctrlX, ctrlY, color, width, pickId);
+    return slot + 1;
+  }
+
+  _writeInstance(slot, srcX, srcY, tgtX, tgtY, ctrlX, ctrlY, color, width, pickId) {
+    const off = slot * EDGE_CURVE_STRIDE;
+    this.buffer[off + 0] = srcX;
+    this.buffer[off + 1] = srcY;
+    this.buffer[off + 2] = tgtX;
+    this.buffer[off + 3] = tgtY;
+    this.buffer[off + 4] = ctrlX;
+    this.buffer[off + 5] = ctrlY;
+    this.buffer[off + 6] = color;
+    this.buffer[off + 7] = width;
+    this.buffer[off + 8] = pickId;
+    this._markDirty(slot);
+  }
+
+  /** Mark a slot as dirty for partial upload. */
+  _markDirty(slot) {
+    if(slot < this._dirtyMin) this._dirtyMin = slot;
+    if(slot > this._dirtyMax) this._dirtyMax = slot;
+    this.needsUpload = true;
+  }
+
+  /** Upload buffer to GPU if dirty. Uses dirty range for partial uploads. */
+  upload(gl) {
+    if(!this.needsUpload || !this.buffer || this.count === 0) return;
+
+    const dataSize = this.count * EDGE_CURVE_STRIDE;
+
+    // If GPU buffer is too small, delete and recreate it, then rebind in VAO
+    if(dataSize > this._gpuBufferSize) {
+      const data = this.buffer.subarray(0, dataSize);
+      gl.deleteBuffer(this.glBuffer);
+      this.glBuffer = gl.createBuffer();
+      this._gpuBufferSize = dataSize;
+
+      gl.bindVertexArray(this.vao);
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+      this._setupInstanceAttribs(gl);
+      gl.bindVertexArray(null);
+    } else if(this._dirtyMin <= this._dirtyMax) {
+      // Partial upload: only the dirty range
+      const startFloat = this._dirtyMin * EDGE_CURVE_STRIDE;
+      const endFloat = (this._dirtyMax + 1) * EDGE_CURVE_STRIDE;
+      const dirtyData = this.buffer.subarray(startFloat, Math.min(endFloat, dataSize));
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, dirtyData);
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    } else {
+      // Full upload (e.g. after process())
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, dataSize));
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+    }
+
+    this._dirtyMin = Infinity;
+    this._dirtyMax = -1;
+    this.needsUpload = false;
+  }
+
+  /** Draw all curve edge instances. */
+  draw(gl, panZoomMatrix, isPicking, zoom) {
+    if(this.count === 0 || !this.buffer) return;
+    const program = isPicking ? this.pickingProgram : this.screenProgram;
+    gl.useProgram(program);
+    gl.bindVertexArray(this.vao);
+    gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
+    gl.uniform2f(program.uViewportSize, gl.canvas.width, gl.canvas.height);
+    gl.uniform1f(program.uZoom, zoom || 1.0);
+    gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
+    gl.bindVertexArray(null);
+  }
+
+  /** Update edge endpoints and control point for drag. O(1) per edge. */
+  updateEndpoints(slot, edge) {
+    const rs = edge._private.rscratch;
+    if(!rs || rs.badLine || !rs.allpts || rs.allpts.length < 6) return;
+
+    const pts = rs.allpts;
+    const off = slot * EDGE_CURVE_STRIDE;
+
+    // Source and target
+    this.buffer[off + 0] = pts[0];
+    this.buffer[off + 1] = pts[1];
+    this.buffer[off + 2] = pts[pts.length - 2];
+    this.buffer[off + 3] = pts[pts.length - 1];
+
+    // Control point (same logic as processCurveEdge)
+    if(pts.length === 6) {
+      this.buffer[off + 4] = pts[2];
+      this.buffer[off + 5] = pts[3];
+    } else if(pts.length === 8) {
+      this.buffer[off + 4] = (pts[2] + pts[4]) * 0.5;
+      this.buffer[off + 5] = (pts[3] + pts[5]) * 0.5;
+    } else {
+      const midIdx = Math.floor(pts.length / 2) & ~1;
+      this.buffer[off + 4] = pts[midIdx];
+      this.buffer[off + 5] = pts[midIdx + 1];
+    }
+
+    this._markDirty(slot);
+  }
+
+  /** Clean up GL resources. */
+  destroy(gl) {
+    if(this.vao) {
+      gl.deleteVertexArray(this.vao);
+      this.vao = null;
+    }
+    if(this.glBuffer) {
+      gl.deleteBuffer(this.glBuffer);
+      this.glBuffer = null;
+    }
+    if(this.quadBuffer) {
+      gl.deleteBuffer(this.quadBuffer);
+      this.quadBuffer = null;
+    }
+    if(this.screenProgram) {
+      gl.deleteProgram(this.screenProgram);
+      this.screenProgram = null;
+    }
+    if(this.pickingProgram) {
+      gl.deleteProgram(this.pickingProgram);
+      this.pickingProgram = null;
+    }
+    this.buffer = null;
+    this.capacity = 0;
+    this.count = 0;
+  }
+
+  /** Clean up picking GL resources (on a DIFFERENT GL context than destroy). */
+  destroyPicking(gl) {
+    if(this._pickVao) { gl.deleteVertexArray(this._pickVao); this._pickVao = null; }
+    if(this._pickGlBuffer) { gl.deleteBuffer(this._pickGlBuffer); this._pickGlBuffer = null; }
+    if(this._pickQuadBuffer) { gl.deleteBuffer(this._pickQuadBuffer); this._pickQuadBuffer = null; }
+    if(this._pickProgram) { gl.deleteProgram(this._pickProgram); this._pickProgram = null; }
+  }
+}
