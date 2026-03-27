@@ -45,15 +45,6 @@ CRp.initWebgl = function(opts) {
     }
   }
 
-  // Labels must render ON TOP of the unified WebGL canvas.
-  // Original z-order: NODE_WEBGL=z4, LABELS=z3 (labels behind nodes, edges separate at z2).
-  // With unified context, edges+nodes both on NODE_WEBGL — labels must be above it.
-  const labelCanvas = r.data.canvases[r.LABELS];
-  const webglCanvas = r.data.canvases[r.NODE_WEBGL];
-  if(labelCanvas && webglCanvas) {
-    labelCanvas.style.zIndex = String(parseInt(webglCanvas.style.zIndex) + 1);
-  }
-
   // Create the render loop — same GL context for edges and nodes
   r.renderLoop = new WebGLRenderLoop(r, opts);
   r.renderLoop.init(glNode, glNode);
@@ -277,26 +268,38 @@ function renderWebgl(r, options) {
     r.data.canvasNeedsRedraw[r.DRAG] = false;
   }
 
-  const labelCtx = r.data.contexts[r.LABELS];
-  if(labelCtx) {
+  // --- Labels (Canvas 2D overlay, redrawn every frame) ---
+  // Node labels and edge labels are drawn on separate canvases for correct z-ordering:
+  //   Node bodies (top) > Node labels > Edge labels > Edges (bottom)
+  {
+    // Helper: render labels to an offscreen buffer then blit to a target canvas
+    const blitLabels = (targetCtx, bufferKey, renderFn) => {
+      if(!targetCtx) return;
+      if(!r[bufferKey] || r[bufferKey].width !== r.canvasWidth || r[bufferKey].height !== r.canvasHeight) {
+        r[bufferKey] = r.makeOffscreenCanvas(r.canvasWidth, r.canvasHeight);
+      }
+      const bufCtx = r[bufferKey].getContext('2d');
+      bufCtx.setTransform(1, 0, 0, 1, 0, 0);
+      bufCtx.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
+      bufCtx.translate(pan.x, pan.y);
+      bufCtx.scale(zoom, zoom);
+      renderFn(bufCtx);
+      targetCtx.save();
+      targetCtx.setTransform(1, 0, 0, 1, 0, 0);
+      targetCtx.globalCompositeOperation = 'copy';
+      targetCtx.drawImage(r[bufferKey], 0, 0);
+      targetCtx.globalCompositeOperation = 'source-over';
+      targetCtx.restore();
+    };
 
-    if(!r._labelBuffer || r._labelBuffer.width !== r.canvasWidth || r._labelBuffer.height !== r.canvasHeight) {
-      r._labelBuffer = r.makeOffscreenCanvas(r.canvasWidth, r.canvasHeight);
-    }
-    const bufCtx = r._labelBuffer.getContext('2d');
-    bufCtx.setTransform(1, 0, 0, 1, 0, 0);
-    bufCtx.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
-    bufCtx.translate(pan.x, pan.y);
-    bufCtx.scale(zoom, zoom);
-    r.renderLoop.renderLabels(bufCtx, pan, zoom, r.canvasWidth, r.canvasHeight);
-
-    // Atomic blit: 'copy' replaces all pixels in one operation
-    labelCtx.save();
-    labelCtx.setTransform(1, 0, 0, 1, 0, 0);
-    labelCtx.globalCompositeOperation = 'copy';
-    labelCtx.drawImage(r._labelBuffer, 0, 0);
-    labelCtx.globalCompositeOperation = 'source-over';
-    labelCtx.restore();
+    blitLabels(
+      r.data.contexts[r.NODE_LABELS], '_nodeLabelBuffer',
+      (ctx) => r.renderLoop.renderLabels(ctx, pan, zoom, r.canvasWidth, r.canvasHeight, true)
+    );
+    blitLabels(
+      r.data.contexts[r.EDGE_LABELS], '_edgeLabelBuffer',
+      (ctx) => r.renderLoop.renderLabels(ctx, pan, zoom, r.canvasWidth, r.canvasHeight, false)
+    );
   }
 }
 

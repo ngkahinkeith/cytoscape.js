@@ -908,12 +908,7 @@ BRp.findEdgeControlPoints = function( edges ){
           y: vectorNorm.x
         };
 
-        // if node shapes overlap, then no ctrl pts to draw
-        pairInfo.nodesOverlap = (
-          !is.number(l)
-          || tgtShape.checkPoint( srcOutside[0], srcOutside[1], 0, tgtW, tgtH, tgtPos.x, tgtPos.y, tgtCornerRadius, tgtRs )
-          || srcShape.checkPoint( tgtOutside[0], tgtOutside[1], 0, srcW, srcH, srcPos.x, srcPos.y, srcCornerRadius, srcRs )
-        );
+        pairInfo.nodesOverlap = false;
 
         pairInfo.vectorNormInverse = vectorNormInverse;
 

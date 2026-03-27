@@ -378,13 +378,17 @@ export class WebGLRenderLoop {
 
   /**
    * Render labels on a Canvas 2D context using LabelGrid culling.
+   * @param {boolean} nodesOnly - true = draw only node labels, false = draw only edge labels
    */
-  renderLabels(context, pan, zoom, viewportWidth, viewportHeight) {
+  renderLabels(context, pan, zoom, viewportWidth, viewportHeight, nodesOnly) {
     const r = this.r;
 
-    for(const candidate of this._labelCandidates) {
+    // Filter candidates by type
+    const candidates = this._labelCandidates.filter(c => c.isNode === nodesOnly);
+
+    for(const candidate of candidates) {
       let px, py;
-      if(candidate.ele.isNode()) {
+      if(candidate.isNode) {
         const p = candidate.ele.position();
         px = p.x; py = p.y;
       } else {
@@ -407,7 +411,7 @@ export class WebGLRenderLoop {
     }
 
     const visible = this.labelGrid.getLabelsToDisplay(
-      this._labelCandidates, zoom, viewportWidth, viewportHeight, 4
+      candidates, zoom, viewportWidth, viewportHeight, 4
     );
 
     for(const item of visible) {

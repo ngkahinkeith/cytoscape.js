@@ -138,14 +138,16 @@ CRp._bufferCanvasImageWebgl = function( buffCxt, options, width, height, scale, 
     buffCxt.scale( scale / this.getPixelRatio(), scale / this.getPixelRatio() );
   }
 
-  // Composite layers in order: edges (bottom) -> nodes (middle) -> labels (top)
+  // Composite layers in order: edges (bottom) -> edge labels -> node labels -> nodes (top)
   var edgeCanvas = this.data.canvases[this.EDGE_WEBGL];
+  var edgeLabelCanvas = this.data.canvases[this.EDGE_LABELS];
+  var nodeLabelCanvas = this.data.canvases[this.NODE_LABELS];
   var nodeCanvas = this.data.canvases[this.NODE_WEBGL];
-  var labelCanvas = this.data.canvases[this.LABELS];
 
   if( edgeCanvas ) buffCxt.drawImage( edgeCanvas, 0, 0 );
+  if( edgeLabelCanvas ) buffCxt.drawImage( edgeLabelCanvas, 0, 0 );
+  if( nodeLabelCanvas ) buffCxt.drawImage( nodeLabelCanvas, 0, 0 );
   if( nodeCanvas ) buffCxt.drawImage( nodeCanvas, 0, 0 );
-  if( labelCanvas ) buffCxt.drawImage( labelCanvas, 0, 0 );
 
   buffCxt.restore();
 };

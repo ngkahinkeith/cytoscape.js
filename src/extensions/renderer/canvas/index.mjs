@@ -69,22 +69,24 @@ function CanvasRenderer( options ){
   }
 
   if( options.webgl ){
-    // WebGL layer stack:
-    //   0 (SELECT_BOX): 2d context, z-index 6 (top - mouse events)
-    //   1 (DRAG):       2d context, z-index 5
-    //   2 (NODE_WEBGL): webgl2 context, z-index 4 (SDF shapes + texture overlays)
-    //   3 (LABELS):     2d context, z-index 3 (Canvas 2D labels with LabelGrid)
-    //   4 (EDGE_WEBGL): webgl2 context, z-index 2 (edges + arrows)
-    //   5 (NODE):       2d context, z-index 1 (Canvas 2D fallback for nodes, used by export)
-    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 6;
+    // WebGL layer stack (top to bottom: node bodies → node labels → edge labels → edges):
+    //   0 (SELECT_BOX):  2d context, z-index 7 (top - mouse events)
+    //   1 (DRAG):        2d context, z-index 6
+    //   2 (NODE_WEBGL):  webgl2 context, z-index 5 (SDF shapes + texture overlays — topmost)
+    //   3 (NODE_LABELS): 2d context, z-index 4 (node labels below nodes)
+    //   4 (EDGE_LABELS): 2d context, z-index 3 (edge labels below node labels)
+    //   5 (EDGE_WEBGL):  webgl2 context, z-index 2 (edges + arrows — bottom)
+    //   6 (NODE):        2d context, z-index 1 (Canvas 2D fallback for nodes, used by export)
+    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 7;
     CRp.SELECT_BOX = r.SELECT_BOX = 0;
     CRp.DRAG = r.DRAG = 1;
     CRp.NODE_WEBGL = r.NODE_WEBGL = 2;
     CRp.WEBGL = r.WEBGL = 2; // backward compat
-    CRp.LABELS = r.LABELS = 3;
-    CRp.EDGE_WEBGL = r.EDGE_WEBGL = 4;
-    CRp.NODE = r.NODE = 5;
-    CRp.CANVAS_TYPES = [ '2d', '2d', 'webgl2', '2d', 'webgl2', '2d' ];
+    CRp.NODE_LABELS = r.NODE_LABELS = 3;
+    CRp.EDGE_LABELS = r.EDGE_LABELS = 4;
+    CRp.EDGE_WEBGL = r.EDGE_WEBGL = 5;
+    CRp.NODE = r.NODE = 6;
+    CRp.CANVAS_TYPES = [ '2d', '2d', 'webgl2', '2d', '2d', 'webgl2', '2d' ];
     console.log('webgl rendering enabled');
   }
 
@@ -155,7 +157,8 @@ function CanvasRenderer( options ){
   r.data.canvases[ CRp.DRAG ].setAttribute( 'data-id', 'layer' + CRp.DRAG + '-drag' );
   r.data.canvases[ CRp.NODE ].setAttribute( 'data-id', 'layer' + CRp.NODE + '-node' );
   if( options.webgl ) {
-    r.data.canvases[ CRp.LABELS ].setAttribute( 'data-id', 'layer' + CRp.LABELS + '-labels' );
+    r.data.canvases[ CRp.NODE_LABELS ].setAttribute( 'data-id', 'layer' + CRp.NODE_LABELS + '-node-labels' );
+    r.data.canvases[ CRp.EDGE_LABELS ].setAttribute( 'data-id', 'layer' + CRp.EDGE_LABELS + '-edge-labels' );
     r.data.canvases[ CRp.NODE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.NODE_WEBGL + '-node-webgl' );
     r.data.canvases[ CRp.EDGE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.EDGE_WEBGL + '-edge-webgl' );
   }
