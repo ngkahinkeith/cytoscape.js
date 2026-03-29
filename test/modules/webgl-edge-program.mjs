@@ -343,4 +343,10 @@ describe('EdgeProgram', () => {
   it('vertex shader contains viewport cull degenerate pattern', () => {
     expect(VERTEX_SHADER_SOURCE).to.include('vec4(2.0');
   });
+
+  it('draw() method accepts viewport bounds parameter', () => {
+    const prog = new EdgeProgram();
+    expect(prog.draw).to.be.a('function');
+    expect(prog.draw.length).to.be.at.least(5);
+  });
 });

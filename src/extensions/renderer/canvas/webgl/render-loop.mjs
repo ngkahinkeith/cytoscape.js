@@ -311,9 +311,10 @@ export class WebGLRenderLoop {
     // Compute viewport bounds for GPU-side culling (screen pass only)
     const canvasWidth = this.glEdge.canvas.width;
     const canvasHeight = this.glEdge.canvas.height;
+    // Default to infinite bounds (no culling) if pan is not provided
     const vpBounds = pan
       ? this._computeViewportBounds(pan, zoom, canvasWidth, canvasHeight)
-      : null;
+      : [-1e9, -1e9, 1e9, 1e9];
 
     // --- Edge pass (EDGE_WEBGL canvas, z-index 2 — below labels) ---
     const glEdge = this.glEdge;
