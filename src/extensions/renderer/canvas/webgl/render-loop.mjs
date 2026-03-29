@@ -188,16 +188,22 @@ export class WebGLRenderLoop {
       } else {
         const rs = ele._private.rscratch;
         if(rs && rs.allpts && rs.allpts.length > 4) {
+          // Pre-compute shared style values once — avoids 4 redundant pstyle()
+          // calls between EdgeCurveProgram and EdgeProgram per bezier edge.
+          const combinedOpacity = ele.pstyle('opacity').value * ele.pstyle('line-opacity').value;
+          const lineColor = ele.pstyle('line-color').value;
+          const width = ele.pstyle('width').pfValue;
+
           // Bezier edge: curve body → EdgeCurveProgram, arrows → EdgeProgram
           this.edgeCurveProgram.ensureCapacity(curveSlot + 1);
-          this.edgeCurveProgram.processCurveEdge(curveSlot, ele, pickIndex);
+          this.edgeCurveProgram.processCurveEdge(curveSlot, ele, pickIndex, combinedOpacity, lineColor, width);
           ele._private._webglCurveSlot = curveSlot;
           curveSlot++;
 
           // Arrows only via EdgeProgram
           this.edgeProgram.ensureCapacity(edgeSlot + 2);
           const prevSlot = edgeSlot;
-          edgeSlot = this.edgeProgram.processArrowsOnly(edgeSlot, ele, pickIndex, r);
+          edgeSlot = this.edgeProgram.processArrowsOnly(edgeSlot, ele, pickIndex, r, combinedOpacity, lineColor, width);
           ele._private._webglEdgeSlot = prevSlot;
           ele._private._webglEdgeInstances = edgeSlot - prevSlot;
         } else if(rs && rs.allpts) {

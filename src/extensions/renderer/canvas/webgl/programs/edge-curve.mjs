@@ -279,14 +279,18 @@ export class EdgeCurveProgram {
    * points as a quadratic approximation.
    * For multi-segment curves (allpts.length > 8): use the middle control point.
    */
-  processCurveEdge(slot, edge, pickIndex) {
+  processCurveEdge(slot, edge, pickIndex, combinedOpacity, lineColor, width) {
     const rs = edge._private.rscratch;
     if(!rs || !rs.allpts || rs.allpts.length < 6) return slot;
 
     const pts = rs.allpts;
-    const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
-    const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
-    const width = edge.pstyle('width').pfValue;
+    // Use pre-computed values if provided, otherwise read from pstyle
+    if(combinedOpacity === undefined) {
+      combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+      lineColor = edge.pstyle('line-color').value;
+      width = edge.pstyle('width').pfValue;
+    }
+    const color = packPremulColor(lineColor, combinedOpacity);
     const pickId = packPickIndex(pickIndex);
 
     // Source and target are always first and last pair

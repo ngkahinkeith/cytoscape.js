@@ -281,13 +281,17 @@ export class EdgeProgram {
    * Used for bezier edges where the curve body is handled by EdgeCurveProgram.
    * Returns the next available slot index.
    */
-  processArrowsOnly(startSlot, edge, pickIndex, r) {
+  processArrowsOnly(startSlot, edge, pickIndex, r, combinedOpacity, lineColor, width) {
     const rs = edge._private.rscratch;
     if(!rs || !rs.allpts) return startSlot;
 
-    const combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
-    const color = packPremulColor(edge.pstyle('line-color').value, combinedOpacity);
-    const width = edge.pstyle('width').pfValue;
+    // Use pre-computed values if provided, otherwise read from pstyle
+    if(combinedOpacity === undefined) {
+      combinedOpacity = edge.pstyle('opacity').value * edge.pstyle('line-opacity').value;
+      lineColor = edge.pstyle('line-color').value;
+      width = edge.pstyle('width').pfValue;
+    }
+    const color = packPremulColor(lineColor, combinedOpacity);
     const pickId = packPickIndex(pickIndex);
 
     let slot = startSlot;

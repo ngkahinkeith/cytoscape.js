@@ -509,19 +509,62 @@ describe('EdgeCurveProgram', () => {
     });
 
     it('processCurveEdge buffer data unchanged after OBB (shader-only change)', () => {
-      // OBB is a vertex shader change only — instance data format is identical
       const prog = new EdgeCurveProgram();
       prog.reallocate(10);
       const edge = mockCurveEdge({ allpts: [0, 0, 50, 100, 100, 0] });
       prog.processCurveEdge(0, edge, 42);
-      // Same 9-float layout: src(2) + tgt(2) + ctrl(2) + color(1) + width(1) + pickId(1)
-      expect(prog.buffer[0]).to.equal(0);    // srcX
-      expect(prog.buffer[1]).to.equal(0);    // srcY
-      expect(prog.buffer[2]).to.equal(100);  // tgtX
-      expect(prog.buffer[3]).to.equal(0);    // tgtY
-      expect(prog.buffer[4]).to.equal(50);   // ctrlX
-      expect(prog.buffer[5]).to.equal(100);  // ctrlY
-      expect(prog.buffer[7]).to.equal(2);    // width (default)
+      expect(prog.buffer[0]).to.equal(0);
+      expect(prog.buffer[1]).to.equal(0);
+      expect(prog.buffer[2]).to.equal(100);
+      expect(prog.buffer[3]).to.equal(0);
+      expect(prog.buffer[4]).to.equal(50);
+      expect(prog.buffer[5]).to.equal(100);
+      expect(prog.buffer[7]).to.equal(2);
+    });
+  });
+
+  // Phase 3: pstyle dedup tests
+  describe('pstyle dedup (Phase 3)', () => {
+    it('processCurveEdge accepts pre-computed style values', () => {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      const edge = mockCurveEdge({ lineColor: [200, 100, 50], opacity: 0.5, width: 4 });
+      // Pass pre-computed values
+      prog.processCurveEdge(0, edge, 1, 0.5, [200, 100, 50], 4);
+      const [r, g, b] = unpackColor(prog.buffer[6]);
+      expect(r).to.equal(100); // 200 * 0.5
+      expect(g).to.equal(50);  // 100 * 0.5
+      expect(prog.buffer[7]).to.equal(4); // width
+    });
+
+    it('processCurveEdge falls back to pstyle when no pre-computed values', () => {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      const edge = mockCurveEdge({ lineColor: [200, 100, 50], opacity: 1, width: 3 });
+      // No pre-computed values — should read from pstyle
+      prog.processCurveEdge(0, edge, 1);
+      const [r, g, b] = unpackColor(prog.buffer[6]);
+      expect(r).to.equal(200);
+      expect(g).to.equal(100);
+      expect(prog.buffer[7]).to.equal(3);
+    });
+
+    it('pre-computed and pstyle paths produce identical buffer output', () => {
+      const prog1 = new EdgeCurveProgram();
+      prog1.reallocate(10);
+      const prog2 = new EdgeCurveProgram();
+      prog2.reallocate(10);
+      const edge = mockCurveEdge({ lineColor: [200, 100, 50], opacity: 0.8, lineOpacity: 0.5, width: 3 });
+
+      // Path 1: pstyle fallback
+      prog1.processCurveEdge(0, edge, 42);
+      // Path 2: pre-computed values (combinedOpacity = 0.8 * 0.5 = 0.4)
+      prog2.processCurveEdge(0, edge, 42, 0.4, [200, 100, 50], 3);
+
+      // All 9 floats must match
+      for(let i = 0; i < EDGE_CURVE_STRIDE; i++) {
+        expect(prog2.buffer[i]).to.equal(prog1.buffer[i], `buffer[${i}] mismatch`);
+      }
     });
   });
 

@@ -349,4 +349,25 @@ describe('EdgeProgram', () => {
     expect(prog.draw).to.be.a('function');
     expect(prog.draw.length).to.be.at.least(5);
   });
+
+  // Phase 3: pstyle dedup tests
+  it('processArrowsOnly accepts pre-computed style values', () => {
+    const prog = new EdgeProgram();
+    prog.reallocate(10);
+    const edge = mockEdge({ lineColor: [200, 100, 50], opacity: 0.5, width: 4, tgtArrow: 'triangle' });
+    prog.processArrowsOnly(0, edge, 1, mockR, 0.5, [200, 100, 50], 4);
+    // Arrow should be written with pre-computed color
+    const [r, g, b] = unpackColor(prog.buffer[8]);
+    // Arrow color comes from tgt-arrow-color, not the pre-computed line-color
+    // But the width in the buffer should match
+    expect(prog.buffer[9]).to.equal(4);
+  });
+
+  it('processArrowsOnly falls back to pstyle when no pre-computed values', () => {
+    const prog = new EdgeProgram();
+    prog.reallocate(10);
+    const edge = mockEdge({ width: 5, tgtArrow: 'triangle' });
+    prog.processArrowsOnly(0, edge, 1, mockR);
+    expect(prog.buffer[9]).to.equal(5);
+  });
 });

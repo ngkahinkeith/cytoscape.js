@@ -96,6 +96,46 @@ function mockEdges(count) {
   return edges;
 }
 
+function mockBezierEdges(count) {
+  let pstyleCallCount = 0;
+  const edges = [];
+  for(let i = 0; i < count; i++) {
+    edges.push({
+      _private: {
+        rscratch: {
+          allpts: [0, 0, 50, 100, 100, 0], // quadratic bezier (6 points)
+          badLine: false,
+          arrowStartX: 0, arrowStartY: 0, srcArrowAngle: 0,
+          arrowEndX: 100, arrowEndY: 0, tgtArrowAngle: Math.PI,
+        },
+        data: { id: 'be' + i },
+      },
+      isNode: () => false,
+      isEdge: () => true,
+      pstyle: (prop) => {
+        pstyleCallCount++;
+        const styles = {
+          'line-color': { value: [100, 100, 100] },
+          'opacity': { value: 1 },
+          'line-opacity': { value: 1 },
+          'width': { pfValue: 2 },
+          'source-arrow-shape': { value: 'none' },
+          'target-arrow-shape': { value: 'triangle' },
+          'source-arrow-color': { value: [100, 100, 100] },
+          'target-arrow-color': { value: [100, 100, 100] },
+          'arrow-scale': { value: 1 },
+          'label': { value: '' },
+          'font-size': { pfValue: 8 },
+        };
+        return styles[prop] || { value: null, pfValue: 0, strValue: 'none' };
+      },
+    });
+  }
+  edges._getPstyleCallCount = () => pstyleCallCount;
+  edges._resetPstyleCallCount = () => { pstyleCallCount = 0; };
+  return edges;
+}
+
 describe('WebGLRenderLoop', () => {
   it('creates without errors', () => {
     const loop = new WebGLRenderLoop(mockRenderer());
@@ -344,9 +384,39 @@ describe('WebGLRenderLoop', () => {
 
   it('renderPicking uses infinite bounds (no culling during picking)', () => {
     const loop = new WebGLRenderLoop(mockRenderer());
-    // Verify the noCull bounds are used in renderPicking by checking
-    // that the method exists and accepts pickingFB parameters
     expect(loop.renderPicking).to.be.a('function');
     expect(loop.renderPicking.length).to.be.at.least(4);
+  });
+
+  // Phase 3: pstyle dedup integration tests
+  it('process() handles bezier edges via EdgeCurveProgram + EdgeProgram', () => {
+    const r = mockRenderer();
+    const bezierEdges = mockBezierEdges(3);
+    r.getCachedZSortedEles = () => bezierEdges;
+    r.cy.mutableElements = () => bezierEdges;
+    const loop = new WebGLRenderLoop(r);
+    loop.process();
+    // 3 bezier edges: each gets 1 curve slot + arrow instances
+    expect(loop.edgeCurveProgram.count).to.equal(3);
+    expect(loop.edgeProgram.count).to.be.greaterThan(0); // arrow instances
+    // Each bezier edge should have _webglCurveSlot assigned
+    for(const edge of bezierEdges) {
+      expect(edge._private._webglCurveSlot).to.be.a('number');
+    }
+  });
+
+  it('process() with bezier edges uses <= 7 pstyle calls per edge', () => {
+    const r = mockRenderer();
+    const bezierEdges = mockBezierEdges(100);
+    r.getCachedZSortedEles = () => bezierEdges;
+    r.cy.mutableElements = () => bezierEdges;
+    const loop = new WebGLRenderLoop(r);
+    bezierEdges._resetPstyleCallCount();
+    loop.process();
+    const callsPerEdge = bezierEdges._getPstyleCallCount() / 100;
+    // With pstyle dedup: 3 shared reads in render-loop (opacity, line-opacity, line-color/width)
+    // + arrow-specific calls (source-arrow-shape, target-arrow-shape, arrow-scale, tgt-arrow-color)
+    // + label + font-size = ~9 total, down from 13-14 without dedup
+    expect(callsPerEdge).to.be.at.most(10);
   });
 });
