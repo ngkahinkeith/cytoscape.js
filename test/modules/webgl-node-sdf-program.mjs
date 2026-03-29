@@ -145,12 +145,13 @@ describe('NodeSDFProgram', () => {
     expect(prog.buffer[8]).to.equal(10);
   });
 
-  it('processNode packs auto corner radius as -1', () => {
+  it('processNode resolves auto corner radius via getRoundRectangleRadius', () => {
     const prog = new NodeSDFProgram();
     prog.reallocate(1);
     prog.count = 1;
+    // outerWidth=30, outerHeight=30 → getRoundRectangleRadius(30, 30) = min(7.5, 7.5, 8) = 7.5
     prog.processNode(0, mockNode({ cornerRadius: 'auto' }), 0);
-    expect(prog.buffer[8]).to.equal(-1);
+    expect(prog.buffer[8]).to.equal(7.5);
   });
 
   it('processNode packs border position', () => {

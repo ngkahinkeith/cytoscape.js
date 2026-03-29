@@ -115,13 +115,14 @@ describe('EdgeProgram', () => {
     expect(r).to.equal(42);
   });
 
-  it('skips bad edges', () => {
+  it('processes edges with badLine (badLine check removed in 7903a62f)', () => {
     const prog = new EdgeProgram();
     prog.reallocate(10);
     const edge = mockEdge();
     edge._private.rscratch.badLine = true;
     const nextSlot = prog.processEdge(0, edge, 1, mockR);
-    expect(nextSlot).to.equal(0); // nothing written
+    // badLine check was intentionally removed — edges always render now
+    expect(nextSlot).to.be.greaterThan(0);
   });
 
   it('reallocate grows buffer', () => {

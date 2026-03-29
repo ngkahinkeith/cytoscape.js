@@ -85,7 +85,7 @@ describe('TexturePageManager', () => {
     expect(entry.size).to.equal(300);
   });
 
-  it('multiple images are packed in a row', () => {
+  it('multiple images are packed with adaptive page sizing', () => {
     const mgr = new TexturePageManager({ maxPageSize: 1024, maxImageSize: 256 });
     addReadyImage(mgr, 'a.png', 100, 100);
     addReadyImage(mgr, 'b.png', 100, 100);
@@ -101,13 +101,15 @@ describe('TexturePageManager', () => {
     expect(eb.pageIndex).to.equal(0);
     expect(ec.pageIndex).to.equal(0);
 
-    // Packed in a row with 1px margin between entries
+    // Adaptive sizing picks 256px page (smallest power-of-2 that fits 3 images)
+    // 256 / 101 = 2 cols, ceil(3/2) = 2 rows → fits in 256px
+    // a at (0,0), b at (101,0), c wraps to (0,101)
     expect(ea.x).to.equal(0);
-    expect(eb.x).to.equal(101); // 100 + 1px margin
-    expect(ec.x).to.equal(202); // 101 + 100 + 1px margin
+    expect(eb.x).to.equal(101);
     expect(ea.y).to.equal(0);
     expect(eb.y).to.equal(0);
-    expect(ec.y).to.equal(0);
+    expect(ec.x).to.equal(0);
+    expect(ec.y).to.equal(101); // wraps to second row
   });
 
   it('wraps to next row when image does not fit horizontally', () => {
@@ -228,8 +230,9 @@ describe('TexturePageManager', () => {
     addReadyImage(mgr, 'a.png', 100, 100);
     mgr.rebuild();
 
-    // 1 page, 1024 * 1024 * 4 bytes
-    expect(mgr.getMemoryBytes()).to.equal(1024 * 1024 * 4);
+    // Adaptive sizing picks 256px page for 1 image of 100px
+    // 1 page, 256 * 256 * 4 bytes
+    expect(mgr.getMemoryBytes()).to.equal(256 * 256 * 4);
   });
 
   it('getMemoryBytes returns 0 when no pages', () => {
@@ -265,13 +268,14 @@ describe('TexturePageManager', () => {
     expect(called).to.be.false;
   });
 
-  it('page canvas has correct dimensions (stub)', () => {
+  it('page canvas has correct dimensions (adaptive sizing)', () => {
     const mgr = new TexturePageManager({ maxPageSize: 2048, maxImageSize: 256 });
     addReadyImage(mgr, 'a.png', 100, 100);
     mgr.rebuild();
     const page = mgr.getPages()[0];
-    expect(page.canvas.width).to.equal(2048);
-    expect(page.canvas.height).to.equal(2048);
+    // Adaptive sizing picks 256px page (smallest power-of-2 that fits 1 image of 100px)
+    expect(page.canvas.width).to.equal(256);
+    expect(page.canvas.height).to.equal(256);
   });
 
   it('page glTexture is initially null', () => {

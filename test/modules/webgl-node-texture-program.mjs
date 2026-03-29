@@ -284,9 +284,10 @@ describe('NodeTextureProgram shader generation', () => {
     expect(src).to.include('PICKING_MODE');
   });
 
-  it('getFragmentShaderSource includes compositing logic', () => {
+  it('getFragmentShaderSource includes direct texel output', () => {
     const src = getFragmentShaderSource(1);
-    expect(src).to.include('mix(nodeColor.rgb, texel.rgb, texel.a)');
+    // Shader outputs texel directly; SDF shape behind provides the background
+    expect(src).to.include('outColor = texel');
   });
 
   it('getFragmentShaderSource includes unpackColor function', () => {

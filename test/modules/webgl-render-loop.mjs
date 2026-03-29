@@ -10,10 +10,12 @@ function mockRenderer() {
   return {
     cy: {
       container: () => ({ style: { backgroundColor: 'white' } }),
+      mutableElements: () => eles,
     },
     getCachedZSortedEles: () => eles,
     drawElementText: () => {},
     getArrowWidth: (w, s) => Math.max(Math.pow(w * 13.37, 0.9), 29) * s,
+    recalculateRenderedStyle: () => {},
   };
 }
 
@@ -27,6 +29,9 @@ function mockNodes(count) {
       position: () => ({ x: i * 10, y: i * 20 }),
       outerWidth: () => 30,
       outerHeight: () => 30,
+      padding: () => 0,
+      width: () => 30,
+      height: () => 30,
       pstyle: (prop) => {
         const styles = {
           'background-color': { value: [255, 0, 0] },
@@ -40,6 +45,12 @@ function mockNodes(count) {
           'corner-radius': { value: 'auto', pfValue: 0 },
           'label': { value: 'Node ' + i },
           'font-size': { pfValue: 12 },
+          'overlay-opacity': { value: 0 },
+          'overlay-color': { value: [0, 0, 0] },
+          'overlay-padding': { pfValue: 10 },
+          'overlay-corner-radius': { value: 'auto', pfValue: 0 },
+          'overlay-shape': { value: 'round-rectangle' },
+          'underlay-opacity': { value: 0 },
         };
         return styles[prop] || { value: null, pfValue: 0, strValue: 'none' };
       },
@@ -94,7 +105,7 @@ describe('WebGLRenderLoop', () => {
   it('process() populates node buffer', () => {
     const loop = new WebGLRenderLoop(mockRenderer());
     loop.process();
-    expect(loop.nodeSDFProgram.count).to.equal(5);
+    expect(loop.nodeSDFProgram.count).to.equal(10); // 5 nodes x (body + overlay) = 10
     expect(loop.nodeSDFProgram.buffer).to.not.be.null;
   });
 
@@ -105,14 +116,19 @@ describe('WebGLRenderLoop', () => {
     expect(loop.edgeProgram.count).to.equal(6);
   });
 
-  it('process() assigns pick indices to all elements', () => {
+  it('process() assigns node slots and edge slots to all elements', () => {
     const r = mockRenderer();
     const eles = r.getCachedZSortedEles();
     const loop = new WebGLRenderLoop(r);
     loop.process();
-    for(const ele of eles) {
-      expect(ele._private._webglPickIndex).to.be.a('number');
-      expect(ele._private._webglPickIndex).to.be.greaterThan(0);
+    const nodes = eles.filter(e => e.isNode());
+    const edges = eles.filter(e => e.isEdge());
+    for(const node of nodes) {
+      expect(node._private._webglNodeSlots).to.be.an('array');
+      expect(node._private._webglNodeSlots.length).to.be.greaterThan(0);
+    }
+    for(const edge of edges) {
+      expect(edge._private._webglEdgeSlot).to.be.a('number');
     }
   });
 
@@ -123,7 +139,9 @@ describe('WebGLRenderLoop', () => {
     loop.process();
     const nodes = eles.filter(e => e.isNode());
     for(let i = 0; i < nodes.length; i++) {
-      expect(nodes[i]._private._webglNodeSlot).to.equal(i);
+      // Each node gets _webglNodeSlots = [bodySlot, overlaySlot]
+      expect(nodes[i]._private._webglNodeSlots).to.be.an('array');
+      expect(nodes[i]._private._webglNodeSlots.length).to.equal(2); // body + overlay
     }
   });
 
@@ -147,9 +165,11 @@ describe('WebGLRenderLoop', () => {
     const eles = r.getCachedZSortedEles();
     const loop = new WebGLRenderLoop(r);
     loop.process();
+    // Reset needsUpload after process
+    loop.nodeSDFProgram.needsUpload = false;
     const node = eles[0]; // first node
     loop.updateNodePosition(node);
-    expect(loop.needsUpload).to.be.true;
+    expect(loop.nodeSDFProgram.needsUpload).to.be.true;
   });
 
   it('process() handles textured nodes', () => {
@@ -175,7 +195,8 @@ describe('WebGLRenderLoop', () => {
     expect(loop.needsProcess).to.be.true;
     loop.process();
     expect(loop.needsProcess).to.be.false;
-    expect(loop.needsUpload).to.be.true;
+    expect(loop.nodeSDFProgram.needsUpload).to.be.true;
+    expect(loop.edgeProgram.needsUpload).to.be.true;
   });
 
   it('process() assigns edge slots and instance counts', () => {
@@ -191,13 +212,17 @@ describe('WebGLRenderLoop', () => {
     }
   });
 
-  it('process() pick indices are sequential starting at 1', () => {
+  it('process() assigns sequential node slots', () => {
     const r = mockRenderer();
     const eles = r.getCachedZSortedEles();
     const loop = new WebGLRenderLoop(r);
     loop.process();
-    for(let i = 0; i < eles.length; i++) {
-      expect(eles[i]._private._webglPickIndex).to.equal(i + 1);
+    const nodes = eles.filter(e => e.isNode());
+    // Each node gets 2 SDF slots (body + overlay), so slots are 0,1 / 2,3 / 4,5 ...
+    for(let i = 0; i < nodes.length; i++) {
+      const slots = nodes[i]._private._webglNodeSlots;
+      expect(slots[0]).to.equal(i * 2);     // body slot
+      expect(slots[1]).to.equal(i * 2 + 1); // overlay slot
     }
   });
 
@@ -220,7 +245,7 @@ describe('WebGLRenderLoop', () => {
       position: () => ({ x: 0, y: 0 }),
     };
     loop.updateNodePosition(node);
-    expect(loop.needsUpload).to.be.false;
+    expect(loop.nodeSDFProgram.needsUpload).to.be.false;
   });
 
   it('render() without init is no-op', () => {
@@ -237,7 +262,9 @@ describe('WebGLRenderLoop', () => {
 
   it('process() handles zero elements', () => {
     const r = mockRenderer();
-    r.getCachedZSortedEles = () => [];
+    const emptyEles = [];
+    r.getCachedZSortedEles = () => emptyEles;
+    r.cy.mutableElements = () => emptyEles;
     const loop = new WebGLRenderLoop(r);
     loop.process();
     expect(loop.nodeSDFProgram.count).to.equal(0);
@@ -247,16 +274,20 @@ describe('WebGLRenderLoop', () => {
 
   it('process() handles nodes-only', () => {
     const r = mockRenderer();
-    r.getCachedZSortedEles = () => mockNodes(10);
+    const nodes = mockNodes(10);
+    r.getCachedZSortedEles = () => nodes;
+    r.cy.mutableElements = () => nodes;
     const loop = new WebGLRenderLoop(r);
     loop.process();
-    expect(loop.nodeSDFProgram.count).to.equal(10);
+    expect(loop.nodeSDFProgram.count).to.equal(20); // 10 nodes x (body + overlay) = 20
     expect(loop.edgeProgram.count).to.equal(0);
   });
 
   it('process() handles edges-only', () => {
     const r = mockRenderer();
-    r.getCachedZSortedEles = () => mockEdges(4);
+    const edges = mockEdges(4);
+    r.getCachedZSortedEles = () => edges;
+    r.cy.mutableElements = () => edges;
     const loop = new WebGLRenderLoop(r);
     loop.process();
     expect(loop.nodeSDFProgram.count).to.equal(0);
