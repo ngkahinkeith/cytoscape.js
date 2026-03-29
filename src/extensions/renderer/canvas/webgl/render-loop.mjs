@@ -4,6 +4,7 @@ import { EdgeProgram, EDGE_STRIDE } from './programs/edge.mjs';
 import { EdgeCurveProgram, EDGE_CURVE_STRIDE } from './programs/edge-curve.mjs';
 import { TexturePageManager } from './texture-page-manager.mjs';
 import { LabelGrid } from './label-grid.mjs';
+import { LODManager } from './lod-manager.mjs';
 import { packPremulColor, packColor, packPickIndex } from './color-pack.mjs';
 import { getRoundRectangleRadius } from '../../../../math.mjs';
 
@@ -29,6 +30,10 @@ export class WebGLRenderLoop {
       maxImageSize: opts.maxImageSize || 512,
     });
     this.labelGrid = new LabelGrid(opts.labelGridCellSize || 100);
+    this.lodManager = new LODManager({
+      hideEdgesOnViewport: opts.hideEdgesOnViewport || false,
+      textureOnViewport: opts.textureOnViewport || false,
+    });
 
     this.needsProcess = true;  // true on first frame and after data changes
     this._hasProcessed = false; // false until first process() completes
@@ -324,21 +329,27 @@ export class WebGLRenderLoop {
 
     // --- Edge pass (EDGE_WEBGL canvas, z-index 2 — below labels) ---
     const glEdge = this.glEdge;
-    this.edgeProgram.upload(glEdge);
-    this.edgeCurveProgram.upload(glEdge);
 
+    // Clear edge canvas (always — even if edges are hidden, stale content must be removed)
     glEdge.clearColor(0, 0, 0, 0);
-    glEdge.enable(glEdge.BLEND);
-    glEdge.blendFunc(glEdge.ONE, glEdge.ONE_MINUS_SRC_ALPHA);
     glEdge.clear(glEdge.COLOR_BUFFER_BIT);
-    glEdge.viewport(0, 0, canvasWidth, canvasHeight);
 
-    const bgColor = this._getBGColor();
-    this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor, vpBounds);
-    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom, vpBounds);
+    // LODManager: skip edge drawing during fast interaction when hideEdgesOnViewport is enabled
+    if(this.lodManager.shouldDrawEdges()) {
+      this.edgeProgram.upload(glEdge);
+      this.edgeCurveProgram.upload(glEdge);
 
-    // Draw edge :active overlays (wider semi-transparent line on top)
-    this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom, vpBounds);
+      glEdge.enable(glEdge.BLEND);
+      glEdge.blendFunc(glEdge.ONE, glEdge.ONE_MINUS_SRC_ALPHA);
+      glEdge.viewport(0, 0, canvasWidth, canvasHeight);
+
+      const bgColor = this._getBGColor();
+      this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor, vpBounds);
+      this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom, vpBounds);
+
+      // Draw edge :active overlays (wider semi-transparent line on top)
+      this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom, vpBounds);
+    }
 
     // --- Node pass (NODE_WEBGL canvas, z-index 5 — above labels) ---
     const glNode = this.glNode;

@@ -144,6 +144,19 @@ function overrideRendererFunctions(r) {
       // Camera changed — picking buffer is stale but NO buffer rebuild
       r.pickingFrameBufferNode.needsDraw = true;
       r.pickingFrameBufferEdge.needsDraw = true;
+
+      // LODManager: mark as interacting during viewport changes (pan/zoom),
+      // clear after 100ms debounce. When hideEdgesOnViewport is enabled,
+      // edges are skipped during interaction for maximum pan/zoom fps.
+      r.renderLoop.lodManager.setInteracting(true);
+      clearTimeout(r._lodInteractTimeout);
+      r._lodInteractTimeout = setTimeout(() => {
+        if(r.renderLoop) {
+          r.renderLoop.lodManager.setInteracting(false);
+          r.data.canvasNeedsRedraw[r.NODE] = true;
+          r.redraw();
+        }
+      }, 100);
     } else if(eventName === 'bounds') {
       // Position change (drag) — update just the moved elements
       r.pickingFrameBufferNode.needsDraw = true;
@@ -199,6 +212,9 @@ function overrideRendererFunctions(r) {
   // --- Override destroy to clean up ALL WebGL + renderer resources ---
   const baseDestroy = r.destroy;
   r.destroy = function() {
+    // 0. Clear LOD debounce timer to prevent post-destroy callback
+    clearTimeout(r._lodInteractTimeout);
+
     // 1. WebGL render loop — frees GPU buffers, CPU typed arrays, element slot refs
     if(r.renderLoop) {
       r.renderLoop.destroy();

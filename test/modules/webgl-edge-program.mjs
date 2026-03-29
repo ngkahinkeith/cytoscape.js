@@ -370,4 +370,34 @@ describe('EdgeProgram', () => {
     prog.processArrowsOnly(0, edge, 1, mockR);
     expect(prog.buffer[9]).to.equal(5);
   });
+
+  // Phase 5: adaptive segment count tests
+  it('processEdge with segmentCount=8 produces fewer instances than default', () => {
+    const prog1 = new EdgeProgram();
+    prog1.reallocate(20);
+    const prog2 = new EdgeProgram();
+    prog2.reallocate(20);
+    const edge = mockEdge({ allpts: [0, 0, 50, 100, 100, 0], tgtArrow: 'none' });
+
+    const slot16 = prog1.processEdge(0, edge, 1, mockR);       // default = 16 segments
+    const slot8 = prog2.processEdge(0, edge, 1, mockR, 8);     // 8 segments
+    expect(slot8).to.be.lessThan(slot16);
+  });
+
+  it('processEdge without segmentCount defaults to 16 segments', () => {
+    const prog = new EdgeProgram();
+    prog.reallocate(20);
+    const edge = mockEdge({ allpts: [0, 0, 50, 100, 100, 0], tgtArrow: 'none' });
+    const slot = prog.processEdge(0, edge, 1, mockR);
+    // 16 segments = 17 points, loop produces 15 instances (segmentPoints.length-2 iterations, step 2)
+    expect(slot).to.equal(16); // 16 curve segment instances
+  });
+
+  it('processEdge with segmentCount=4 produces exactly 4 curve segment instances', () => {
+    const prog = new EdgeProgram();
+    prog.reallocate(10);
+    const edge = mockEdge({ allpts: [0, 0, 50, 100, 100, 0], tgtArrow: 'none' });
+    const slot = prog.processEdge(0, edge, 1, mockR, 4);
+    expect(slot).to.equal(4);
+  });
 });

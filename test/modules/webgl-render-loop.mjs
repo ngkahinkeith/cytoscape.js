@@ -1,6 +1,7 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { WebGLRenderLoop } from '../../src/extensions/renderer/canvas/webgl/render-loop.mjs';
+import { LODManager } from '../../src/extensions/renderer/canvas/webgl/lod-manager.mjs';
 
 // Minimal mock for testing process() without GL
 function mockRenderer() {
@@ -418,5 +419,25 @@ describe('WebGLRenderLoop', () => {
     // + arrow-specific calls (source-arrow-shape, target-arrow-shape, arrow-scale, tgt-arrow-color)
     // + label + font-size = ~9 total, down from 13-14 without dedup
     expect(callsPerEdge).to.be.at.most(10);
+  });
+
+  // Phase 5: LODManager integration tests
+  it('constructor creates lodManager property', () => {
+    const loop = new WebGLRenderLoop(mockRenderer());
+    expect(loop.lodManager).to.be.an.instanceOf(LODManager);
+  });
+
+  it('lodManager receives options from constructor', () => {
+    const loop = new WebGLRenderLoop(mockRenderer(), {
+      hideEdgesOnViewport: true,
+      textureOnViewport: true,
+    });
+    expect(loop.lodManager._hideEdgesOnViewport).to.be.true;
+    expect(loop.lodManager._textureOnViewport).to.be.true;
+  });
+
+  it('lodManager defaults to not hiding edges', () => {
+    const loop = new WebGLRenderLoop(mockRenderer());
+    expect(loop.lodManager.shouldDrawEdges()).to.be.true;
   });
 });

@@ -313,7 +313,7 @@ export class EdgeProgram {
    * Returns the next available slot index.
    * Called during process() only -- NOT per frame.
    */
-  processEdge(startSlot, edge, pickIndex, r) {
+  processEdge(startSlot, edge, pickIndex, r, segmentCount) {
     const rs = edge._private.rscratch;
     if(!rs || !rs.allpts) return startSlot;
 
@@ -336,7 +336,8 @@ export class EdgeProgram {
       slot++;
     } else {
       // Bezier: pre-compute segment points, write N instances
-      const segmentPoints = this._computeSegments(controlPoints, BEZIER_SEGMENTS);
+      const segments = segmentCount || BEZIER_SEGMENTS;
+      const segmentPoints = this._computeSegments(controlPoints, segments);
       for(let i = 0; i < segmentPoints.length - 2; i += 2) {
         let pAx = segmentPoints[i - 2], pAy = segmentPoints[i - 1];
         let pBx = segmentPoints[i], pBy = segmentPoints[i + 1];
