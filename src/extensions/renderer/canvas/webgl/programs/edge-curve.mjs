@@ -47,14 +47,40 @@ void main() {
 
   // Scale width from model space to viewport pixels
   float screenWidth = aWidth * uZoom;
-
-  // Compute bounding box of the 3 control points with padding
   float padding = screenWidth + 2.0; // line width + AA margin
-  vec2 minBound = min(min(vCpA, vCpB), vCpC) - padding;
-  vec2 maxBound = max(max(vCpA, vCpB), vCpC) + padding;
 
-  // Position the quad vertex within the bounding box
-  vec2 viewportPos = mix(minBound, maxBound, aVertex);
+  // --- Oriented Bounding Box (OBB) along source-to-target chord ---
+  vec2 chord = vCpC - vCpA;
+  float chordLen = length(chord);
+
+  vec2 viewportPos;
+  if(chordLen < 0.001) {
+    // Degenerate case (self-loop or coincident endpoints): fall back to AABB
+    vec2 minBound = min(min(vCpA, vCpB), vCpC) - padding;
+    vec2 maxBound = max(max(vCpA, vCpB), vCpC) + padding;
+    viewportPos = mix(minBound, maxBound, aVertex);
+  } else {
+    // Chord-aligned OBB: much tighter than AABB for curved edges
+    vec2 chordDir = chord / chordLen;
+    vec2 chordNorm = vec2(-chordDir.y, chordDir.x);
+
+    // Project control point perpendicular offset from chord midpoint
+    vec2 midToCtrl = vCpB - (vCpA + vCpC) * 0.5;
+    float perpOffset = dot(midToCtrl, chordNorm);
+
+    // Quadratic bezier max deviation from chord = |perpOffset| / 2
+    // Add padding for line width + AA margin
+    float halfAcross = abs(perpOffset) * 0.5 + padding;
+
+    // Bias center perpendicular to account for control point side
+    float centerBias = perpOffset * 0.5;
+
+    // Map unit quad [0,1] to OBB
+    float along = (aVertex.x - 0.5) * (chordLen + 2.0 * padding);
+    float across = (aVertex.y - 0.5) * 2.0 * halfAcross;
+    vec2 center = (vCpA + vCpC) * 0.5 + chordNorm * centerBias;
+    viewportPos = center + chordDir * along + chordNorm * across;
+  }
 
   // Convert back to clip space
   gl_Position = vec4(viewportPos / uViewportSize * 2.0 - 1.0, 0.0, 1.0);
@@ -113,27 +139,33 @@ float distToQuadraticBezierCurve(vec2 p, vec2 b0, vec2 b1, vec2 b2) {
 }
 `;
 
-const FRAGMENT_SHADER_MAIN = `
+const FRAGMENT_SHADER_SCREEN_MAIN = `
 void main() {
   float dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
   float halfWidth = vWidth * 0.5;
-
-  if(dist > halfWidth + 1.0) {
-    discard;
-  }
-
-  #ifdef PICKING_MODE
-    outColor = unpackColor(vPickId);
-  #else
-    vec4 color = unpackColor(vColor);
-    float alpha = 1.0 - smoothstep(halfWidth - 1.0, halfWidth + 0.5, dist);
-    outColor = vec4(color.rgb * color.a * alpha, color.a * alpha);
-  #endif
+  // Smoothstep zeros alpha for distant fragments (no early exit needed).
+  // Avoids GPU thread divergence and tile flushes on mobile GPUs.
+  vec4 color = unpackColor(vColor);
+  float alpha = 1.0 - smoothstep(halfWidth - 1.0, halfWidth + 0.5, dist);
+  outColor = vec4(color.rgb * color.a * alpha, color.a * alpha);
 }
 `;
 
-export const FRAGMENT_SHADER_SOURCE = FRAGMENT_SHADER_HEADER + FRAGMENT_SHADER_MAIN;
-export const FRAGMENT_SHADER_PICKING_SOURCE = FRAGMENT_SHADER_HEADER + '#define PICKING_MODE\n' + FRAGMENT_SHADER_MAIN;
+const FRAGMENT_SHADER_PICKING_MAIN = `
+void main() {
+  float dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
+  float halfWidth = vWidth * 0.5;
+  // Picking: discard required because blending is disabled during picking.
+  // Without discard, vec4(0) would overwrite previously-drawn pick IDs.
+  if(dist > halfWidth + 1.0) {
+    discard;
+  }
+  outColor = unpackColor(vPickId);
+}
+`;
+
+export const FRAGMENT_SHADER_SOURCE = FRAGMENT_SHADER_HEADER + FRAGMENT_SHADER_SCREEN_MAIN;
+export const FRAGMENT_SHADER_PICKING_SOURCE = FRAGMENT_SHADER_HEADER + FRAGMENT_SHADER_PICKING_MAIN;
 
 
 export class EdgeCurveProgram {

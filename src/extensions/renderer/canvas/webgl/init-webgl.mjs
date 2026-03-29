@@ -28,30 +28,23 @@ const _pickIndexes = new Set(); // reused per pick call
 CRp.initWebgl = function(opts) {
   const r = this;
   const glNode = r.data.contexts[r.NODE_WEBGL];
+  const glEdge = r.data.contexts[r.EDGE_WEBGL];
 
-  if(!glNode) return;
+  if(!glNode || !glEdge) return;
 
-  // Unified GL context: both edges and nodes render on the NODE_WEBGL canvas.
-  // Release the EDGE_WEBGL canvas — it is no longer used.
-  const edgeCanvas = r.data.canvases[r.EDGE_WEBGL];
-  if(edgeCanvas) {
-    edgeCanvas.style.display = 'none';
-    edgeCanvas.width = 1;
-    edgeCanvas.height = 1;
-    const glEdge = r.data.contexts[r.EDGE_WEBGL];
-    if(glEdge) {
-      const ext = glEdge.getExtension('WEBGL_lose_context');
-      if(ext) ext.loseContext();
-    }
-  }
-
-  // Create the render loop — same GL context for edges and nodes
+  // Two-canvas architecture for correct z-ordering:
+  //   NODE_WEBGL (z-5): nodes — above labels
+  //   NODE_LABELS (z-4): node labels
+  //   EDGE_LABELS (z-3): edge labels
+  //   EDGE_WEBGL (z-2): edges — below labels
   r.renderLoop = new WebGLRenderLoop(r, opts);
-  r.renderLoop.init(glNode, glNode);
+  r.renderLoop.init(glNode, glEdge);
 
-  // Create picking framebuffer on the (only) GL context
-  r.pickingFrameBuffer = util.createPickingFrameBuffer(glNode);
-  r.pickingFrameBuffer.needsDraw = true;
+  // Create picking framebuffers on both contexts
+  r.pickingFrameBufferNode = util.createPickingFrameBuffer(glNode);
+  r.pickingFrameBufferNode.needsDraw = true;
+  r.pickingFrameBufferEdge = util.createPickingFrameBuffer(glEdge);
+  r.pickingFrameBufferEdge.needsDraw = true;
 
   // Override canvas renderer functions to use the new render loop
   overrideRendererFunctions(r);
@@ -115,9 +108,13 @@ function overrideRendererFunctions(r) {
   const baseMatchCanvas = r.matchCanvasSize;
   r.matchCanvasSize = function(container) {
     baseMatchCanvas.call(r, container);
-    if(r.pickingFrameBuffer) {
-      r.pickingFrameBuffer.setFramebufferAttachmentSizes(r.canvasWidth, r.canvasHeight);
-      r.pickingFrameBuffer.needsDraw = true;
+    if(r.pickingFrameBufferNode) {
+      r.pickingFrameBufferNode.setFramebufferAttachmentSizes(r.canvasWidth, r.canvasHeight);
+      r.pickingFrameBufferNode.needsDraw = true;
+    }
+    if(r.pickingFrameBufferEdge) {
+      r.pickingFrameBufferEdge.setFramebufferAttachmentSizes(r.canvasWidth, r.canvasHeight);
+      r.pickingFrameBufferEdge.needsDraw = true;
     }
   };
 
@@ -130,7 +127,8 @@ function overrideRendererFunctions(r) {
   const baseInvalidateZ = r.invalidateCachedZSortedEles;
   r.invalidateCachedZSortedEles = function() {
     baseInvalidateZ.call(r);
-    r.pickingFrameBuffer.needsDraw = true;
+    r.pickingFrameBufferNode.needsDraw = true;
+    r.pickingFrameBufferEdge.needsDraw = true;
     r.renderLoop.invalidate();
   };
 
@@ -144,10 +142,12 @@ function overrideRendererFunctions(r) {
 
     if(eventName === 'viewport') {
       // Camera changed — picking buffer is stale but NO buffer rebuild
-      r.pickingFrameBuffer.needsDraw = true;
+      r.pickingFrameBufferNode.needsDraw = true;
+      r.pickingFrameBufferEdge.needsDraw = true;
     } else if(eventName === 'bounds') {
       // Position change (drag) — update just the moved elements
-      r.pickingFrameBuffer.needsDraw = true;
+      r.pickingFrameBufferNode.needsDraw = true;
+      r.pickingFrameBufferEdge.needsDraw = true;
       if(eles) {
         for(let i = 0; i < eles.length; i++) {
           const ele = eles[i];
@@ -162,7 +162,8 @@ function overrideRendererFunctions(r) {
       // ALL edge control points (adding a parallel edge changes existing edges' geometry)
       r.renderLoop._hasProcessed = false;
       r.renderLoop.invalidate();
-      r.pickingFrameBuffer.needsDraw = true;
+      r.pickingFrameBufferNode.needsDraw = true;
+      r.pickingFrameBufferEdge.needsDraw = true;
     } else if(eventName === 'style') {
       // Incremental color update (sets styleDirty so pstyle returns fresh values)
       if(eles && eles.length > 0 && !r.renderLoop.needsProcess) {
@@ -175,11 +176,13 @@ function overrideRendererFunctions(r) {
       }
       r.renderLoop._overlayDirty = true;
       r.renderLoop.refreshOverlayColors();
-      r.pickingFrameBuffer.needsDraw = true;
+      r.pickingFrameBufferNode.needsDraw = true;
+      r.pickingFrameBufferEdge.needsDraw = true;
     } else if(eventName === 'background') {
       // Background image finished loading — rebuild textures
       r.renderLoop.invalidate();
-      r.pickingFrameBuffer.needsDraw = true;
+      r.pickingFrameBufferNode.needsDraw = true;
+      r.pickingFrameBufferEdge.needsDraw = true;
     }
   };
 
@@ -202,19 +205,28 @@ function overrideRendererFunctions(r) {
       r.renderLoop = null;
     }
 
-    // 2. Picking framebuffer — frees FB + color texture
-    if(r.pickingFrameBuffer) {
-      r.pickingFrameBuffer.destroy();
-      r.pickingFrameBuffer = null;
+    // 2. Picking framebuffers — frees FB + color texture on both contexts
+    if(r.pickingFrameBufferNode) {
+      r.pickingFrameBufferNode.destroy();
+      r.pickingFrameBufferNode = null;
+    }
+    if(r.pickingFrameBufferEdge) {
+      r.pickingFrameBufferEdge.destroy();
+      r.pickingFrameBufferEdge = null;
     }
 
     // 3. Label offscreen canvas
     r._labelBuffer = null;
 
-    // 4. Lose WebGL context to release GPU memory immediately (unified context)
+    // 4. Lose WebGL contexts to release GPU memory immediately
     const glNode = r.data && r.data.contexts && r.data.contexts[r.NODE_WEBGL];
     if(glNode) {
       const ext = glNode.getExtension('WEBGL_lose_context');
+      if(ext) ext.loseContext();
+    }
+    const glEdge = r.data && r.data.contexts && r.data.contexts[r.EDGE_WEBGL];
+    if(glEdge) {
+      const ext = glEdge.getExtension('WEBGL_lose_context');
       if(ext) ext.loseContext();
     }
 
@@ -312,36 +324,51 @@ function findNearestElementsWebgl(r, x, y) {
   const { pan, zoom } = util.getEffectivePanZoom(r);
   const [ rx, ry ] = util.modelToRenderedPosition(r, pan, zoom, x, y);
 
-  const gl = r.data.contexts[r.NODE_WEBGL];
-  gl.bindFramebuffer(gl.FRAMEBUFFER, r.pickingFrameBuffer);
+  const needsDraw = r.pickingFrameBufferNode.needsDraw || r.pickingFrameBufferEdge.needsDraw;
 
-  if(r.pickingFrameBuffer.needsDraw) {
-    // Ensure GPU buffers are current before picking (unified context)
-    r.renderLoop.nodeSDFProgram.upload(gl);
-    r.renderLoop.nodeTexProgram.upload(gl);
-    r.renderLoop.edgeProgram.upload(gl);
-    r.renderLoop.edgeCurveProgram.upload(gl);
-
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  if(needsDraw) {
     const panZoomMatrix = createPanZoomMatrix(r);
-    r.renderLoop.renderPicking(r.pickingFrameBuffer, panZoomMatrix, zoom);
-    r.pickingFrameBuffer.needsDraw = false;
+
+    // Upload and render picking on both contexts
+    const glNode = r.data.contexts[r.NODE_WEBGL];
+    r.renderLoop.nodeSDFProgram.upload(glNode);
+    r.renderLoop.nodeTexProgram.upload(glNode);
+
+    const glEdge = r.data.contexts[r.EDGE_WEBGL];
+    r.renderLoop.edgeProgram.upload(glEdge);
+    r.renderLoop.edgeCurveProgram.upload(glEdge);
+
+    r.renderLoop.renderPicking(r.pickingFrameBufferNode, r.pickingFrameBufferEdge, panZoomMatrix, zoom);
+    r.pickingFrameBufferNode.needsDraw = false;
+    r.pickingFrameBufferEdge.needsDraw = false;
   }
 
-  // Read a 6x6 pixel area around the cursor
   const px = Math.round(rx - PICK_SIZE / 2);
   const py = Math.round(ry - PICK_SIZE / 2);
-  gl.readPixels(px, py, PICK_SIZE, PICK_SIZE, gl.RGBA, gl.UNSIGNED_BYTE, _pickData);
-  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 
-  // Decode pick indices (read directly from buffer, no slice)
+  // Read node picks from node FBO
   _pickIndexes.clear();
+  const glNode = r.data.contexts[r.NODE_WEBGL];
+  glNode.bindFramebuffer(glNode.FRAMEBUFFER, r.pickingFrameBufferNode);
+  glNode.readPixels(px, py, PICK_SIZE, PICK_SIZE, glNode.RGBA, glNode.UNSIGNED_BYTE, _pickData);
+  glNode.bindFramebuffer(glNode.FRAMEBUFFER, null);
+
   for(let i = 0; i < PICK_PIXELS; i++) {
     const off = i * 4;
     const index = (_pickData[off] | (_pickData[off+1] << 8) | (_pickData[off+2] << 16) | (_pickData[off+3] << 24)) - 1;
-    if(index >= 0) {
-      _pickIndexes.add(index);
-    }
+    if(index >= 0) _pickIndexes.add(index);
+  }
+
+  // Read edge picks from edge FBO
+  const glEdge = r.data.contexts[r.EDGE_WEBGL];
+  glEdge.bindFramebuffer(glEdge.FRAMEBUFFER, r.pickingFrameBufferEdge);
+  glEdge.readPixels(px, py, PICK_SIZE, PICK_SIZE, glEdge.RGBA, glEdge.UNSIGNED_BYTE, _pickData);
+  glEdge.bindFramebuffer(glEdge.FRAMEBUFFER, null);
+
+  for(let i = 0; i < PICK_PIXELS; i++) {
+    const off = i * 4;
+    const index = (_pickData[off] | (_pickData[off+1] << 8) | (_pickData[off+2] << 16) | (_pickData[off+3] << 24)) - 1;
+    if(index >= 0) _pickIndexes.add(index);
   }
 
   // Map indices to elements
@@ -351,15 +378,9 @@ function findNearestElementsWebgl(r, x, y) {
   for(const index of _pickIndexes) {
     const ele = eles[index];
     if(ele) {
-      if(!node && ele.isNode()) {
-        node = ele;
-      }
-      if(!edge && ele.isEdge()) {
-        edge = ele;
-      }
-      if(node && edge) {
-        break;
-      }
+      if(!node && ele.isNode()) node = ele;
+      if(!edge && ele.isEdge()) edge = ele;
+      if(node && edge) break;
     }
   }
 

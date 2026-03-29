@@ -449,12 +449,62 @@ describe('EdgeCurveProgram', () => {
       expect(FRAGMENT_SHADER_SOURCE).to.include('smoothstep');
     });
 
-    it('picking shader contains PICKING_MODE define', () => {
-      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('PICKING_MODE');
+    it('picking shader uses separate main with discard (no PICKING_MODE needed)', () => {
+      // Picking and screen shaders use separate main functions,
+      // so PICKING_MODE preprocessor define is no longer needed
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('discard');
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('unpackColor(vPickId)');
     });
 
     it('picking shader contains distToQuadraticBezierCurve', () => {
       expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('distToQuadraticBezierCurve');
+    });
+
+    // Phase 1: OBB vertex shader tests
+    it('vertex shader contains OBB computation (chordDir, chordNorm)', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include('chordDir');
+      expect(VERTEX_SHADER_SOURCE).to.include('chordNorm');
+    });
+
+    it('vertex shader uses OBB as primary path (perpOffset computation)', () => {
+      // The degenerate fallback still uses minBound/maxBound inside the if-block,
+      // but the primary path uses the OBB with perpOffset
+      expect(VERTEX_SHADER_SOURCE).to.include('perpOffset');
+      expect(VERTEX_SHADER_SOURCE).to.include('halfAcross');
+    });
+
+    it('vertex shader contains degenerate fallback for zero-length chord (self-loop safety)', () => {
+      // Must handle self-loops where source === target (chordLen < 0.001)
+      expect(VERTEX_SHADER_SOURCE).to.include('0.001');
+    });
+
+    // Phase 1: discard removal tests
+    it('screen fragment shader does NOT contain discard', () => {
+      // FRAGMENT_SHADER_SOURCE is the screen path (no PICKING_MODE define)
+      // The discard should have been removed — smoothstep zeros alpha for distant fragments
+      expect(FRAGMENT_SHADER_SOURCE).to.not.include('discard');
+    });
+
+    it('picking fragment shader DOES contain discard (preserved for correctness)', () => {
+      // FRAGMENT_SHADER_PICKING_SOURCE has #define PICKING_MODE and must keep discard
+      // because blending is disabled during picking
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('discard');
+    });
+
+    it('processCurveEdge buffer data unchanged after OBB (shader-only change)', () => {
+      // OBB is a vertex shader change only — instance data format is identical
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      const edge = mockCurveEdge({ allpts: [0, 0, 50, 100, 100, 0] });
+      prog.processCurveEdge(0, edge, 42);
+      // Same 9-float layout: src(2) + tgt(2) + ctrl(2) + color(1) + width(1) + pickId(1)
+      expect(prog.buffer[0]).to.equal(0);    // srcX
+      expect(prog.buffer[1]).to.equal(0);    // srcY
+      expect(prog.buffer[2]).to.equal(100);  // tgtX
+      expect(prog.buffer[3]).to.equal(0);    // tgtY
+      expect(prog.buffer[4]).to.equal(50);   // ctrlX
+      expect(prog.buffer[5]).to.equal(100);  // ctrlY
+      expect(prog.buffer[7]).to.equal(2);    // width (default)
     });
   });
 
