@@ -274,7 +274,7 @@ function renderWebgl(r, options) {
   if(r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG] || r.renderLoop.needsProcess) {
     const panZoomMatrix = createPanZoomMatrix(r);
 
-    r.renderLoop.render(panZoomMatrix, zoom);
+    r.renderLoop.render(panZoomMatrix, zoom, pan);
 
     r.data.canvasNeedsRedraw[r.NODE] = false;
     r.data.canvasNeedsRedraw[r.DRAG] = false;
@@ -321,6 +321,12 @@ function renderWebgl(r, options) {
  * Arguments (x, y) are in model coordinates.
  */
 function findNearestElementsWebgl(r, x, y) {
+  // Skip picking during active interaction (pan/zoom/drag) to avoid
+  // expensive full re-render of all edges on every mouse move.
+  // Picking resumes when interaction ends (needsDraw stays true).
+  if(r.hoverData && r.hoverData.dragging) return [];
+  if(r.swipePanning) return [];
+
   const { pan, zoom } = util.getEffectivePanZoom(r);
   const [ rx, ry ] = util.modelToRenderedPosition(r, pan, zoom, x, y);
 

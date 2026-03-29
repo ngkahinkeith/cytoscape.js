@@ -1,6 +1,6 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { EdgeProgram, EDGE_STRIDE } from '../../src/extensions/renderer/canvas/webgl/programs/edge.mjs';
+import { EdgeProgram, EDGE_STRIDE, VERTEX_SHADER_SOURCE } from '../../src/extensions/renderer/canvas/webgl/programs/edge.mjs';
 import { unpackColor } from '../../src/extensions/renderer/canvas/webgl/color-pack.mjs';
 
 // Mock edge
@@ -333,5 +333,14 @@ describe('EdgeProgram', () => {
     expect(arrowColor[0]).to.equal(0);
     expect(arrowColor[1]).to.equal(255);
     expect(arrowColor[2]).to.equal(0);
+  });
+
+  // Phase 2: Viewport culling tests
+  it('vertex shader contains uViewportBounds uniform', () => {
+    expect(VERTEX_SHADER_SOURCE).to.include('uViewportBounds');
+  });
+
+  it('vertex shader contains viewport cull degenerate pattern', () => {
+    expect(VERTEX_SHADER_SOURCE).to.include('vec4(2.0');
   });
 });

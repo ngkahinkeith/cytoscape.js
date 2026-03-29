@@ -296,7 +296,7 @@ export class WebGLRenderLoop {
    * Render one frame — O(1).
    * Sets camera uniform, uploads dirty buffers, issues draw calls.
    */
-  render(panZoomMatrix, zoom) {
+  render(panZoomMatrix, zoom, pan) {
     if(!this._initialized) return;
 
     if(this.needsProcess) {
@@ -308,6 +308,13 @@ export class WebGLRenderLoop {
     // authoritative ele._private.active flag.
     this.refreshOverlayColors();
 
+    // Compute viewport bounds for GPU-side culling (screen pass only)
+    const canvasWidth = this.glEdge.canvas.width;
+    const canvasHeight = this.glEdge.canvas.height;
+    const vpBounds = pan
+      ? this._computeViewportBounds(pan, zoom, canvasWidth, canvasHeight)
+      : null;
+
     // --- Edge pass (EDGE_WEBGL canvas, z-index 2 — below labels) ---
     const glEdge = this.glEdge;
     this.edgeProgram.upload(glEdge);
@@ -317,14 +324,14 @@ export class WebGLRenderLoop {
     glEdge.enable(glEdge.BLEND);
     glEdge.blendFunc(glEdge.ONE, glEdge.ONE_MINUS_SRC_ALPHA);
     glEdge.clear(glEdge.COLOR_BUFFER_BIT);
-    glEdge.viewport(0, 0, glEdge.canvas.width, glEdge.canvas.height);
+    glEdge.viewport(0, 0, canvasWidth, canvasHeight);
 
     const bgColor = this._getBGColor();
-    this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor);
-    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom);
+    this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor, vpBounds);
+    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom, vpBounds);
 
     // Draw edge :active overlays (wider semi-transparent line on top)
-    this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom);
+    this._drawEdgeOverlays(glEdge, panZoomMatrix, zoom, vpBounds);
 
     // --- Node pass (NODE_WEBGL canvas, z-index 5 — above labels) ---
     const glNode = this.glNode;
@@ -362,9 +369,11 @@ export class WebGLRenderLoop {
     glEdge.clear(glEdge.COLOR_BUFFER_BIT);
     glEdge.viewport(0, 0, glEdge.canvas.width, glEdge.canvas.height);
 
+    // Picking: no viewport culling — pass infinite bounds so all edges are pickable
+    const noCull = [-1e9, -1e9, 1e9, 1e9];
     const bgColor = this._getBGColor();
-    this.edgeProgram.draw(glEdge, panZoomMatrix, true, zoom, bgColor);
-    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, true, zoom);
+    this.edgeProgram.draw(glEdge, panZoomMatrix, true, zoom, bgColor, noCull);
+    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, true, zoom, noCull);
 
     glEdge.bindFramebuffer(glEdge.FRAMEBUFFER, null);
 
@@ -393,17 +402,30 @@ export class WebGLRenderLoop {
    */
   renderLabels(context, pan, zoom, viewportWidth, viewportHeight, nodesOnly) {
     const r = this.r;
+    if(!this._labelCandidates) return;
 
-    // Filter candidates by type
-    const candidates = this._labelCandidates.filter(c => c.isNode === nodesOnly);
+    // Viewport bounds in model space for label culling
+    const vpX1 = -pan.x / zoom;
+    const vpY1 = -pan.y / zoom;
+    const vpX2 = (viewportWidth - pan.x) / zoom;
+    const vpY2 = (viewportHeight - pan.y) / zoom;
+    const margin = 50 / zoom; // margin for labels extending beyond element center
 
-    for(const candidate of candidates) {
+    const candidates = this._labelCandidates;
+    const filtered = [];
+
+    // Single pass: filter by type AND viewport — skip offscreen labels entirely
+    for(let i = 0; i < candidates.length; i++) {
+      const c = candidates[i];
+      if(c.isNode !== nodesOnly) continue;
+
+      // Get model-space position
       let px, py;
-      if(candidate.isNode) {
-        const p = candidate.ele.position();
+      if(c.isNode) {
+        const p = c.ele.position();
         px = p.x; py = p.y;
       } else {
-        const rs = candidate.ele._private.rscratch;
+        const rs = c.ele._private.rscratch;
         if(rs && rs.midX !== undefined) {
           px = rs.midX; py = rs.midY;
         } else if(rs && rs.allpts && rs.allpts.length >= 4) {
@@ -411,22 +433,28 @@ export class WebGLRenderLoop {
           px = (pts[0] + pts[pts.length-2]) / 2;
           py = (pts[1] + pts[pts.length-1]) / 2;
         } else {
-          px = 0; py = 0;
+          continue;
         }
       }
-      candidate.screenX = px * zoom + pan.x;
-      candidate.screenY = py * zoom + pan.y;
-      candidate.gridX = px * zoom;
-      candidate.gridY = py * zoom;
-      candidate.screenSize = candidate.baseSize * zoom;
+
+      // Skip labels outside viewport
+      if(px < vpX1 - margin || px > vpX2 + margin ||
+         py < vpY1 - margin || py > vpY2 + margin) continue;
+
+      c.screenX = px * zoom + pan.x;
+      c.screenY = py * zoom + pan.y;
+      c.gridX = px * zoom;
+      c.gridY = py * zoom;
+      c.screenSize = c.baseSize * zoom;
+      filtered.push(c);
     }
 
     const visible = this.labelGrid.getLabelsToDisplay(
-      candidates, zoom, viewportWidth, viewportHeight, 4
+      filtered, zoom, viewportWidth, viewportHeight, 4
     );
 
-    for(const item of visible) {
-      r.drawElementText(context, item.ele, null, true);
+    for(let i = 0; i < visible.length; i++) {
+      r.drawElementText(context, visible[i].ele, null, true);
     }
   }
 
@@ -555,8 +583,9 @@ export class WebGLRenderLoop {
 
 
   /** Draw edge :active overlays — a wider semi-transparent line on top of normal edges.
-   *  Only draws for edges in _activeEdges (typically 0-3 edges). */
-  _drawEdgeOverlays(gl, panZoomMatrix, zoom) {
+   *  Only draws for edges in _activeEdges (typically 0-3 edges).
+   *  @param {Float32Array} vpBounds - viewport bounds for culling (optional) */
+  _drawEdgeOverlays(gl, panZoomMatrix, zoom, vpBounds) {
     if(this._activeEdges.length === 0) return;
 
     const edgeBuf = this.edgeProgram.buffer;
@@ -607,7 +636,7 @@ export class WebGLRenderLoop {
         edgeBuf.subarray(minOff, maxOff + EDGE_STRIDE));
 
       const bgColor = this._getBGColor();
-      this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor);
+      this.edgeProgram.draw(gl, panZoomMatrix, false, zoom, bgColor, vpBounds);
 
       // Restore original values
       for(const s of saved) {
@@ -629,7 +658,7 @@ export class WebGLRenderLoop {
       gl.bufferSubData(gl.ARRAY_BUFFER, minOff * 4,
         curveBuf.subarray(minOff, maxOff + EDGE_CURVE_STRIDE));
 
-      this.edgeCurveProgram.draw(gl, panZoomMatrix, false, zoom);
+      this.edgeCurveProgram.draw(gl, panZoomMatrix, false, zoom, vpBounds);
 
       // Restore original values
       for(const s of savedCurve) {
@@ -688,6 +717,27 @@ export class WebGLRenderLoop {
       }
     }
     // (needsUpload set per-program via _markDirty)
+  }
+
+  /**
+   * Compute viewport bounds in model space for GPU-side culling.
+   * Returns [x1, y1, x2, y2] with a generous margin for edge curvature.
+   */
+  _computeViewportBounds(pan, zoom, canvasWidth, canvasHeight) {
+    // Convert canvas bounds to model coordinates: model = (screen - pan) / zoom
+    const x1 = (0 - pan.x) / zoom;
+    const y1 = (0 - pan.y) / zoom;
+    const x2 = (canvasWidth - pan.x) / zoom;
+    const y2 = (canvasHeight - pan.y) / zoom;
+
+    // Margin to accommodate control point offsets from parallel edge bundles.
+    // Scales with zoom: at low zoom edges are small, at high zoom we need more
+    // model-space margin. Base of 100 model units covers typical parallel bundles
+    // (3 edges × stepSize 40 = 60 units offset). Additional zoom-adaptive term
+    // ensures edges near viewport edges aren't clipped at high zoom.
+    const margin = 100 + 200 / zoom;
+
+    return [x1 - margin, y1 - margin, x2 + margin, y2 + margin];
   }
 
   _getBGColor() {

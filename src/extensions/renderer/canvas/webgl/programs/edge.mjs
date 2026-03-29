@@ -18,6 +18,7 @@ export const VERTEX_SHADER_SOURCE = `#version 300 es
 precision highp float;
 
 uniform mat3 uPanZoomMatrix;
+uniform vec4 uViewportBounds; // model-space (x1, y1, x2, y2) for viewport culling
 
 // Unit quad vertex (not instanced)
 layout(location = 0) in vec2 aVertex;
@@ -40,6 +41,22 @@ flat out float vPickId;
 void main() {
   vec2 position = aVertex;
   int vid = gl_VertexID % 6;
+
+  // --- Viewport culling in model space ---
+  // Use aPointAB for all types (contains the primary position data)
+  float margin = aWidth * 2.0;
+  vec2 eMin = min(aPointAB.xy, aPointAB.zw) - margin;
+  vec2 eMax = max(aPointAB.xy, aPointAB.zw) + margin;
+  if(aVertType == 1) {
+    // Curve segment: also consider points C and D
+    eMin = min(eMin, min(aPointCD.xy, aPointCD.zw) - margin);
+    eMax = max(eMax, max(aPointCD.xy, aPointCD.zw) + margin);
+  }
+  if(eMax.x < uViewportBounds.x || eMin.x > uViewportBounds.z ||
+     eMax.y < uViewportBounds.y || eMin.y > uViewportBounds.w) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    return;
+  }
 
   if(aVertType == 0) { // EDGE_STRAIGHT
     vec2 source = aPointAB.xy;
@@ -183,6 +200,7 @@ export class EdgeProgram {
     for(const prog of [this.screenProgram, this.pickingProgram]) {
       prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
       prog.uBGColor = gl.getUniformLocation(prog, 'uBGColor');
+      prog.uViewportBounds = gl.getUniformLocation(prog, 'uViewportBounds');
     }
 
     this.glBuffer = gl.createBuffer();
@@ -506,8 +524,8 @@ export class EdgeProgram {
     this.needsUpload = false;
   }
 
-  /** Draw all edge instances. */
-  draw(gl, panZoomMatrix, isPicking, zoom, bgColor) {
+  /** Draw all edge instances. GPU vertex shader handles viewport culling. */
+  draw(gl, panZoomMatrix, isPicking, zoom, bgColor, vpBounds) {
     if(this.count === 0 || !this.buffer) return;
     const program = isPicking ? this.pickingProgram : this.screenProgram;
     gl.useProgram(program);
@@ -515,6 +533,9 @@ export class EdgeProgram {
     gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
     if(program.uBGColor !== null) {
       gl.uniform4fv(program.uBGColor, bgColor || [1.0, 1.0, 1.0, 1.0]);
+    }
+    if(vpBounds && program.uViewportBounds !== null) {
+      gl.uniform4f(program.uViewportBounds, vpBounds[0], vpBounds[1], vpBounds[2], vpBounds[3]);
     }
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
     gl.bindVertexArray(null);
@@ -648,6 +669,16 @@ export class EdgeProgram {
       gl.deleteProgram(this.pickingProgram);
       this.pickingProgram = null;
     }
+    if(this._drawGLBuffer) {
+      gl.deleteBuffer(this._drawGLBuffer);
+      this._drawGLBuffer = null;
+    }
+    if(this._drawGLTypeBuffer) {
+      gl.deleteBuffer(this._drawGLTypeBuffer);
+      this._drawGLTypeBuffer = null;
+    }
+    this._drawBuffer = null;
+    this._drawTypeBuffer = null;
     this.buffer = null;
     this.typeBuffer = null;
     this.capacity = 0;

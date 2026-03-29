@@ -313,4 +313,32 @@ describe('WebGLRenderLoop', () => {
     const color = loop._getBGColor();
     expect(color).to.deep.equal([1.0, 1.0, 1.0, 1.0]);
   });
+
+  // Phase 2: Viewport culling tests
+  it('_computeViewportBounds returns correct model-space bounds', () => {
+    const loop = new WebGLRenderLoop(mockRenderer());
+    // pan={x:100, y:50}, zoom=2, canvas=800x600
+    // margin = 100 + 200/2 = 200
+    const bounds = loop._computeViewportBounds({ x: 100, y: 50 }, 2, 800, 600);
+    // model x1 = (0 - 100) / 2 - 200 = -250
+    // model y1 = (0 - 50) / 2 - 200 = -225
+    // model x2 = (800 - 100) / 2 + 200 = 550
+    // model y2 = (600 - 50) / 2 + 200 = 475
+    expect(bounds[0]).to.equal(-250);
+    expect(bounds[1]).to.equal(-225);
+    expect(bounds[2]).to.equal(550);
+    expect(bounds[3]).to.equal(475);
+  });
+
+  it('_computeViewportBounds has margin >= 100 model-space units', () => {
+    const loop = new WebGLRenderLoop(mockRenderer());
+    const bounds = loop._computeViewportBounds({ x: 0, y: 0 }, 1, 100, 100);
+    // margin = 100 + 200/1 = 300
+    // Without margin: x1=0, y1=0, x2=100, y2=100
+    // With margin: should extend at least 100 units in each direction
+    expect(bounds[0]).to.be.at.most(-100);
+    expect(bounds[1]).to.be.at.most(-100);
+    expect(bounds[2]).to.be.at.least(200);
+    expect(bounds[3]).to.be.at.least(200);
+  });
 });

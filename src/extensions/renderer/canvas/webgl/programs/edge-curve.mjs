@@ -11,6 +11,7 @@ precision highp float;
 uniform mat3 uPanZoomMatrix;
 uniform vec2 uViewportSize;
 uniform float uZoom;
+uniform vec4 uViewportBounds; // model-space (x1, y1, x2, y2) for viewport culling
 
 // Unit quad vertex (not instanced)
 layout(location = 0) in vec2 aVertex; // [0,0]-[1,1] quad
@@ -48,6 +49,18 @@ void main() {
   // Scale width from model space to viewport pixels
   float screenWidth = aWidth * uZoom;
   float padding = screenWidth + 2.0; // line width + AA margin
+
+  // --- Viewport culling in model space ---
+  // If the edge's bounding box (src/ctrl/tgt with margin) is entirely outside
+  // the viewport, degenerate the quad to an invisible point.
+  float margin = aWidth * 2.0;
+  vec2 eMin = min(min(aSource, aTarget), aControlPt) - margin;
+  vec2 eMax = max(max(aSource, aTarget), aControlPt) + margin;
+  if(eMax.x < uViewportBounds.x || eMin.x > uViewportBounds.z ||
+     eMax.y < uViewportBounds.y || eMin.y > uViewportBounds.w) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    return;
+  }
 
   // --- Oriented Bounding Box (OBB) along source-to-target chord ---
   vec2 chord = vCpC - vCpA;
@@ -194,6 +207,7 @@ export class EdgeCurveProgram {
       prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
       prog.uViewportSize = gl.getUniformLocation(prog, 'uViewportSize');
       prog.uZoom = gl.getUniformLocation(prog, 'uZoom');
+      prog.uViewportBounds = gl.getUniformLocation(prog, 'uViewportBounds');
     }
 
     this.glBuffer = gl.createBuffer();
@@ -362,8 +376,8 @@ export class EdgeCurveProgram {
     this.needsUpload = false;
   }
 
-  /** Draw all curve edge instances. */
-  draw(gl, panZoomMatrix, isPicking, zoom) {
+  /** Draw all curve edge instances. GPU vertex shader handles viewport culling. */
+  draw(gl, panZoomMatrix, isPicking, zoom, vpBounds) {
     if(this.count === 0 || !this.buffer) return;
     const program = isPicking ? this.pickingProgram : this.screenProgram;
     gl.useProgram(program);
@@ -371,6 +385,9 @@ export class EdgeCurveProgram {
     gl.uniformMatrix3fv(program.uPanZoomMatrix, false, panZoomMatrix);
     gl.uniform2f(program.uViewportSize, gl.canvas.width, gl.canvas.height);
     gl.uniform1f(program.uZoom, zoom || 1.0);
+    if(vpBounds && program.uViewportBounds !== null) {
+      gl.uniform4f(program.uViewportBounds, vpBounds[0], vpBounds[1], vpBounds[2], vpBounds[3]);
+    }
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
     gl.bindVertexArray(null);
   }
@@ -427,6 +444,11 @@ export class EdgeCurveProgram {
       gl.deleteProgram(this.pickingProgram);
       this.pickingProgram = null;
     }
+    if(this._drawGLBuffer) {
+      gl.deleteBuffer(this._drawGLBuffer);
+      this._drawGLBuffer = null;
+    }
+    this._drawBuffer = null;
     this.buffer = null;
     this.capacity = 0;
     this.count = 0;

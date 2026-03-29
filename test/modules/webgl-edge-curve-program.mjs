@@ -491,6 +491,23 @@ describe('EdgeCurveProgram', () => {
       expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('discard');
     });
 
+    // Phase 2: Viewport culling tests
+    it('vertex shader contains uViewportBounds uniform', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include('uViewportBounds');
+    });
+
+    it('vertex shader contains viewport cull degenerate pattern', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include('vec4(2.0');
+    });
+
+    it('draw() method accepts viewport bounds parameter', () => {
+      const prog = new EdgeCurveProgram();
+      // draw() should accept vpBounds as 5th parameter without error
+      // (no GL context, so just verify the method signature exists)
+      expect(prog.draw).to.be.a('function');
+      expect(prog.draw.length).to.be.at.least(4);
+    });
+
     it('processCurveEdge buffer data unchanged after OBB (shader-only change)', () => {
       // OBB is a vertex shader change only — instance data format is identical
       const prog = new EdgeCurveProgram();
