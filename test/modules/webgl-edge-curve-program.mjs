@@ -521,6 +521,27 @@ describe('EdgeCurveProgram', () => {
       expect(prog.buffer[5]).to.equal(100);
       expect(prog.buffer[7]).to.equal(2);
     });
+
+    // Phase 8: Sub-pixel LOD cull tests
+    it('vertex shader contains sub-pixel LOD cull with distance and width check', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include('screenDist');
+      expect(VERTEX_SHADER_SOURCE).to.include('screenWidth');
+      expect(VERTEX_SHADER_SOURCE).to.include('4.0');
+      expect(VERTEX_SHADER_SOURCE).to.include('1.0');
+    });
+
+    it('vertex shader contains degenerate position for sub-pixel case', () => {
+      // Should degenerate to vec4(2.0, ...) for sub-pixel edges
+      // Count occurrences: viewport cull + sub-pixel cull + degenerate fallback
+      const matches = VERTEX_SHADER_SOURCE.match(/vec4\(2\.0/g);
+      expect(matches.length).to.be.at.least(2); // viewport cull + sub-pixel cull
+    });
+
+    it('uZoom uniform is used in sub-pixel LOD check', () => {
+      // uZoom is used for screenWidth = aWidth * uZoom and in the LOD check
+      expect(VERTEX_SHADER_SOURCE).to.include('uZoom');
+      expect(VERTEX_SHADER_SOURCE).to.include('screenWidth < 1.0');
+    });
   });
 
   // Phase 3: pstyle dedup tests

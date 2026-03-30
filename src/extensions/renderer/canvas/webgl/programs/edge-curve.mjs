@@ -62,6 +62,16 @@ void main() {
     return;
   }
 
+  // --- Sub-pixel LOD cull ---
+  // Skip edges that are too small to see: if the screen-space distance
+  // between source and target is < 4px AND line width is sub-pixel,
+  // the edge is invisible. Same pattern as node-sdf.mjs LOD cull.
+  float screenDist = distance(vCpA, vCpC);
+  if(screenDist < 4.0 && screenWidth < 1.0) {
+    gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+    return;
+  }
+
   // --- Oriented Bounding Box (OBB) along source-to-target chord ---
   vec2 chord = vCpC - vCpA;
   float chordLen = length(chord);

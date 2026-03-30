@@ -156,7 +156,7 @@ function overrideRendererFunctions(r) {
           r.data.canvasNeedsRedraw[r.NODE] = true;
           r.redraw();
         }
-      }, 100);
+      }, 500);
     } else if(eventName === 'bounds') {
       // Position change (drag) — update just the moved elements
       r.pickingFrameBufferNode.needsDraw = true;
@@ -296,10 +296,37 @@ function renderWebgl(r, options) {
     r.data.canvasNeedsRedraw[r.DRAG] = false;
   }
 
-  // --- Labels (Canvas 2D overlay, redrawn every frame) ---
-  // Node labels and edge labels are drawn on separate canvases for correct z-ordering:
-  //   Node bodies (top) > Node labels > Edge labels > Edges (bottom)
-  {
+  // --- Labels (Canvas 2D overlay) ---
+  // Skip label rendering during interaction — iterating 275K candidates + Canvas 2D
+  // text drawing is the dominant per-frame CPU cost (~30-40ms at 275K elements).
+  // Labels reappear after interaction stops (100ms debounce via LODManager).
+  if(!r.renderLoop.lodManager.shouldDrawLabels()) {
+    // During interaction: use CSS transform to move label canvases with pan/zoom.
+    // Like Flightradar24 — labels follow nodes without expensive re-rendering.
+    // Labels re-render at full quality after interaction stops (1s debounce).
+    if(r._lastLabelPan) {
+      const dpx = pan.x - r._lastLabelPan.x;
+      const dpy = pan.y - r._lastLabelPan.y;
+      const dzoom = zoom / r._lastLabelZoom;
+      const tx = `translate(${dpx}px, ${dpy}px) scale(${dzoom})`;
+      const nodeLabelCanvas = r.data.canvases[r.NODE_LABELS];
+      const edgeLabelCanvas = r.data.canvases[r.EDGE_LABELS];
+      if(nodeLabelCanvas) {
+        nodeLabelCanvas.style.transformOrigin = `${r._lastLabelPan.x}px ${r._lastLabelPan.y}px`;
+        nodeLabelCanvas.style.transform = tx;
+      }
+      if(edgeLabelCanvas) {
+        edgeLabelCanvas.style.transformOrigin = `${r._lastLabelPan.x}px ${r._lastLabelPan.y}px`;
+        edgeLabelCanvas.style.transform = tx;
+      }
+    }
+  } else {
+    // Reset CSS transform and re-render labels at full quality
+    const nodeLabelCanvas = r.data.canvases[r.NODE_LABELS];
+    const edgeLabelCanvas = r.data.canvases[r.EDGE_LABELS];
+    if(nodeLabelCanvas) nodeLabelCanvas.style.transform = '';
+    if(edgeLabelCanvas) edgeLabelCanvas.style.transform = '';
+
     // Helper: render labels to an offscreen buffer then blit to a target canvas
     const blitLabels = (targetCtx, bufferKey, renderFn) => {
       if(!targetCtx) return;
@@ -328,7 +355,11 @@ function renderWebgl(r, options) {
       r.data.contexts[r.EDGE_LABELS], '_edgeLabelBuffer',
       (ctx) => r.renderLoop.renderLabels(ctx, pan, zoom, r.canvasWidth, r.canvasHeight, false)
     );
-  }
+
+    // Track pan/zoom for CSS transform during next interaction
+    r._lastLabelPan = { x: pan.x, y: pan.y };
+    r._lastLabelZoom = zoom;
+  } // end else (shouldDrawLabels)
 }
 
 

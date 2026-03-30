@@ -19,6 +19,7 @@ precision highp float;
 
 uniform mat3 uPanZoomMatrix;
 uniform vec4 uViewportBounds; // model-space (x1, y1, x2, y2) for viewport culling
+uniform float uZoom;          // zoom level for sub-pixel LOD cull
 
 // Unit quad vertex (not instanced)
 layout(location = 0) in vec2 aVertex;
@@ -56,6 +57,23 @@ void main() {
      eMax.y < uViewportBounds.y || eMin.y > uViewportBounds.w) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     return;
+  }
+
+  // --- Sub-pixel LOD cull ---
+  // Skip edges/arrows that are too small to see on screen.
+  if(aVertType == 2) {
+    // Arrow: aPointAB.z = arrowSize. Skip if arrow is tiny on screen.
+    if(aPointAB.z * uZoom < 4.0) {
+      gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+      return;
+    }
+  } else {
+    // Straight edge or curve segment: skip if screen length < 4px and line is sub-pixel
+    float screenLen = length(aPointAB.zw - aPointAB.xy) * uZoom;
+    if(screenLen < 4.0 && aWidth * uZoom < 1.0) {
+      gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
+      return;
+    }
   }
 
   if(aVertType == 0) { // EDGE_STRAIGHT
@@ -201,6 +219,7 @@ export class EdgeProgram {
       prog.uPanZoomMatrix = gl.getUniformLocation(prog, 'uPanZoomMatrix');
       prog.uBGColor = gl.getUniformLocation(prog, 'uBGColor');
       prog.uViewportBounds = gl.getUniformLocation(prog, 'uViewportBounds');
+      prog.uZoom = gl.getUniformLocation(prog, 'uZoom');
     }
 
     this.glBuffer = gl.createBuffer();
@@ -541,6 +560,9 @@ export class EdgeProgram {
     }
     if(vpBounds && program.uViewportBounds !== null) {
       gl.uniform4f(program.uViewportBounds, vpBounds[0], vpBounds[1], vpBounds[2], vpBounds[3]);
+    }
+    if(program.uZoom !== null) {
+      gl.uniform1f(program.uZoom, zoom || 1.0);
     }
     gl.drawArraysInstanced(gl.TRIANGLES, 0, 6, this.count);
     gl.bindVertexArray(null);
