@@ -307,18 +307,23 @@ function renderWebgl(r, options) {
     // Like Flightradar24 — labels follow nodes without expensive re-rendering.
     // Labels re-render at full quality after interaction stops (1s debounce).
     if(r._lastLabelPan) {
-      const dpx = pan.x - r._lastLabelPan.x;
-      const dpy = pan.y - r._lastLabelPan.y;
+      // pan/zoom values are in device pixels (multiplied by pixelRatio),
+      // but CSS transforms operate in CSS pixels. Divide by pixelRatio.
+      const pr = r.pixelRatio;
+      const dpx = (pan.x - r._lastLabelPan.x) / pr;
+      const dpy = (pan.y - r._lastLabelPan.y) / pr;
       const dzoom = zoom / r._lastLabelZoom;
+      const originX = r._lastLabelPan.x / pr;
+      const originY = r._lastLabelPan.y / pr;
       const tx = `translate(${dpx}px, ${dpy}px) scale(${dzoom})`;
       const nodeLabelCanvas = r.data.canvases[r.NODE_LABELS];
       const edgeLabelCanvas = r.data.canvases[r.EDGE_LABELS];
       if(nodeLabelCanvas) {
-        nodeLabelCanvas.style.transformOrigin = `${r._lastLabelPan.x}px ${r._lastLabelPan.y}px`;
+        nodeLabelCanvas.style.transformOrigin = `${originX}px ${originY}px`;
         nodeLabelCanvas.style.transform = tx;
       }
       if(edgeLabelCanvas) {
-        edgeLabelCanvas.style.transformOrigin = `${r._lastLabelPan.x}px ${r._lastLabelPan.y}px`;
+        edgeLabelCanvas.style.transformOrigin = `${originX}px ${originY}px`;
         edgeLabelCanvas.style.transform = tx;
       }
     }
