@@ -67,7 +67,7 @@ let elesfn = ({
 
   hasClass: function( className ){
     let ele = this[0];
-    return ( ele != null && ele._private.classes != null && ele._private.classes.has(className) );
+    return ( ele != null && ele._private.classes.has(className) );
   },
 
   toggleClass: function( classes, toggle ){

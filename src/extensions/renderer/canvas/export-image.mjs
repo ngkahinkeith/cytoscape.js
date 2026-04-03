@@ -123,6 +123,11 @@ CRp.bufferCanvasImage = function( options ){
  * node canvas, and label canvas onto the export buffer in the correct order.
  */
 CRp._bufferCanvasImageWebgl = function( buffCxt, options, width, height, scale, bb ) {
+  // Disable LOD culling during export so all elements are rendered
+  if( this.renderLoop && this.renderLoop.lodManager ){
+    this.renderLoop.lodManager.setExportMode(true);
+  }
+
   // Force a full process + render so all canvases are up to date
   this.renderLoop.invalidate();
   // Mark canvases as needing redraw to trigger the full render path
@@ -150,6 +155,11 @@ CRp._bufferCanvasImageWebgl = function( buffCxt, options, width, height, scale, 
   if( nodeCanvas ) buffCxt.drawImage( nodeCanvas, 0, 0 );
 
   buffCxt.restore();
+
+  // Restore normal LOD mode
+  if( this.renderLoop && this.renderLoop.lodManager ){
+    this.renderLoop.lodManager.setExportMode(false);
+  }
 };
 
 function b64ToBlob( b64, mimeType ){

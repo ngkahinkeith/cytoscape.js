@@ -306,7 +306,13 @@ BRp.findEndpoints = function( edge ){
   rs.arrowStartX = arrowStart[0];
   rs.arrowStartY = arrowStart[1];
 
-  rs.badLine = false;
+  if( hasEndpts ){
+    if( !is.number( rs.startX ) || !is.number( rs.startY ) || !is.number( rs.endX ) || !is.number( rs.endY ) ){
+      rs.badLine = true;
+    } else {
+      rs.badLine = false;
+    }
+  }
 };
 
 BRp.getSourceEndpoint = function( edge ){

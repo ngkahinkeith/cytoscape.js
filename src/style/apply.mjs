@@ -12,8 +12,7 @@ const FALSE = 'f';
 // Lazily populated on first updateStyleHints call.
 let STYLE_GROUP_INDICES = null;
 
-// Reusable two-element seed array to avoid allocating per call in propHash
-let _seedPair = [ 0, 0 ];
+// Seed pair allocated locally in updateStyleHints to avoid shared-state corruption
 
 // (potentially expensive calculation)
 // apply the style to the element based on
@@ -370,8 +369,8 @@ styfn.updateStyleHints = function(ele){
   let clIdx = grIndices.commonLabel * 2;
   let cl0 = sk[clIdx], cl1 = sk[clIdx + 1];
 
-  _seedPair[0] = sk[ldIdx]; _seedPair[1] = sk[ldIdx + 1];
-  let labelKeys = propHash( ele, ['label'], _seedPair );
+  let seedPair = [ sk[ldIdx], sk[ldIdx + 1] ];
+  let labelKeys = propHash( ele, ['label'], seedPair );
 
   _p.labelKey = util.combineHashes(labelKeys[0], labelKeys[1]);
   _p.labelStyleKey = util.combineHashes(
@@ -380,16 +379,16 @@ styfn.updateStyleHints = function(ele){
   );
 
   if( !isNode ){
-    _seedPair[0] = sk[ldIdx]; _seedPair[1] = sk[ldIdx + 1];
-    let sourceLabelKeys = propHash( ele, ['source-label'], _seedPair );
+    seedPair[0] = sk[ldIdx]; seedPair[1] = sk[ldIdx + 1];
+    let sourceLabelKeys = propHash( ele, ['source-label'], seedPair );
     _p.sourceLabelKey = util.combineHashes(sourceLabelKeys[0], sourceLabelKeys[1]);
     _p.sourceLabelStyleKey = util.combineHashes(
       util.hashInt(cl0, sourceLabelKeys[0]),
       util.hashIntAlt(cl1, sourceLabelKeys[1])
     );
 
-    _seedPair[0] = sk[ldIdx]; _seedPair[1] = sk[ldIdx + 1];
-    let targetLabelKeys = propHash( ele, ['target-label'], _seedPair );
+    seedPair[0] = sk[ldIdx]; seedPair[1] = sk[ldIdx + 1];
+    let targetLabelKeys = propHash( ele, ['target-label'], seedPair );
     _p.targetLabelKey = util.combineHashes(targetLabelKeys[0], targetLabelKeys[1]);
     _p.targetLabelStyleKey = util.combineHashes(
       util.hashInt(cl0, targetLabelKeys[0]),
@@ -706,14 +705,17 @@ styfn.applyParsedProperty = function( ele, parsedProp ){
     // caching the parsed property object.  Elements that share the same
     // stylesheet value will reference the SAME object, saving ~112 bytes each.
     if( !prop.bypass && !prop.mapped && prop.mapping == null ){
-      let cache = self._parsedPropCache || (self._parsedPropCache = {});
+      let cache = self._parsedPropCache || (self._parsedPropCache = new Map());
       let cacheKey = prop.name + '\0' + prop.strValue;
-      let cached = cache[ cacheKey ];
+      let cached = cache.get( cacheKey );
 
       if( cached ){
         prop = cached;
       } else {
-        cache[ cacheKey ] = prop;
+        if( cache.size >= 10000 ){
+          cache.clear();
+        }
+        cache.set( cacheKey, prop );
       }
     }
 

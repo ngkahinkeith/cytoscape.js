@@ -448,6 +448,7 @@ export class EdgeProgram {
     if(!this._segResult || this._segResult.length < resultLen) {
       this._segResult = new Array(resultLen);
     }
+    this._segResult.length = resultLen; // truncate to actual used length to prevent stale reads
     if(!this._segWork || this._segWork.length < n) {
       this._segWork = new Array(n);
     }
@@ -487,11 +488,7 @@ export class EdgeProgram {
     const needsRebind = (floatSize > this._gpuFloatSize) || (typeSize > this._gpuTypeSize);
 
     if(needsRebind) {
-      // Recreate buffers and rebind in VAO
-      gl.deleteBuffer(this.glBuffer);
-      gl.deleteBuffer(this.glTypeBuffer);
-      this.glBuffer = gl.createBuffer();
-      this.glTypeBuffer = gl.createBuffer();
+      // Orphan and reallocate buffers via bufferData (avoids pipeline stalls from delete/create)
       this._gpuFloatSize = floatSize;
       this._gpuTypeSize = typeSize;
 

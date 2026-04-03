@@ -110,7 +110,7 @@ export class WebGLRenderLoop {
     const eleCount = eles.length || 256;
     const estNodeSlots = eleCount * 3;
     const estTexNodes = Math.max(Math.ceil(eleCount * 0.1), 16);
-    const estEdgeInstances = eleCount * 10;
+    const estEdgeInstances = eleCount * 3; // typical: 1-3 instances per edge (body + arrows)
     const estCurveInstances = Math.max(Math.ceil(eleCount * 0.5), 16);
     this.nodeSDFProgram.reallocate(estNodeSlots);
     this.nodeTexProgram.reallocate(estTexNodes);

@@ -399,10 +399,18 @@ describe('StyleSnapshotCache', () => {
     });
 
     it('has unique values for unique shapes', () => {
-      // 'roundrectangle' and 'round-rectangle' are aliases and share a value
+      // Aliases share values intentionally: roundrectangle/round-rectangle,
+      // square/rectangle, round-* variants share enum with base shapes, etc.
       const entries = Object.entries(SHAPE_MAP);
-      const nonAliasEntries = entries.filter(([k]) => k !== 'roundrectangle');
-      const values = nonAliasEntries.map(([, v]) => v);
+      // Filter to only canonical shape names (no aliases)
+      const knownAliases = new Set([
+        'roundrectangle', 'square', 'bottomroundrectangle', 'cutrectangle',
+        'concavehexagon', 'round-rectangle',
+        'round-triangle', 'round-diamond', 'round-pentagon', 'round-hexagon',
+        'round-heptagon', 'round-octagon', 'round-tag', 'right-rhomboid', 'polygon'
+      ]);
+      const canonicalEntries = entries.filter(([k]) => !knownAliases.has(k));
+      const values = canonicalEntries.map(([, v]) => v);
       expect(new Set(values).size).to.equal(values.length);
     });
   });

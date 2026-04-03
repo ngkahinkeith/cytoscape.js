@@ -130,7 +130,9 @@ function CanvasRenderer( options ){
   for( var i = 0; i < CRp.CANVAS_LAYERS; i++ ){
     var canvas = r.data.canvases[ i ] = document.createElement( 'canvas' );  // eslint-disable-line no-undef
     var type = CRp.CANVAS_TYPES[ i ];
-    r.data.contexts[ i ] = canvas.getContext( type );
+    r.data.contexts[ i ] = type === 'webgl2'
+      ? canvas.getContext( type, { preserveDrawingBuffer: true } )
+      : canvas.getContext( type );
     if( !r.data.contexts[ i ] ) {
       if( type === 'webgl2' ) {
         util.error( 'WebGL2 context creation failed for layer ' + i + '; falling back to Canvas 2D rendering' );

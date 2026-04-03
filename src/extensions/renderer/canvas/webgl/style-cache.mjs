@@ -11,35 +11,21 @@
  * the next frame.
  */
 
-const SHAPE_MAP = {
-  'rectangle': 0,
-  'ellipse': 1,
-  'roundrectangle': 2,
-  'round-rectangle': 2,
-  'bottom-round-rectangle': 3,
-  'triangle': 4,
-  'diamond': 5,
-  'pentagon': 6,
-  'hexagon': 7,
-  'heptagon': 8,
-  'octagon': 9,
-  'star': 10,
-  'tag': 11,
-  'vee': 12,
-  'rhomboid': 13,
-  'barrel': 14,
-  'cut-rectangle': 15,
-  'concave-hexagon': 16,
-  'right-rhomboid': 17,
-  'round-triangle': 18,
-  'round-diamond': 19,
-  'round-pentagon': 20,
-  'round-hexagon': 21,
-  'round-heptagon': 22,
-  'round-octagon': 23,
-  'round-tag': 24,
-  'polygon': 25,
-};
+import { SHAPE_ENUM } from './programs/node-sdf.mjs';
+
+// Use SHAPE_ENUM from the shader as the authoritative source.
+// For shapes not supported by SDF, fall back to rectangle (0).
+const SHAPE_MAP = Object.assign({}, SHAPE_ENUM, {
+  'right-rhomboid': SHAPE_ENUM['rhomboid'] || 0,
+  'round-triangle': SHAPE_ENUM['triangle'] || 0,
+  'round-diamond': SHAPE_ENUM['diamond'] || 0,
+  'round-pentagon': SHAPE_ENUM['pentagon'] || 0,
+  'round-hexagon': SHAPE_ENUM['hexagon'] || 0,
+  'round-heptagon': SHAPE_ENUM['heptagon'] || 0,
+  'round-octagon': SHAPE_ENUM['octagon'] || 0,
+  'round-tag': SHAPE_ENUM['tag'] || 0,
+  'polygon': 0, // custom polygons unsupported by SDF, fallback to rectangle
+});
 
 // Fields per node: bg r,g,b, bgOpacity, borderWidth, border r,g,b,a, borderPosition(encoded), shape(int), cornerRadius, isSimple(int)
 // = 13 floats
@@ -64,6 +50,28 @@ export class StyleSnapshotCache {
     this.nodeCapacity = 0;
     this.edgeCapacity = 0;
     this.dirtyCount = 0;
+    this._freeNodeSlots = [];
+    this._freeEdgeSlots = [];
+  }
+
+  removeNode(node) {
+    const id = node._private.data.id;
+    if(this.nodeIdToIndex.has(id)) {
+      const idx = this.nodeIdToIndex.get(id);
+      this._freeNodeSlots.push(idx);
+      this.nodeIdToIndex.delete(id);
+      node._private._wglIdx = undefined;
+    }
+  }
+
+  removeEdge(edge) {
+    const id = edge._private.data.id;
+    if(this.edgeIdToIndex.has(id)) {
+      const idx = this.edgeIdToIndex.get(id);
+      this._freeEdgeSlots.push(idx);
+      this.edgeIdToIndex.delete(id);
+      edge._private._wglIdx = undefined;
+    }
   }
 
   _ensureNodeCapacity(count) {
@@ -99,8 +107,12 @@ export class StyleSnapshotCache {
     const _p = node._private;
     let index = _p._wglIdx;
     if(index === undefined) {
-      index = this.nodeCount++;
-      this._ensureNodeCapacity(this.nodeCount);
+      if(this._freeNodeSlots.length > 0) {
+        index = this._freeNodeSlots.pop();
+      } else {
+        index = this.nodeCount++;
+        this._ensureNodeCapacity(this.nodeCount);
+      }
       _p._wglIdx = index;
       this.nodeIdToIndex.set(_p.data.id, index);
     }
@@ -111,8 +123,12 @@ export class StyleSnapshotCache {
     const _p = edge._private;
     let index = _p._wglIdx;
     if(index === undefined) {
-      index = this.edgeCount++;
-      this._ensureEdgeCapacity(this.edgeCount);
+      if(this._freeEdgeSlots.length > 0) {
+        index = this._freeEdgeSlots.pop();
+      } else {
+        index = this.edgeCount++;
+        this._ensureEdgeCapacity(this.edgeCount);
+      }
       _p._wglIdx = index;
       this.edgeIdToIndex.set(_p.data.id, index);
     }

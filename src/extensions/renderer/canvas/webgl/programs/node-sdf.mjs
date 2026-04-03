@@ -23,6 +23,14 @@ export const SHAPE_ENUM = {
   'barrel': 14,
   'cut-rectangle': 15, 'cutrectangle': 15,
   'concave-hexagon': 16, 'concavehexagon': 16,
+  // Round variants use the same SDF as base shape with corner-radius applied
+  'round-triangle': 4,
+  'round-diamond': 5,
+  'round-pentagon': 6,
+  'round-hexagon': 7,
+  'round-heptagon': 8,
+  'round-octagon': 9,
+  'round-tag': 11,
 };
 
 // ---- Shader Sources ----
@@ -592,16 +600,14 @@ export class NodeSDFProgram {
 
     const dataSize = this.count * NODE_STRIDE;
 
-    // If GPU buffer is too small, delete and recreate it, then rebind in VAO
+    // If GPU buffer is too small, orphan and reallocate via bufferData
     if(dataSize > this._gpuBufferSize) {
       const data = this.buffer.subarray(0, dataSize);
-      gl.deleteBuffer(this.glBuffer);
-      this.glBuffer = gl.createBuffer();
       this._gpuBufferSize = dataSize;
 
       gl.bindVertexArray(this.vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW); // orphans old buffer
 
       const stride = NODE_STRIDE * 4;
       const attribs = [

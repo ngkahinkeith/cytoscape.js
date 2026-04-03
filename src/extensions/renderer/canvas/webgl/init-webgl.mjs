@@ -13,8 +13,6 @@ const _scaleVec = [0, 0];
 
 const PICK_SIZE = 6;
 const PICK_PIXELS = PICK_SIZE * PICK_SIZE;
-const _pickData = new Uint8Array(PICK_PIXELS * 4);
-const _pickIndexes = new Set(); // reused per pick call
 
 /**
  * Initialize the new WebGL rendering mode after the Canvas renderer has been set up.
@@ -39,6 +37,10 @@ CRp.initWebgl = function(opts) {
   //   EDGE_WEBGL (z-2): edges — below labels
   r.renderLoop = new WebGLRenderLoop(r, opts);
   r.renderLoop.init(glNode, glEdge);
+
+  // Per-instance picking buffers (not shared across cy instances)
+  r._pickData = new Uint8Array(PICK_PIXELS * 4);
+  r._pickIndexes = new Set();
 
   // Create picking framebuffers on both contexts
   r.pickingFrameBufferNode = util.createPickingFrameBuffer(glNode);
@@ -374,6 +376,17 @@ function findNearestElementsWebgl(r, x, y) {
   if(r.hoverData && r.hoverData.dragging) return [];
   if(r.swipePanning) return [];
 
+  // Debounce: if cursor barely moved and last pick was <16ms ago, return cached result
+  const now = performance.now();
+  if(r._lastPickTime && (now - r._lastPickTime) < 16 && r._lastPickResult) {
+    const dx = Math.abs(x - r._lastPickX);
+    const dy = Math.abs(y - r._lastPickY);
+    if(dx < 2 && dy < 2) return r._lastPickResult;
+  }
+  r._lastPickTime = now;
+  r._lastPickX = x;
+  r._lastPickY = y;
+
   const { pan, zoom } = util.getEffectivePanZoom(r);
   const [ rx, ry ] = util.modelToRenderedPosition(r, pan, zoom, x, y);
 
@@ -400,44 +413,50 @@ function findNearestElementsWebgl(r, x, y) {
   const py = Math.round(ry - PICK_SIZE / 2);
 
   // Read node picks from node FBO
-  _pickIndexes.clear();
+  r._pickIndexes.clear();
   const glNode = r.data.contexts[r.NODE_WEBGL];
   glNode.bindFramebuffer(glNode.FRAMEBUFFER, r.pickingFrameBufferNode);
-  glNode.readPixels(px, py, PICK_SIZE, PICK_SIZE, glNode.RGBA, glNode.UNSIGNED_BYTE, _pickData);
+  glNode.readPixels(px, py, PICK_SIZE, PICK_SIZE, glNode.RGBA, glNode.UNSIGNED_BYTE, r._pickData);
   glNode.bindFramebuffer(glNode.FRAMEBUFFER, null);
 
   for(let i = 0; i < PICK_PIXELS; i++) {
     const off = i * 4;
-    const index = (_pickData[off] | (_pickData[off+1] << 8) | (_pickData[off+2] << 16) | (_pickData[off+3] << 24)) - 1;
-    if(index >= 0) _pickIndexes.add(index);
+    const index = (r._pickData[off] | (r._pickData[off+1] << 8) | (r._pickData[off+2] << 16) | (r._pickData[off+3] << 24)) - 1;
+    if(index >= 0) r._pickIndexes.add(index);
   }
 
   // Read edge picks from edge FBO
   const glEdge = r.data.contexts[r.EDGE_WEBGL];
   glEdge.bindFramebuffer(glEdge.FRAMEBUFFER, r.pickingFrameBufferEdge);
-  glEdge.readPixels(px, py, PICK_SIZE, PICK_SIZE, glEdge.RGBA, glEdge.UNSIGNED_BYTE, _pickData);
+  glEdge.readPixels(px, py, PICK_SIZE, PICK_SIZE, glEdge.RGBA, glEdge.UNSIGNED_BYTE, r._pickData);
   glEdge.bindFramebuffer(glEdge.FRAMEBUFFER, null);
 
   for(let i = 0; i < PICK_PIXELS; i++) {
     const off = i * 4;
-    const index = (_pickData[off] | (_pickData[off+1] << 8) | (_pickData[off+2] << 16) | (_pickData[off+3] << 24)) - 1;
-    if(index >= 0) _pickIndexes.add(index);
+    const index = (r._pickData[off] | (r._pickData[off+1] << 8) | (r._pickData[off+2] << 16) | (r._pickData[off+3] << 24)) - 1;
+    if(index >= 0) r._pickIndexes.add(index);
   }
 
-  // Map indices to elements
+  // Map indices to elements — return topmost (highest z-index) element
+  // Higher indices are drawn later and occlude earlier ones
   const eles = r.getCachedZSortedEles();
-  let node, edge;
+  let maxNodeIdx = -1;
+  let maxEdgeIdx = -1;
 
-  for(const index of _pickIndexes) {
+  for(const index of r._pickIndexes) {
     const ele = eles[index];
     if(ele) {
-      if(!node && ele.isNode()) node = ele;
-      if(!edge && ele.isEdge()) edge = ele;
-      if(node && edge) break;
+      if(ele.isNode() && index > maxNodeIdx) maxNodeIdx = index;
+      if(ele.isEdge() && index > maxEdgeIdx) maxEdgeIdx = index;
     }
   }
 
-  return [node, edge].filter(Boolean);
+  let node = maxNodeIdx >= 0 ? eles[maxNodeIdx] : undefined;
+  let edge = maxEdgeIdx >= 0 ? eles[maxEdgeIdx] : undefined;
+
+  const result = [node, edge].filter(Boolean);
+  r._lastPickResult = result;
+  return result;
 }
 
 export default CRp;

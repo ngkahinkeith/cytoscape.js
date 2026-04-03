@@ -33,7 +33,7 @@ const defaults = {
 let emptyOpts = {};
 
 function Emitter( opts = emptyOpts, context ){
-  this._opts = opts;  // shared reference, not copied per-instance
+  this._opts = Object.assign({}, opts);
   this.context = context || opts.context || null;
   this.listeners = null; // lazily allocated on first .on() call
   this.emitting = 0;

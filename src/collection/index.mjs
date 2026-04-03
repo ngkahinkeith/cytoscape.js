@@ -493,8 +493,10 @@ elesfn.restore = function( notifyRenderer = true, addToPool = true ){
       edge._private.target = tgt;
     } // if is edge
 
-    // single elements don't need a Map; hasElementWithId/getElementById use fast path
-    _private.map = null;
+    // single elements use fast path for hasElementWithId/getElementById
+    // but still need a valid map for fallback code paths
+    _private.map = new Map();
+    _private.map.set('' + ele._private.data.id, { ele, index: 0 });
 
     _private.removed = false;
 
@@ -557,25 +559,6 @@ elesfn.restore = function( notifyRenderer = true, addToPool = true ){
 
   if( elements.length > 0 ){
     let restored = elements.length === self.length ? self : new Collection( cy, elements );
-
-    // Invalidate traversal caches for added edges AND their existing parallel edges.
-    // Without this, existing parallel edges return stale parallelEdges() results
-    // and get computed as solo straight lines instead of parallel curves.
-    // Skip during bulk initial add (no pre-existing edges to invalidate).
-    if( cy_p.elements.length > restored.length ){
-      for( let i = 0; i < restored.length; i++ ){
-        let ele = restored[i];
-        if( ele.isNode() ){ continue; }
-        // Clear source/target node caches
-        ele.source().clearTraversalCache();
-        ele.target().clearTraversalCache();
-        // Clear existing parallel edges' caches so they re-discover the new edge
-        let srcEdges = ele.source()._private.edges;
-        for( let j = 0; j < srcEdges.length; j++ ){
-          srcEdges[j].clearTraversalCache();
-        }
-      }
-    }
 
     let toUpdateStyle;
 

@@ -254,7 +254,6 @@ function defineEdgesWithFunction( params ){
 
     for( let h = 0; h < otherNodes.length; h++ ){
       let edges = otherNodes[ h ]._private.edges;
-      if( !edges ){ continue; }
 
       for( let i = 0; i < edges.length; i++ ){
         let edge = edges[ i ];

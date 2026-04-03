@@ -358,16 +358,14 @@ export class EdgeCurveProgram {
 
     const dataSize = this.count * EDGE_CURVE_STRIDE;
 
-    // If GPU buffer is too small, delete and recreate it, then rebind in VAO
+    // If GPU buffer is too small, orphan and reallocate via bufferData
     if(dataSize > this._gpuBufferSize) {
       const data = this.buffer.subarray(0, dataSize);
-      gl.deleteBuffer(this.glBuffer);
-      this.glBuffer = gl.createBuffer();
       this._gpuBufferSize = dataSize;
 
       gl.bindVertexArray(this.vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW); // orphans old buffer
       this._setupInstanceAttribs(gl);
       gl.bindVertexArray(null);
     } else if(this._dirtyMin <= this._dirtyMax) {

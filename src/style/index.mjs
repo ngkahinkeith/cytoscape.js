@@ -52,7 +52,7 @@ styfn.clear = function(){
   _p.contextStyles = {};
   _p.propDiffs = {};
 
-  this._parsedPropCache = {};
+  this._parsedPropCache = new Map();
 
   this.cleanElements( eles, true );
 

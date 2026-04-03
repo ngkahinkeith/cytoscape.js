@@ -52,11 +52,11 @@ let Element = function( cy, params, restore = true ){
     grabbable: params.grabbable === undefined ? true : ( params.grabbable ? true : false ), // whether the element can be grabbed
     pannable: params.pannable === undefined ? (group === 'edges' ? true : false) : ( params.pannable ? true : false ), // whether the element has passthrough panning enabled
     active: false, // whether the element is active from user interaction
-    classes: null, // set of class names; lazily allocated
+    classes: new Set(), // set of class names
     animation: null, // object for currently-running animations; lazily allocated as { current: [], queue: [] }
     rscratch: {}, // object in which the renderer can store information
-    scratch: params.scratch || null, // scratch objects; lazily allocated
-    edges: group === 'nodes' ? [] : null, // array of connected edges (only for nodes)
+    scratch: params.scratch || {}, // scratch objects
+    edges: [], // array of connected edges (only for nodes; empty for edges)
     children: null, // array of children; lazily allocated for compound parents
     parent: params.parent && params.parent.isNode() ? params.parent : null, // parent ref
     traversalCache: null, // cache of output of traversal functions; lazily allocated

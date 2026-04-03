@@ -207,6 +207,12 @@ export class TexturePageManager {
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, page.canvas);
       gl.bindTexture(gl.TEXTURE_2D, null);
+
+      // Release canvas backing store after GPU upload (~67MB per 4096x4096 page)
+      page.canvas.width = 0;
+      page.canvas.height = 0;
+      page.canvas = null;
+      page.ctx = null;
     }
     this._texturesUploaded = true;
   }
