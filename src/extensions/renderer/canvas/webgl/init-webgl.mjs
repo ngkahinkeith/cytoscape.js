@@ -290,9 +290,23 @@ function renderWebgl(r, options) {
   const { pan, zoom } = util.getEffectivePanZoom(r);
 
   if(r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG] || r.renderLoop.needsProcess) {
-    const panZoomMatrix = createPanZoomMatrix(r);
+    // Render throttle: skip every other rAF frame during interaction.
+    // Unlike CSS transform (which clips at viewport edges), this always
+    // re-renders the full scene so content appears seamlessly during pan.
+    // ~30fps WebGL during interaction, 60fps when idle.
+    const isInteracting = r.renderLoop.lodManager.isInteracting();
+    const needsDataUpdate = r.renderLoop.needsProcess;
 
-    r.renderLoop.render(panZoomMatrix, zoom, pan);
+    if(!r._webglFrameCount) r._webglFrameCount = 0;
+    r._webglFrameCount++;
+
+    if(isInteracting && !needsDataUpdate && (r._webglFrameCount % 2 !== 0)) {
+      // Skip this frame — previous frame's content is still on screen
+    } else {
+      r._webglFrameCount = 0;
+      const panZoomMatrix = createPanZoomMatrix(r);
+      r.renderLoop.render(panZoomMatrix, zoom, pan);
+    }
 
     r.data.canvasNeedsRedraw[r.NODE] = false;
     r.data.canvasNeedsRedraw[r.DRAG] = false;

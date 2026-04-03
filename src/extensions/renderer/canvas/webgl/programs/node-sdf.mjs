@@ -344,6 +344,13 @@ vec4 distInterp(vec4 cA, vec4 cB, float d) {
 // ---- Compute SDF for given shape ----
 
 float computeSDF(vec2 p, vec2 b, int shape, float cr) {
+  // Per-node LOD: when node is small on screen, use cheap rectangle SDF
+  // instead of full shape dispatch. Avoids expensive ellipse Newton solver,
+  // polygon trig, and 17-branch divergence for nodes that are just dots.
+  float screenB = max(b.x, b.y) * uZoom;
+  if(screenB < 6.0) {
+    return rectangleSD(p, b);
+  }
   if(shape == 0) { // RECTANGLE
     return rectangleSD(p, b);
   } else if(shape == 1) { // ROUND_RECTANGLE

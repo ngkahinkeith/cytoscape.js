@@ -30,6 +30,9 @@ out vec2 vCpC;       // control point C (target) in viewport pixels
 flat out float vColor;
 flat out float vWidth;
 flat out float vPickId;
+flat out float vUseLOD;  // 1.0 = use polyline LOD, 0.0 = full bezier
+out vec2 vP1;            // polyline bend point 1 (bezier at t=1/3)
+out vec2 vP2;            // polyline bend point 2 (bezier at t=2/3)
 
 vec2 toViewport(vec2 clipPos) {
   return (clipPos + 1.0) * uViewportSize * 0.5;
@@ -111,6 +114,13 @@ void main() {
   vColor = aColor;
   vWidth = screenWidth;
   vPickId = aPickId;
+
+  // Per-edge LOD: precompute polyline bend points in vertex shader (runs 6x per edge)
+  // so the fragment shader (runs 1000s of times) can use cheap polyline distance.
+  // Quadratic bezier at t: (1-t)^2*A + 2(1-t)t*B + t^2*C
+  vP1 = (4.0/9.0)*vCpA + (4.0/9.0)*vCpB + (1.0/9.0)*vCpC; // t=1/3
+  vP2 = (1.0/9.0)*vCpA + (4.0/9.0)*vCpB + (4.0/9.0)*vCpC; // t=2/3
+  vUseLOD = (chordLen < 200.0) ? 1.0 : 0.0;
 }
 `;
 
@@ -123,6 +133,9 @@ in vec2 vCpC;
 flat in float vColor;
 flat in float vWidth;
 flat in float vPickId;
+flat in float vUseLOD;
+in vec2 vP1;
+in vec2 vP2;
 
 out vec4 outColor;
 
@@ -163,11 +176,26 @@ float distToQuadraticBezierCurve(vec2 p, vec2 b0, vec2 b1, vec2 b2) {
 `;
 
 const FRAGMENT_SHADER_SCREEN_MAIN = `
+// Distance from point to line segment (~5 ops).
+float segDist(vec2 p, vec2 a, vec2 b) {
+  vec2 ab = b - a;
+  float t = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+  return length(p - a - ab * t);
+}
+
 void main() {
-  float dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
   float halfWidth = vWidth * 0.5;
-  // Smoothstep zeros alpha for distant fragments (no early exit needed).
-  // Avoids GPU thread divergence and tile flushes on mobile GPUs.
+  // Per-edge LOD decided in vertex shader (flat varying = no warp divergence).
+  // LOD path: 3-segment polyline through precomputed bezier(1/3) and bezier(2/3)
+  // gives two corners — ~15 ops vs ~20 ops for full bezier, with bend points
+  // computed once in vertex shader instead of per-pixel.
+  float dist;
+  if(vUseLOD > 0.5) {
+    vec2 p = gl_FragCoord.xy;
+    dist = min(segDist(p, vCpA, vP1), min(segDist(p, vP1, vP2), segDist(p, vP2, vCpC)));
+  } else {
+    dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
+  }
   vec4 color = unpackColor(vColor);
   float alpha = 1.0 - smoothstep(halfWidth - 1.0, halfWidth + 0.5, dist);
   outColor = vec4(color.rgb * color.a * alpha, color.a * alpha);
@@ -175,11 +203,21 @@ void main() {
 `;
 
 const FRAGMENT_SHADER_PICKING_MAIN = `
+float segDistPick(vec2 p, vec2 a, vec2 b) {
+  vec2 ab = b - a;
+  float t = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
+  return length(p - a - ab * t);
+}
+
 void main() {
-  float dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
   float halfWidth = vWidth * 0.5;
-  // Picking: discard required because blending is disabled during picking.
-  // Without discard, vec4(0) would overwrite previously-drawn pick IDs.
+  float dist;
+  if(vUseLOD > 0.5) {
+    vec2 p = gl_FragCoord.xy;
+    dist = min(segDistPick(p, vCpA, vP1), min(segDistPick(p, vP1, vP2), segDistPick(p, vP2, vCpC)));
+  } else {
+    dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
+  }
   if(dist > halfWidth + 1.0) {
     discard;
   }

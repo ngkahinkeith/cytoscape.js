@@ -344,7 +344,9 @@ export class WebGLRenderLoop {
       glEdge.viewport(0, 0, canvasWidth, canvasHeight);
 
       const bgColor = this._getBGColor();
+
       this.edgeProgram.draw(glEdge, panZoomMatrix, false, zoom, bgColor, vpBounds);
+
       this.edgeCurveProgram.draw(glEdge, panZoomMatrix, false, zoom, vpBounds);
 
       // Draw edge :active overlays (wider semi-transparent line on top)
@@ -717,6 +719,11 @@ export class WebGLRenderLoop {
   /** Update a dragged node's connected edges. O(degree). */
   updateConnectedEdges(node) {
     const edges = node.connectedEdges();
+
+    // Recalculate edge control points (rs.allpts) — the onUpdateEleCalcs
+    // callback is a no-op in WebGL mode, so edge geometry is stale after drag.
+    this.r.recalculateRenderedStyle(edges, true);
+
     for(let i = 0; i < edges.length; i++) {
       const edge = edges[i];
       const slot = edge._private._webglEdgeSlot;
