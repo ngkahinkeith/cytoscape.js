@@ -290,22 +290,35 @@ function renderWebgl(r, options) {
   const { pan, zoom } = util.getEffectivePanZoom(r);
 
   if(r.data.canvasNeedsRedraw[r.NODE] || r.data.canvasNeedsRedraw[r.DRAG] || r.renderLoop.needsProcess) {
-    // Render throttle: skip every other rAF frame during interaction.
-    // Unlike CSS transform (which clips at viewport edges), this always
-    // re-renders the full scene so content appears seamlessly during pan.
-    // ~30fps WebGL during interaction, 60fps when idle.
-    const isInteracting = r.renderLoop.lodManager.isInteracting();
-    const needsDataUpdate = r.renderLoop.needsProcess;
+    const rl = r.renderLoop;
+    const anyBufferDirty = rl.needsProcess ||
+                           rl.edgeProgram.needsUpload ||
+                           rl.nodeSDFProgram.needsUpload ||
+                           rl.nodeTexProgram.needsUpload;
+    const cameraChanged = pan.x !== r._wglLastPanX || pan.y !== r._wglLastPanY || zoom !== r._wglLastZoom;
+    const drawEdges = rl.lodManager.shouldDrawEdges();
+    const lodChanged = drawEdges !== r._wglLastDrawEdges;
 
-    if(!r._webglFrameCount) r._webglFrameCount = 0;
-    r._webglFrameCount++;
-
-    if(isInteracting && !needsDataUpdate && (r._webglFrameCount % 2 !== 0)) {
-      // Skip this frame — previous frame's content is still on screen
+    if(!cameraChanged && !anyBufferDirty && !lodChanged) {
+      // Scene state identical to last rendered frame — skip GPU work
     } else {
-      r._webglFrameCount = 0;
-      const panZoomMatrix = createPanZoomMatrix(r);
-      r.renderLoop.render(panZoomMatrix, zoom, pan);
+      const isInteracting = rl.lodManager.isInteracting();
+      const needsDataUpdate = rl.needsProcess;
+      const now = performance.now();
+      const timeSinceRender = now - (r._wglLastRenderTime || 0);
+
+      if(isInteracting && !needsDataUpdate && timeSinceRender < 16) {
+        // Skip WebGL draw on throttled frames, but fall through to label CSS transforms
+      } else {
+        r._wglLastRenderTime = now;
+        const panZoomMatrix = createPanZoomMatrix(r);
+        rl.render(panZoomMatrix, zoom, pan);
+      }
+
+      r._wglLastPanX = pan.x;
+      r._wglLastPanY = pan.y;
+      r._wglLastZoom = zoom;
+      r._wglLastDrawEdges = drawEdges;
     }
 
     r.data.canvasNeedsRedraw[r.NODE] = false;
@@ -342,6 +355,14 @@ function renderWebgl(r, options) {
       }
     }
   } else {
+    // Cap label rendering at ~60fps (expensive Canvas 2D text drawing)
+    const labelNow = performance.now();
+    const labelTimeSince = labelNow - (r._wglLastLabelTime || 0);
+    if(labelTimeSince < 16) {
+      // Skip — labels were just rendered
+    } else {
+    r._wglLastLabelTime = labelNow;
+
     // Reset CSS transform and re-render labels at full quality
     const nodeLabelCanvas = r.data.canvases[r.NODE_LABELS];
     const edgeLabelCanvas = r.data.canvases[r.EDGE_LABELS];
@@ -380,6 +401,7 @@ function renderWebgl(r, options) {
     // Track pan/zoom for CSS transform during next interaction
     r._lastLabelPan = { x: pan.x, y: pan.y };
     r._lastLabelZoom = zoom;
+    } // end label time cap
   } // end else (shouldDrawLabels)
 }
 
@@ -421,11 +443,15 @@ function findNearestElementsWebgl(r, x, y) {
 
     const glEdge = r.data.contexts[r.EDGE_WEBGL];
     r.renderLoop.edgeProgram.upload(glEdge);
-    r.renderLoop.edgeCurveProgram.upload(glEdge);
 
     r.renderLoop.renderPicking(r.pickingFrameBufferNode, r.pickingFrameBufferEdge, panZoomMatrix, zoom);
     r.pickingFrameBufferNode.needsDraw = false;
     r.pickingFrameBufferEdge.needsDraw = false;
+
+    // Picking upload() resets needsUpload flags. If buffer data was modified
+    // (e.g., overlay for :selected), the screen render must also re-draw.
+    // Invalidate cached state so renderWebgl() doesn't skip the next frame.
+    r._wglLastPanX = NaN;
   }
 
   const px = Math.round(rx - PICK_SIZE / 2);

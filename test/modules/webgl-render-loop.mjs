@@ -63,6 +63,10 @@ function mockNodes(count) {
 
 function mockEdges(count) {
   const edges = [];
+  const mockTargetNode = {
+    outerWidth: () => 30,
+    outerHeight: () => 30,
+  };
   for(let i = 0; i < count; i++) {
     edges.push({
       _private: {
@@ -76,6 +80,7 @@ function mockEdges(count) {
       },
       isNode: () => false,
       isEdge: () => true,
+      target: () => mockTargetNode,
       pstyle: (prop) => {
         const styles = {
           'line-color': { value: [100, 100, 100] },
@@ -89,6 +94,9 @@ function mockEdges(count) {
           'arrow-scale': { value: 1 },
           'label': { value: 'Edge ' + i },
           'font-size': { pfValue: 8 },
+          'overlay-opacity': { value: 0 },
+          'overlay-color': { value: [0, 0, 0] },
+          'overlay-padding': { pfValue: 10 },
         };
         return styles[prop] || { value: null, pfValue: 0, strValue: 'none' };
       },
@@ -99,6 +107,10 @@ function mockEdges(count) {
 
 function mockBezierEdges(count) {
   let pstyleCallCount = 0;
+  const mockTargetNode = {
+    outerWidth: () => 30,
+    outerHeight: () => 30,
+  };
   const edges = [];
   for(let i = 0; i < count; i++) {
     edges.push({
@@ -113,6 +125,7 @@ function mockBezierEdges(count) {
       },
       isNode: () => false,
       isEdge: () => true,
+      target: () => mockTargetNode,
       pstyle: (prop) => {
         pstyleCallCount++;
         const styles = {
@@ -127,6 +140,9 @@ function mockBezierEdges(count) {
           'arrow-scale': { value: 1 },
           'label': { value: '' },
           'font-size': { pfValue: 8 },
+          'overlay-opacity': { value: 0 },
+          'overlay-color': { value: [0, 0, 0] },
+          'overlay-padding': { pfValue: 10 },
         };
         return styles[prop] || { value: null, pfValue: 0, strValue: 'none' };
       },
@@ -153,8 +169,8 @@ describe('WebGLRenderLoop', () => {
   it('process() populates edge buffer', () => {
     const loop = new WebGLRenderLoop(mockRenderer());
     loop.process();
-    // 3 edges x (1 straight + 1 arrow) = 6 instances
-    expect(loop.edgeProgram.count).to.equal(6);
+    // 3 edges x 1 unified instance each = 3 instances
+    expect(loop.edgeProgram.count).to.equal(3);
   });
 
   it('process() assigns node slots and edge slots to all elements', () => {
@@ -332,7 +348,7 @@ describe('WebGLRenderLoop', () => {
     const loop = new WebGLRenderLoop(r);
     loop.process();
     expect(loop.nodeSDFProgram.count).to.equal(0);
-    expect(loop.edgeProgram.count).to.equal(8); // 4 edges x (1 straight + 1 arrow)
+    expect(loop.edgeProgram.count).to.equal(4); // 4 edges x 1 unified instance
   });
 
   it('label candidates have correct isNode flag', () => {
@@ -347,12 +363,6 @@ describe('WebGLRenderLoop', () => {
   it('destroy() does not throw when not initialized', () => {
     const loop = new WebGLRenderLoop(mockRenderer());
     expect(() => loop.destroy()).to.not.throw();
-  });
-
-  it('_getBGColor returns white by default', () => {
-    const loop = new WebGLRenderLoop(mockRenderer());
-    const color = loop._getBGColor();
-    expect(color).to.deep.equal([1.0, 1.0, 1.0, 1.0]);
   });
 
   // Phase 2: Viewport culling tests
@@ -390,19 +400,19 @@ describe('WebGLRenderLoop', () => {
   });
 
   // Phase 3: pstyle dedup integration tests
-  it('process() handles bezier edges via EdgeCurveProgram + EdgeProgram', () => {
+  it('process() handles bezier edges via UnifiedEdgeProgram', () => {
     const r = mockRenderer();
     const bezierEdges = mockBezierEdges(3);
     r.getCachedZSortedEles = () => bezierEdges;
     r.cy.mutableElements = () => bezierEdges;
     const loop = new WebGLRenderLoop(r);
     loop.process();
-    // 3 bezier edges: each gets 1 curve slot + arrow instances
-    expect(loop.edgeCurveProgram.count).to.equal(3);
-    expect(loop.edgeProgram.count).to.be.greaterThan(0); // arrow instances
-    // Each bezier edge should have _webglCurveSlot assigned
+    // 3 bezier edges: each gets 1 unified instance (body + arrow in one)
+    expect(loop.edgeProgram.count).to.equal(3);
+    // Each bezier edge should have _webglEdgeSlot assigned
     for(const edge of bezierEdges) {
-      expect(edge._private._webglCurveSlot).to.be.a('number');
+      expect(edge._private._webglEdgeSlot).to.be.a('number');
+      expect(edge._private._webglEdgeInstances).to.equal(1);
     }
   });
 
@@ -415,10 +425,9 @@ describe('WebGLRenderLoop', () => {
     bezierEdges._resetPstyleCallCount();
     loop.process();
     const callsPerEdge = bezierEdges._getPstyleCallCount() / 100;
-    // With pstyle dedup: 3 shared reads in render-loop (opacity, line-opacity, line-color/width)
-    // + arrow-specific calls (source-arrow-shape, target-arrow-shape, arrow-scale, tgt-arrow-color)
-    // + label + font-size = ~9 total, down from 13-14 without dedup
-    expect(callsPerEdge).to.be.at.most(10);
+    // UnifiedEdgeProgram reads: opacity, line-opacity, line-color, width,
+    // target-arrow-shape = 5, plus label + font-size from render-loop = 7 total
+    expect(callsPerEdge).to.be.at.most(8);
   });
 
   // Phase 5: LODManager integration tests
