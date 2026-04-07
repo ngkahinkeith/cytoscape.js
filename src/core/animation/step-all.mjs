@@ -24,14 +24,14 @@ function stepAll( now, cy ){
       }
     }
 
-    let callbacks = function( callbacks ){
-      for( let j = callbacks.length - 1; j >= 0; j-- ){
-        let cb = callbacks[ j ];
+    let runCallbacks = function( cbs ){
+      for( let j = cbs.length - 1; j >= 0; j-- ){
+        let cb = cbs[ j ];
 
         cb();
       }
 
-      callbacks.splice( 0, callbacks.length );
+      cbs.splice( 0, cbs.length );
     };
 
     // step and remove if done
@@ -46,7 +46,7 @@ function stepAll( now, cy ){
         ani_p.playing = false;
         ani_p.started = false;
 
-        callbacks( ani_p.frames );
+        runCallbacks( ani_p.frames );
 
         continue;
       }
@@ -68,7 +68,7 @@ function stepAll( now, cy ){
         ani_p.applying = false;
       }
 
-      callbacks( ani_p.frames );
+      runCallbacks( ani_p.frames );
 
       if( ani_p.step != null ){
         ani_p.step(now);
@@ -81,7 +81,7 @@ function stepAll( now, cy ){
         ani_p.playing = false;
         ani_p.started = false;
 
-        callbacks( ani_p.completes );
+        runCallbacks( ani_p.completes );
       }
 
       ranAnis = true;

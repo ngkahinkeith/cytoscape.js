@@ -139,7 +139,9 @@ function overrideRendererFunctions(r) {
   r.notify = function(eventName, eles) {
     baseNotify.call(r, eventName, eles);
 
-    // After 'destroy', all resources are freed — skip further processing
+    // After 'destroy', all resources are freed — skip further processing.
+    // Check AFTER baseNotify because baseNotify handles core renderer duties
+    // (redrawHint, startRenderLoop) that must run even during teardown.
     if(r.destroyed || !r.renderLoop) return;
 
     if(eventName === 'viewport') {
@@ -308,17 +310,20 @@ function renderWebgl(r, options) {
       const timeSinceRender = now - (r._wglLastRenderTime || 0);
 
       if(isInteracting && !needsDataUpdate && timeSinceRender < 16) {
-        // Skip WebGL draw on throttled frames, but fall through to label CSS transforms
+        // Skip WebGL draw on throttled frames, but fall through to label CSS transforms.
+        // Do NOT update _wglLast* here — the GPU hasn't rendered this state yet,
+        // so the next frame must still detect the change and draw.
       } else {
         r._wglLastRenderTime = now;
         const panZoomMatrix = createPanZoomMatrix(r);
         rl.render(panZoomMatrix, zoom, pan);
-      }
 
-      r._wglLastPanX = pan.x;
-      r._wglLastPanY = pan.y;
-      r._wglLastZoom = zoom;
-      r._wglLastDrawEdges = drawEdges;
+        // Only update cached state after successful render
+        r._wglLastPanX = pan.x;
+        r._wglLastPanY = pan.y;
+        r._wglLastZoom = zoom;
+        r._wglLastDrawEdges = drawEdges;
+      }
     }
 
     r.data.canvasNeedsRedraw[r.NODE] = false;
