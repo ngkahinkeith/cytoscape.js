@@ -36,9 +36,10 @@ let corefn = ({
     // and explicit cy.destroy() is necessary to stop the loop
 
     function headlessStep(){
-      if( !cy._private.animationsRunning ){ return; }
+      if( !cy._private || !cy._private.animationsRunning ){ return; }
 
       util.requestAnimationFrame( function animationStep( now ){
+        if( !cy._private ){ return; }
         stepAll( now, cy );
         headlessStep();
       } );

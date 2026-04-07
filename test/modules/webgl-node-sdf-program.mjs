@@ -290,4 +290,320 @@ describe('NodeSDFProgram', () => {
     expect(prog.buffer[NODE_STRIDE + 2]).to.equal(30);
     expect(prog.buffer[NODE_STRIDE + 3]).to.equal(40);
   });
+
+  it('ensureCapacity grows when needed', () => {
+    const prog = new NodeSDFProgram();
+    prog.reallocate(10);
+    const oldCap = prog.capacity;
+    prog.ensureCapacity(oldCap + 100);
+    expect(prog.capacity).to.be.at.least(oldCap + 100);
+  });
+
+  it('ensureCapacity does nothing when capacity is sufficient', () => {
+    const prog = new NodeSDFProgram();
+    prog.reallocate(100);
+    const cap = prog.capacity;
+    prog.ensureCapacity(50);
+    expect(prog.capacity).to.equal(cap);
+  });
+
+  it('_markDirty tracks min/max slot range', () => {
+    const prog = new NodeSDFProgram();
+    prog.reallocate(10);
+    expect(prog._dirtyMin).to.equal(Infinity);
+    expect(prog._dirtyMax).to.equal(-1);
+    prog._markDirty(3);
+    prog._markDirty(7);
+    expect(prog._dirtyMin).to.equal(3);
+    expect(prog._dirtyMax).to.equal(7);
+    prog._markDirty(1);
+    expect(prog._dirtyMin).to.equal(1);
+  });
+
+  describe('init / upload / draw / destroy (with mock GL)', () => {
+    function mockGL() {
+      return {
+        canvas: { width: 800, height: 600 },
+        ARRAY_BUFFER: 0x8892,
+        STATIC_DRAW: 0x88E4,
+        DYNAMIC_DRAW: 0x88E8,
+        FLOAT: 0x1406,
+        TRIANGLES: 0x0004,
+        VERTEX_SHADER: 0x8B31,
+        FRAGMENT_SHADER: 0x8B30,
+        COMPILE_STATUS: 0x8B81,
+        LINK_STATUS: 0x8B82,
+        createShader: () => ({}),
+        shaderSource: () => {},
+        compileShader: () => {},
+        getShaderParameter: () => true,
+        getShaderInfoLog: () => '',
+        createProgram: () => ({}),
+        attachShader: () => {},
+        linkProgram: () => {},
+        getProgramParameter: () => true,
+        getUniformLocation: (prog, name) => name,
+        createBuffer: () => ({}),
+        createVertexArray: () => ({}),
+        bindVertexArray: () => {},
+        bindBuffer: () => {},
+        bufferData: () => {},
+        bufferSubData: () => {},
+        enableVertexAttribArray: () => {},
+        vertexAttribPointer: () => {},
+        vertexAttribDivisor: () => {},
+        useProgram: () => {},
+        uniformMatrix3fv: () => {},
+        uniform1f: () => {},
+        drawArraysInstanced: () => {},
+        deleteVertexArray: () => {},
+        deleteBuffer: () => {},
+        deleteProgram: () => {},
+      };
+    }
+
+    it('init compiles 2 programs and creates VAO + buffers', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      expect(prog.screenProgram).to.not.be.null;
+      expect(prog.pickingProgram).to.not.be.null;
+      expect(prog.vao).to.not.be.null;
+      expect(prog.glBuffer).to.not.be.null;
+      expect(prog.quadBuffer).to.not.be.null;
+    });
+
+    it('init caches uniform locations on both programs', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      expect(prog.screenProgram.uPanZoomMatrix).to.equal('uPanZoomMatrix');
+      expect(prog.screenProgram.uZoom).to.equal('uZoom');
+      expect(prog.pickingProgram.uPanZoomMatrix).to.equal('uPanZoomMatrix');
+      expect(prog.pickingProgram.uZoom).to.equal('uZoom');
+    });
+
+    it('upload sends full buffer via bufferData when GPU buffer is too small', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.processNode(0, mockNode({ x: 5, y: 10 }), 0);
+      prog.count = 1;
+      prog.needsUpload = true;
+      let bufferDataCalled = false;
+      gl.bufferData = () => { bufferDataCalled = true; };
+      prog.upload(gl);
+      expect(bufferDataCalled).to.be.true;
+      expect(prog.needsUpload).to.be.false;
+      expect(prog._dirtyMin).to.equal(Infinity);
+      expect(prog._dirtyMax).to.equal(-1);
+    });
+
+    it('upload uses bufferSubData for dirty range when GPU buffer is large enough', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.processNode(0, mockNode({ x: 5, y: 10 }), 0);
+      prog.count = 1;
+      prog.needsUpload = true;
+      prog.upload(gl); // first upload sets _gpuBufferSize
+      // Now dirty a slot
+      prog._markDirty(0);
+      let subDataCalled = false;
+      gl.bufferSubData = () => { subDataCalled = true; };
+      prog.upload(gl);
+      expect(subDataCalled).to.be.true;
+    });
+
+    it('upload does full bufferSubData when no dirty range but needsUpload', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.processNode(0, mockNode({ x: 5, y: 10 }), 0);
+      prog.count = 1;
+      prog.needsUpload = true;
+      prog.upload(gl); // sets _gpuBufferSize
+      // Manually set needsUpload without marking dirty (simulates process() aftermath)
+      prog.needsUpload = true;
+      prog._dirtyMin = Infinity;
+      prog._dirtyMax = -1;
+      let subDataCalled = false;
+      gl.bufferSubData = () => { subDataCalled = true; };
+      prog.upload(gl);
+      expect(subDataCalled).to.be.true;
+    });
+
+    it('upload skips when needsUpload is false', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      prog.needsUpload = false;
+      let called = false;
+      gl.bufferData = () => { called = true; };
+      gl.bufferSubData = () => { called = true; };
+      prog.upload(gl);
+      expect(called).to.be.false;
+    });
+
+    it('upload skips when count is 0', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 0;
+      prog.needsUpload = true;
+      let called = false;
+      gl.bufferData = () => { called = true; };
+      prog.upload(gl);
+      expect(called).to.be.false;
+    });
+
+    it('upload skips when buffer is null', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.count = 1;
+      prog.needsUpload = true;
+      prog.buffer = null;
+      let called = false;
+      gl.bufferData = () => { called = true; };
+      prog.upload(gl);
+      expect(called).to.be.false;
+    });
+
+    it('draw issues drawArraysInstanced with screen program', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 5;
+      let drawCount = 0;
+      let usedProg = null;
+      gl.useProgram = (p) => { usedProg = p; };
+      gl.drawArraysInstanced = (mode, first, count, instances) => { drawCount = instances; };
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(drawCount).to.equal(5);
+      expect(usedProg).to.equal(prog.screenProgram);
+    });
+
+    it('draw uses picking program when isPicking is true', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 3;
+      let usedProg = null;
+      gl.useProgram = (p) => { usedProg = p; };
+      prog.draw(gl, new Float32Array(9), true, 1.0);
+      expect(usedProg).to.equal(prog.pickingProgram);
+    });
+
+    it('draw passes high zoom value for picking (disables LOD culling)', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      let zoomValue = 0;
+      gl.uniform1f = (loc, val) => {
+        if(loc === 'uZoom') zoomValue = val;
+      };
+      prog.draw(gl, new Float32Array(9), true, 0.5);
+      expect(zoomValue).to.equal(1e6);
+    });
+
+    it('draw passes actual zoom for screen rendering', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      let zoomValue = 0;
+      gl.uniform1f = (loc, val) => {
+        if(loc === 'uZoom') zoomValue = val;
+      };
+      prog.draw(gl, new Float32Array(9), false, 2.5);
+      expect(zoomValue).to.equal(2.5);
+    });
+
+    it('draw defaults zoom to 1.0 when not provided', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      let zoomValue = -1;
+      gl.uniform1f = (loc, val) => {
+        if(loc === 'uZoom') zoomValue = val;
+      };
+      prog.draw(gl, new Float32Array(9), false, undefined);
+      expect(zoomValue).to.equal(1.0);
+    });
+
+    it('draw skips when count is 0', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.count = 0;
+      let called = false;
+      gl.drawArraysInstanced = () => { called = true; };
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(called).to.be.false;
+    });
+
+    it('draw skips when buffer is null', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.count = 5;
+      prog.buffer = null;
+      let called = false;
+      gl.drawArraysInstanced = () => { called = true; };
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(called).to.be.false;
+    });
+
+    it('destroy cleans up all GL resources', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 5;
+      prog.destroy(gl);
+      expect(prog.vao).to.be.null;
+      expect(prog.glBuffer).to.be.null;
+      expect(prog.quadBuffer).to.be.null;
+      expect(prog.screenProgram).to.be.null;
+      expect(prog.pickingProgram).to.be.null;
+      expect(prog.buffer).to.be.null;
+      expect(prog.capacity).to.equal(0);
+      expect(prog.count).to.equal(0);
+    });
+
+    it('destroy is safe to call without prior init', () => {
+      const prog = new NodeSDFProgram();
+      const gl = mockGL();
+      // no init() call
+      expect(() => prog.destroy(gl)).to.not.throw();
+    });
+
+    it('destroy calls deleteVertexArray, deleteBuffer, deleteProgram', () => {
+      let vaoDel = 0, bufDel = 0, progDel = 0;
+      const gl = mockGL();
+      gl.deleteVertexArray = () => { vaoDel++; };
+      gl.deleteBuffer = () => { bufDel++; };
+      gl.deleteProgram = () => { progDel++; };
+      const prog = new NodeSDFProgram();
+      prog.init(gl);
+      prog.destroy(gl);
+      expect(vaoDel).to.equal(1);
+      expect(bufDel).to.equal(2); // glBuffer + quadBuffer
+      expect(progDel).to.equal(2); // screenProgram + pickingProgram
+    });
+  });
 });

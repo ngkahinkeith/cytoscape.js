@@ -253,6 +253,386 @@ describe('NodeTextureProgram', () => {
     expect(prog.buffer[999 * NODE_TEX_STRIDE]).to.equal(999);
     expect(prog.buffer[999 * NODE_TEX_STRIDE + 1]).to.equal(1998);
   });
+
+  it('processNode uses actual page canvas size for UV normalization', () => {
+    const prog = new NodeTextureProgram();
+    prog.reallocate(1);
+    prog.count = 1;
+    // Manager with page canvas that has a smaller size than maxPageSize
+    const mgr = {
+      maxPageSize: 4096,
+      getEntry: (url) => {
+        if(url === 'img.png') return { x: 100, y: 200, size: 128, pageIndex: 0 };
+        return null;
+      },
+      getPageCount: () => 1,
+      getPages: () => [{ canvas: { width: 2048 } }],
+    };
+    prog.processNode(0, mockNode({ bgImage: 'img.png' }), 0, mgr);
+    // Should normalize by 2048 (actual canvas width), not 4096 (maxPageSize)
+    expect(prog.buffer[5]).to.be.closeTo(100 / 2048, 0.0001);
+    expect(prog.buffer[6]).to.be.closeTo(200 / 2048, 0.0001);
+    expect(prog.buffer[7]).to.be.closeTo(128 / 2048, 0.0001);
+  });
+
+  it('ensureCapacity grows when needed', () => {
+    const prog = new NodeTextureProgram();
+    prog.reallocate(10);
+    const oldCap = prog.capacity;
+    prog.ensureCapacity(oldCap + 100);
+    expect(prog.capacity).to.be.at.least(oldCap + 100);
+  });
+
+  it('ensureCapacity does nothing when sufficient', () => {
+    const prog = new NodeTextureProgram();
+    prog.reallocate(100);
+    const cap = prog.capacity;
+    prog.ensureCapacity(50);
+    expect(prog.capacity).to.equal(cap);
+  });
+
+  it('_markDirty tracks min/max slot range', () => {
+    const prog = new NodeTextureProgram();
+    prog.reallocate(10);
+    expect(prog._dirtyMin).to.equal(Infinity);
+    expect(prog._dirtyMax).to.equal(-1);
+    prog._markDirty(2);
+    prog._markDirty(8);
+    expect(prog._dirtyMin).to.equal(2);
+    expect(prog._dirtyMax).to.equal(8);
+  });
+
+  it('setTextureManager stores reference', () => {
+    const prog = new NodeTextureProgram();
+    const mgr = mockTextureManager();
+    prog.setTextureManager(mgr);
+    expect(prog._textureManager).to.equal(mgr);
+  });
+
+  describe('init / upload / draw / destroy (with mock GL)', () => {
+    function mockGL() {
+      return {
+        canvas: { width: 800, height: 600 },
+        ARRAY_BUFFER: 0x8892,
+        STATIC_DRAW: 0x88E4,
+        DYNAMIC_DRAW: 0x88E8,
+        FLOAT: 0x1406,
+        TRIANGLES: 0x0004,
+        VERTEX_SHADER: 0x8B31,
+        FRAGMENT_SHADER: 0x8B30,
+        COMPILE_STATUS: 0x8B81,
+        LINK_STATUS: 0x8B82,
+        TEXTURE_2D: 0x0DE1,
+        TEXTURE0: 0x84C0,
+        createShader: () => ({}),
+        shaderSource: () => {},
+        compileShader: () => {},
+        getShaderParameter: () => true,
+        getShaderInfoLog: () => '',
+        createProgram: () => ({}),
+        attachShader: () => {},
+        linkProgram: () => {},
+        getProgramParameter: () => true,
+        getUniformLocation: (prog, name) => name,
+        createBuffer: () => ({}),
+        createVertexArray: () => ({}),
+        bindVertexArray: () => {},
+        bindBuffer: () => {},
+        bufferData: () => {},
+        bufferSubData: () => {},
+        enableVertexAttribArray: () => {},
+        vertexAttribPointer: () => {},
+        vertexAttribDivisor: () => {},
+        useProgram: () => {},
+        uniformMatrix3fv: () => {},
+        uniform1f: () => {},
+        uniform1i: () => {},
+        drawArraysInstanced: () => {},
+        deleteVertexArray: () => {},
+        deleteBuffer: () => {},
+        deleteProgram: () => {},
+        activeTexture: () => {},
+        bindTexture: () => {},
+      };
+    }
+
+    it('init compiles shaders and creates VAO + buffers', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      expect(prog.screenProgram).to.not.be.null;
+      expect(prog.pickingProgram).to.not.be.null;
+      expect(prog.vao).to.not.be.null;
+      expect(prog.glBuffer).to.not.be.null;
+      expect(prog.quadBuffer).to.not.be.null;
+      expect(prog._compiledPageCount).to.equal(1);
+    });
+
+    it('init caches uniform locations including uAtlas', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      expect(prog.screenProgram.uPanZoomMatrix).to.equal('uPanZoomMatrix');
+      expect(prog.screenProgram.uZoom).to.equal('uZoom');
+      expect(prog.screenProgram.uAtlas).to.be.an('array');
+      expect(prog.screenProgram.uAtlas.length).to.equal(1);
+    });
+
+    it('_compileShaders recompiles for new page count', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl); // compiled with 1 page
+      expect(prog._compiledPageCount).to.equal(1);
+      prog._compileShaders(gl, 3);
+      expect(prog._compiledPageCount).to.equal(3);
+      expect(prog.screenProgram.uAtlas.length).to.equal(3);
+    });
+
+    it('_compileShaders deletes old programs before recompiling', () => {
+      let deleteCount = 0;
+      const gl = mockGL();
+      gl.deleteProgram = () => { deleteCount++; };
+      const prog = new NodeTextureProgram();
+      prog.init(gl);
+      deleteCount = 0;
+      prog._compileShaders(gl, 2);
+      expect(deleteCount).to.equal(2); // deletes old screen + picking
+    });
+
+    it('upload sends full buffer via bufferData when GPU buffer is too small', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      const mgr = mockTextureManager();
+      prog.processNode(0, mockNode({ x: 1, y: 2 }), 0, mgr);
+      prog.count = 1;
+      prog.needsUpload = true;
+      let bufferDataCalled = false;
+      gl.bufferData = () => { bufferDataCalled = true; };
+      prog.upload(gl);
+      expect(bufferDataCalled).to.be.true;
+      expect(prog.needsUpload).to.be.false;
+    });
+
+    it('upload uses bufferSubData for dirty range', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      const mgr = mockTextureManager();
+      prog.processNode(0, mockNode({ x: 1, y: 2 }), 0, mgr);
+      prog.count = 1;
+      prog.needsUpload = true;
+      prog.upload(gl); // first upload sets _gpuBufferSize
+      prog._markDirty(0);
+      let subDataCalled = false;
+      gl.bufferSubData = () => { subDataCalled = true; };
+      prog.upload(gl);
+      expect(subDataCalled).to.be.true;
+    });
+
+    it('upload does full bufferSubData when no dirty range', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      const mgr = mockTextureManager();
+      prog.processNode(0, mockNode({ x: 1, y: 2 }), 0, mgr);
+      prog.count = 1;
+      prog.needsUpload = true;
+      prog.upload(gl); // sets _gpuBufferSize
+      prog.needsUpload = true;
+      prog._dirtyMin = Infinity;
+      prog._dirtyMax = -1;
+      let subDataCalled = false;
+      gl.bufferSubData = () => { subDataCalled = true; };
+      prog.upload(gl);
+      expect(subDataCalled).to.be.true;
+    });
+
+    it('upload skips when needsUpload is false', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      prog.needsUpload = false;
+      let called = false;
+      gl.bufferData = () => { called = true; };
+      prog.upload(gl);
+      expect(called).to.be.false;
+    });
+
+    it('upload skips when count is 0', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 0;
+      prog.needsUpload = true;
+      let called = false;
+      gl.bufferData = () => { called = true; };
+      prog.upload(gl);
+      expect(called).to.be.false;
+    });
+
+    it('upload creates new glBuffer when GPU buffer needs to grow', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      let deleteBufferCalled = false;
+      let createBufferCount = 0;
+      gl.deleteBuffer = () => { deleteBufferCalled = true; };
+      gl.createBuffer = () => { createBufferCount++; return {}; };
+      prog.init(gl);
+      prog.reallocate(10);
+      const mgr = mockTextureManager();
+      prog.processNode(0, mockNode(), 0, mgr);
+      prog.count = 1;
+      prog.needsUpload = true;
+      prog.upload(gl);
+      expect(deleteBufferCalled).to.be.true;
+      expect(createBufferCount).to.be.greaterThan(2); // init creates 2, upload creates another
+    });
+
+    it('draw issues drawArraysInstanced with screen program', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 3;
+      let drawCount = 0;
+      let usedProg = null;
+      gl.useProgram = (p) => { usedProg = p; };
+      gl.drawArraysInstanced = (mode, first, count, instances) => { drawCount = instances; };
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(drawCount).to.equal(3);
+      expect(usedProg).to.equal(prog.screenProgram);
+    });
+
+    it('draw uses picking program when isPicking', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      let usedProg = null;
+      gl.useProgram = (p) => { usedProg = p; };
+      prog.draw(gl, new Float32Array(9), true, 1.0);
+      expect(usedProg).to.equal(prog.pickingProgram);
+    });
+
+    it('draw recompiles shaders when page count changes', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      // Set a texture manager with 3 pages
+      prog.setTextureManager({
+        getPageCount: () => 3,
+        getPages: () => [
+          { glTexture: {} },
+          { glTexture: {} },
+          { glTexture: {} },
+        ],
+      });
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(prog._compiledPageCount).to.equal(3);
+    });
+
+    it('draw binds texture pages from manager', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      let texturesBound = 0;
+      gl.bindTexture = () => { texturesBound++; };
+      prog.setTextureManager({
+        getPageCount: () => 1,
+        getPages: () => [{ glTexture: {} }],
+      });
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(texturesBound).to.be.greaterThan(0);
+    });
+
+    it('draw skips when count is 0', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.count = 0;
+      let called = false;
+      gl.drawArraysInstanced = () => { called = true; };
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(called).to.be.false;
+    });
+
+    it('draw skips when buffer is null', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.count = 5;
+      prog.buffer = null;
+      let called = false;
+      gl.drawArraysInstanced = () => { called = true; };
+      prog.draw(gl, new Float32Array(9), false, 1.0);
+      expect(called).to.be.false;
+    });
+
+    it('draw defaults zoom to 1.0 when not provided', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.count = 1;
+      let zoomValue = -1;
+      gl.uniform1f = (loc, val) => {
+        if(loc === 'uZoom') zoomValue = val;
+      };
+      prog.draw(gl, new Float32Array(9), false, undefined);
+      expect(zoomValue).to.equal(1.0);
+    });
+
+    it('destroy cleans up all GL resources', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      prog.init(gl);
+      prog.reallocate(10);
+      prog.setTextureManager(mockTextureManager());
+      prog.count = 5;
+      prog.destroy(gl);
+      expect(prog.vao).to.be.null;
+      expect(prog.glBuffer).to.be.null;
+      expect(prog.quadBuffer).to.be.null;
+      expect(prog.screenProgram).to.be.null;
+      expect(prog.pickingProgram).to.be.null;
+      expect(prog.buffer).to.be.null;
+      expect(prog.capacity).to.equal(0);
+      expect(prog.count).to.equal(0);
+      expect(prog._textureManager).to.be.null;
+    });
+
+    it('destroy is safe without prior init', () => {
+      const prog = new NodeTextureProgram();
+      const gl = mockGL();
+      expect(() => prog.destroy(gl)).to.not.throw();
+    });
+
+    it('destroy calls GL deletion functions', () => {
+      let vaoDel = 0, bufDel = 0, progDel = 0;
+      const gl = mockGL();
+      gl.deleteVertexArray = () => { vaoDel++; };
+      gl.deleteBuffer = () => { bufDel++; };
+      gl.deleteProgram = () => { progDel++; };
+      const prog = new NodeTextureProgram();
+      prog.init(gl);
+      prog.destroy(gl);
+      expect(vaoDel).to.equal(1);
+      expect(bufDel).to.equal(2); // glBuffer + quadBuffer
+      expect(progDel).to.equal(2); // screenProgram + pickingProgram
+    });
+  });
 });
 
 describe('NodeTextureProgram shader generation', () => {

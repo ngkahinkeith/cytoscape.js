@@ -2,11 +2,13 @@ import step from './step.mjs';
 import startAnimation from './start.mjs';
 
 function stepAll( now, cy ){
+  if( !cy || !cy._private ) return;
   let eles = cy._private.aniEles;
   let doneEles = [];
 
   function stepOne( ele, isCore ){
     let _p = ele._private;
+    if( !_p ) return;
     let a = _p.animation;
     if( !a ) a = _p.animation = { current: [], queue: [] };
     let current = a.current;

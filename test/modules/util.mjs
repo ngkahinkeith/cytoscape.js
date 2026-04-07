@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { hashString, hashInt, hashIntsArray, hashStrings, endsWith } from '../../src/util/index.mjs';
+import { hashString, hashInt, hashIntsArray, hashStrings, endsWith, extend } from '../../src/util/index.mjs';
 import exp from "node:constants";
 
 var randInt = function(min, max){
@@ -137,6 +137,75 @@ describe('util', function(){
       expect(endsWith('prefix-suffix', 'suffix')).to.equal(true);
       expect(endsWith('short', 'longlong')).to.equal(false);
     })
+  });
+
+  describe('extend', function(){
+    it('copies properties from a single source', function(){
+      var tgt = {};
+      var result = extend(tgt, { a: 1, b: 2 });
+      expect(result).to.equal(tgt);
+      expect(tgt.a).to.equal(1);
+      expect(tgt.b).to.equal(2);
+    });
+
+    it('copies from multiple sources', function(){
+      var tgt = {};
+      extend(tgt, { a: 1 }, { b: 2 }, { c: 3 });
+      expect(tgt.a).to.equal(1);
+      expect(tgt.b).to.equal(2);
+      expect(tgt.c).to.equal(3);
+    });
+
+    it('later sources overwrite earlier ones', function(){
+      var tgt = {};
+      extend(tgt, { a: 1, b: 'first' }, { b: 'second', c: 3 });
+      expect(tgt.a).to.equal(1);
+      expect(tgt.b).to.equal('second');
+      expect(tgt.c).to.equal(3);
+    });
+
+    it('skips null and undefined sources', function(){
+      var tgt = { x: 10 };
+      extend(tgt, null, undefined, { y: 20 });
+      expect(tgt.x).to.equal(10);
+      expect(tgt.y).to.equal(20);
+    });
+
+    it('handles nested objects (shallow copy)', function(){
+      var nested = { inner: 42 };
+      var tgt = {};
+      extend(tgt, { obj: nested });
+      expect(tgt.obj).to.equal(nested); // same reference, shallow
+      expect(tgt.obj.inner).to.equal(42);
+    });
+
+    it('copies array values by reference', function(){
+      var arr = [1, 2, 3];
+      var tgt = {};
+      extend(tgt, { items: arr });
+      expect(tgt.items).to.equal(arr);
+      expect(tgt.items.length).to.equal(3);
+    });
+
+    it('returns the target object', function(){
+      var tgt = { orig: true };
+      var result = extend(tgt, { added: true });
+      expect(result).to.equal(tgt);
+    });
+
+    it('overwrites existing target properties', function(){
+      var tgt = { a: 1, b: 2 };
+      extend(tgt, { a: 100 });
+      expect(tgt.a).to.equal(100);
+      expect(tgt.b).to.equal(2);
+    });
+
+    it('works with no source arguments', function(){
+      var tgt = { a: 1 };
+      var result = extend(tgt);
+      expect(result).to.equal(tgt);
+      expect(tgt.a).to.equal(1);
+    });
   });
 
 });

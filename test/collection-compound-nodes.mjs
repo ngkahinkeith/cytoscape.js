@@ -183,6 +183,9 @@ describe('Collection compound nodes', function(){
     var bb1 = copyBounds(n2.boundingBox());
 
     n4.style('display', 'none');
+    // Invalidate caches for n4 and its parent compound n2
+    n4.dirtyBoundingBoxCache();
+    n2.dirtyCompoundBoundsCache();
 
     // n4 should be 0x0
     var n4bb = n4.boundingBox();

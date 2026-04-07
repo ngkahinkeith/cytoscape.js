@@ -130,8 +130,6 @@ test.describe('Renderer', () => {
     }); // initial bounding box is zero
 
     test('moved bounding box is nonzero', async ({ page }) => {
-      await delay(500);
-
       await page.evaluate(() => {
         cy.layout({ name: 'grid', rows: 1, cols: 2 }).run();
       });
@@ -156,7 +154,7 @@ test.describe('Renderer', () => {
       } = await page.evaluate(() => {
         const cy = window.cy;
 
-        cy.$('#1').position({ x: 0, y: 0 });
+        cy.$('#a').position({ x: 0, y: 0 });
         cy.$('#b').position({ x: 100, y: 0 });
 
         // Set the endpoints for the fist edge via style
