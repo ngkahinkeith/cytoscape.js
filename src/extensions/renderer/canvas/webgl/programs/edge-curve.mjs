@@ -1,5 +1,6 @@
 import { packPremulColor, packPickIndex } from '../color-pack.mjs';
 import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
+import { isMetricsEnabled, getMetrics } from '../perf-metrics.mjs';
 
 export const EDGE_CURVE_STRIDE = 9; // source(2) + target(2) + controlPt(2) + color(1) + width(1) + pickId(1)
 
@@ -363,6 +364,29 @@ export class EdgeCurveProgram {
       const midIdx = Math.floor(pts.length / 2) & ~1; // even index
       ctrlX = pts[midIdx];
       ctrlY = pts[midIdx + 1];
+    }
+
+    // Phase 0 measurement harness — zero overhead when disabled.
+    if(isMetricsEnabled()) {
+      const m = getMetrics();
+      const dx = tgtX - srcX;
+      const dy = tgtY - srcY;
+      const chordLen = Math.sqrt(dx * dx + dy * dy);
+      m.recordChord(chordLen);
+      if(chordLen >= 0.001) {
+        const cdx = dx / chordLen;
+        const cdy = dy / chordLen;
+        const midX = (srcX + tgtX) * 0.5;
+        const midY = (srcY + tgtY) * 0.5;
+        const mx = ctrlX - midX;
+        const my = ctrlY - midY;
+        // perp = (-cdy, cdx)
+        const perpOffset = mx * (-cdy) + my * cdx;
+        m.recordPerpOffset(perpOffset);
+        // along-chord projection of ctrl from src (raw, in pixels)
+        const t = (ctrlX - srcX) * cdx + (ctrlY - srcY) * cdy;
+        m.recordChordProjection(t, chordLen);
+      }
     }
 
     this._writeInstance(slot, srcX, srcY, tgtX, tgtY, ctrlX, ctrlY, color, width, pickId);
