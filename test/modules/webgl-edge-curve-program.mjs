@@ -8,6 +8,7 @@ import {
   FRAGMENT_SHADER_PICKING_SOURCE,
 } from '../../src/extensions/renderer/canvas/webgl/programs/edge-curve.mjs';
 import { unpackColor } from '../../src/extensions/renderer/canvas/webgl/color-pack.mjs';
+import { setMetricsEnabled, getMetrics } from '../../src/extensions/renderer/canvas/webgl/perf-metrics.mjs';
 
 // Mock edge for EdgeCurveProgram
 function mockCurveEdge(opts = {}) {
@@ -206,25 +207,24 @@ describe('EdgeCurveProgram', () => {
       expect(prog.buffer[5]).to.equal(0);   // ctrlY
     });
 
-    it('records chord/perp/projection metrics when harness is enabled', async () => {
-      const { setMetricsEnabled, getMetrics } =
-        await import('../../src/extensions/renderer/canvas/webgl/perf-metrics.mjs');
+    it('records chord/perp/projection metrics when harness is enabled', () => {
       setMetricsEnabled(true);
       const m = getMetrics();
       m.reset();
+      try {
+        const prog = new EdgeCurveProgram();
+        prog.reallocate(10);
+        prog.processCurveEdge(0,
+          mockCurveEdge({ allpts: [0, 0, 50, 100, 100, 0] }), 1);
 
-      const prog = new EdgeCurveProgram();
-      prog.reallocate(10);
-      prog.processCurveEdge(0,
-        mockCurveEdge({ allpts: [0, 0, 50, 100, 100, 0] }), 1);
-
-      expect(m.chordHistogram.totalCount).to.equal(1);
-      expect(m.perpOffsetHistogram.totalCount).to.equal(1);
-      expect(m.chordProjectionHistogram.totalCount).to.equal(1);
-      expect(m.chordProjectionOutliers).to.equal(0);
-
-      setMetricsEnabled(false);
-      m.reset();
+        expect(m.chordHistogram.totalCount).to.equal(1);
+        expect(m.perpOffsetHistogram.totalCount).to.equal(1);
+        expect(m.chordProjectionHistogram.totalCount).to.equal(1);
+        expect(m.chordProjectionOutliers).to.equal(0);
+      } finally {
+        setMetricsEnabled(false);
+        m.reset();
+      }
     });
   });
 
