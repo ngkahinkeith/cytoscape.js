@@ -492,9 +492,10 @@ describe('EdgeCurveProgram', () => {
 
     it('vertex shader uses OBB as primary path (perpOffset computation)', () => {
       // The degenerate fallback still uses minBound/maxBound inside the if-block,
-      // but the primary path uses the OBB with perpOffset
+      // but the primary path uses the OBB with perpOffset.
+      // Phase 3a replaced symmetric halfAcross with asymmetric controlSideExtent/farSideExtent.
       expect(VERTEX_SHADER_SOURCE).to.include('perpOffset');
-      expect(VERTEX_SHADER_SOURCE).to.include('halfAcross');
+      expect(VERTEX_SHADER_SOURCE).to.include('controlSideExtent');
     });
 
     it('vertex shader contains degenerate fallback for zero-length chord (self-loop safety)', () => {
@@ -607,6 +608,28 @@ describe('EdgeCurveProgram', () => {
       // Phase 2 must NOT touch the screen FS — smoothstep needs Euclidean distance.
       expect(FRAGMENT_SHADER_SOURCE).to.include('smoothstep');
       expect(FRAGMENT_SHADER_SOURCE).to.include('length');
+    });
+
+    it('vertex shader uses asymmetric across-chord extents (3a)', () => {
+      // Sub-PR 3a sentinels: VS contains both controlSideExtent and farSideExtent.
+      expect(VERTEX_SHADER_SOURCE).to.include('controlSideExtent');
+      expect(VERTEX_SHADER_SOURCE).to.include('farSideExtent');
+    });
+
+    it('vertex shader no longer uses symmetric halfAcross or centerBias for non-degenerate OBB (3a)', () => {
+      // halfAcross was the symmetric extent var, centerBias was the perpendicular center offset.
+      // Phase 3a replaces both with asymmetric per-vertex extents.
+      // (Note: 'halfAcross' may still appear in comments or other contexts; we assert the
+      // specific symmetric pattern `2.0 * halfAcross` and `chordNorm * centerBias` are gone.)
+      expect(VERTEX_SHADER_SOURCE).to.not.match(/2\.0\s*\*\s*halfAcross/);
+      expect(VERTEX_SHADER_SOURCE).to.not.match(/chordNorm\s*\*\s*centerBias/);
+    });
+
+    it('vertex shader still has self-loop AABB fallback unchanged (3a)', () => {
+      // Plan Guardrail #1 — self-loop branch must keep using `padding`, not the new vars.
+      expect(VERTEX_SHADER_SOURCE).to.match(/chordLen\s*<\s*0\.001/);
+      // The AABB branch should still use minBound/maxBound and `padding`.
+      expect(VERTEX_SHADER_SOURCE).to.match(/minBound[\s\S]*?maxBound[\s\S]*?padding/);
     });
   });
 

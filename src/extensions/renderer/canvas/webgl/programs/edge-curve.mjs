@@ -100,25 +100,33 @@ void main() {
     vec2 maxBound = max(max(vCpA, vCpB), vCpC) + padding;
     viewportPos = mix(minBound, maxBound, aVertex);
   } else {
-    // Chord-aligned OBB: much tighter than AABB for curved edges
+    // Chord-aligned OBB with asymmetric across-chord extents (Phase 3a).
+    // Quadratic bezier reaches |perpOffset|/2 on the control side of the chord
+    // and 0 on the chord-far side (Property 4 of quadratic beziers).
+    // Asymmetric extents avoid wasting fragments on the chord-far side.
     vec2 chordDir = chord / chordLen;
     vec2 chordNorm = vec2(-chordDir.y, chordDir.x);
 
-    // Project control point perpendicular offset from chord midpoint
+    // Project control point perpendicular offset from chord midpoint.
     vec2 midToCtrl = vCpB - (vCpA + vCpC) * 0.5;
     float perpOffset = dot(midToCtrl, chordNorm);
 
-    // Quadratic bezier max deviation from chord = |perpOffset| / 2
-    // Add padding for line width + AA margin
-    float halfAcross = abs(perpOffset) * 0.5 + padding;
+    // Per-side extents: tight on the chord-far side, full bezier reach on the control side.
+    float controlSideExtent = abs(perpOffset) * 0.5 + padding;
+    float farSideExtent = padding;
 
-    // Bias center perpendicular to account for control point side
-    float centerBias = perpOffset * 0.5;
+    // aVertex.y ∈ {0, 1}; u = aVertex.y - 0.5 ∈ {-0.5, +0.5}.
+    // side = sign(perpOffset): +1 if ctrl is on +chordNorm side, -1 if on -chordNorm.
+    // Vertex is on the control side iff sign(u) == side, i.e. u*side > 0.
+    float u = aVertex.y - 0.5;
+    float side = sign(perpOffset);
+    float vertExtent = (u * side > 0.0) ? controlSideExtent : farSideExtent;
+    float across = sign(u) * vertExtent;
 
-    // Map unit quad [0,1] to OBB
+    // Center stays on the chord midpoint (no perpendicular bias) — the asymmetric
+    // extents now encode the control-side / far-side reach independently.
     float along = (aVertex.x - 0.5) * (chordLen + 2.0 * padding);
-    float across = (aVertex.y - 0.5) * 2.0 * halfAcross;
-    vec2 center = (vCpA + vCpC) * 0.5 + chordNorm * centerBias;
+    vec2 center = (vCpA + vCpC) * 0.5;
     viewportPos = center + chordDir * along + chordNorm * across;
   }
 
