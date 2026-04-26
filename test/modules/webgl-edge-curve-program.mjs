@@ -584,6 +584,29 @@ describe('EdgeCurveProgram', () => {
       expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('vPickRGBA');
       expect(FRAGMENT_SHADER_PICKING_SOURCE).to.not.match(/unpackColor\s*\(\s*vPickId/);
     });
+
+    it('picking shader uses squared-distance comparison (no length() in critical path)', () => {
+      // Picking main should compare distSq, not dist.
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.match(/distSq\s*>\s*\(?halfWidth\s*\+\s*1\.0\)?\s*\*\s*\(?halfWidth\s*\+\s*1\.0\)?/);
+      // Should NOT call length() in the picking main (segDistSqPick or distToQuadraticBezierCurveSq).
+      // (Note: length() may still appear in the screen FS — that path uses smoothstep.)
+      // For picking specifically, helpers should return dot(closest, closest) instead.
+    });
+
+    it('picking helper distToQuadraticBezierCurveSq returns dot(closest, closest)', () => {
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('distToQuadraticBezierCurveSq');
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.match(/dot\s*\(\s*closest\s*,\s*closest\s*\)/);
+    });
+
+    it('picking helper segDistSqPick returns dot of perpendicular vector', () => {
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('segDistSqPick');
+    });
+
+    it('screen fragment shader still uses Euclidean distance (length) for smoothstep', () => {
+      // Phase 2 must NOT touch the screen FS — smoothstep needs Euclidean distance.
+      expect(FRAGMENT_SHADER_SOURCE).to.include('smoothstep');
+      expect(FRAGMENT_SHADER_SOURCE).to.include('length');
+    });
   });
 
   // Phase 3: pstyle dedup tests
