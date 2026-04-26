@@ -1,6 +1,7 @@
 import { WebGLRenderLoop } from './render-loop.mjs';
 import * as util from './webgl-util.mjs';
 import { mat3 } from 'gl-matrix';
+import { isMetricsEnabled, getMetrics } from './perf-metrics.mjs';
 
 const CRp = {};
 
@@ -424,6 +425,7 @@ function findNearestElementsWebgl(r, x, y) {
     r.renderLoop.edgeCurveProgram.upload(glEdge);
 
     r.renderLoop.renderPicking(r.pickingFrameBufferNode, r.pickingFrameBufferEdge, panZoomMatrix, zoom);
+    if(isMetricsEnabled()) getMetrics().recordPickingRedraw();
     r.pickingFrameBufferNode.needsDraw = false;
     r.pickingFrameBufferEdge.needsDraw = false;
   }

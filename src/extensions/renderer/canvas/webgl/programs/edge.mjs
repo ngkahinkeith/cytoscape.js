@@ -1,5 +1,6 @@
 import { packPremulColor, packColor, packPickIndex } from '../color-pack.mjs';
 import { createProgram, UNIT_QUAD } from '../webgl-util.mjs';
+import { isMetricsEnabled, getMetrics } from '../perf-metrics.mjs';
 
 export const EDGE_STRIDE = 11; // floats per edge instance
 export const EDGE_TYPE_STRIDE = 1; // int per instance (vertex type)
@@ -496,6 +497,7 @@ export class EdgeProgram {
 
       // Float buffer
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      if(isMetricsEnabled()) getMetrics().recordUploadBytes('edge', floatData.byteLength);
       gl.bufferData(gl.ARRAY_BUFFER, floatData, gl.DYNAMIC_DRAW);
       const stride = EDGE_STRIDE * 4;
       const floatAttribs = [
@@ -513,6 +515,7 @@ export class EdgeProgram {
 
       // Type buffer
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
+      if(isMetricsEnabled()) getMetrics().recordUploadBytes('edge', typeData.byteLength);
       gl.bufferData(gl.ARRAY_BUFFER, typeData, gl.DYNAMIC_DRAW);
       gl.enableVertexAttribArray(6);
       gl.vertexAttribIPointer(6, 1, gl.INT, 0, 0);
@@ -524,15 +527,25 @@ export class EdgeProgram {
       // Partial upload: only the dirty range
       const startFloat = this._dirtyMin * EDGE_STRIDE;
       const endFloat = (this._dirtyMax + 1) * EDGE_STRIDE;
+      const dirtyFloat = this.buffer.subarray(startFloat, Math.min(endFloat, floatSize));
+      const dirtyType = this.typeBuffer.subarray(this._dirtyMin, Math.min(this._dirtyMax + 1, typeSize));
+      if(isMetricsEnabled()) {
+        const metrics = getMetrics();
+        metrics.recordUploadBytes('edge', dirtyFloat.byteLength);
+        metrics.recordUploadBytes('edge', dirtyType.byteLength);
+      }
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-      gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4,
-        this.buffer.subarray(startFloat, Math.min(endFloat, floatSize)));
+      gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, dirtyFloat);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);
-      gl.bufferSubData(gl.ARRAY_BUFFER, this._dirtyMin * 4,
-        this.typeBuffer.subarray(this._dirtyMin, Math.min(this._dirtyMax + 1, typeSize)));
+      gl.bufferSubData(gl.ARRAY_BUFFER, this._dirtyMin * 4, dirtyType);
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
     } else {
       // Full upload
+      if(isMetricsEnabled()) {
+        const metrics = getMetrics();
+        metrics.recordUploadBytes('edge', floatData.byteLength);
+        metrics.recordUploadBytes('edge', typeData.byteLength);
+      }
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, floatData);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glTypeBuffer);

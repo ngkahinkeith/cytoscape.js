@@ -627,3 +627,39 @@ describe('EdgeCurveProgram', () => {
     });
   });
 });
+
+describe('EdgeCurveProgram harness wiring', () => {
+  it('records upload bytes when metrics enabled', () => {
+    setMetricsEnabled(true);
+    const m = getMetrics();
+    m.reset();
+    try {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      prog.processCurveEdge(0, mockCurveEdge(), 1);
+
+      // Stub gl with the minimum surface upload() touches
+      const stubGl = {
+        ARRAY_BUFFER: 0,
+        DYNAMIC_DRAW: 1,
+        bindBuffer() {},
+        bindVertexArray() {},
+        bufferData() {},
+        bufferSubData() {},
+      };
+      // upload() requires glBuffer + vao + count > 0; force the orphan-reallocate path
+      prog.glBuffer = {};
+      prog.vao = {};
+      prog.count = 1;
+      prog._gpuBufferSize = 0;
+      // _setupInstanceAttribs() touches gl methods; stub it
+      prog._setupInstanceAttribs = () => {};
+      prog.upload(stubGl);
+
+      expect(m.uploadBytesPerProgram['edge-curve']).to.be.greaterThan(0);
+    } finally {
+      setMetricsEnabled(false);
+      m.reset();
+    }
+  });
+});

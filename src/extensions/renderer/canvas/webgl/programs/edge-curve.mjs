@@ -427,6 +427,7 @@ export class EdgeCurveProgram {
 
       gl.bindVertexArray(this.vao);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
+      if(isMetricsEnabled()) getMetrics().recordUploadBytes('edge-curve', data.byteLength);
       gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW); // orphans old buffer
       this._setupInstanceAttribs(gl);
       gl.bindVertexArray(null);
@@ -435,13 +436,16 @@ export class EdgeCurveProgram {
       const startFloat = this._dirtyMin * EDGE_CURVE_STRIDE;
       const endFloat = (this._dirtyMax + 1) * EDGE_CURVE_STRIDE;
       const dirtyData = this.buffer.subarray(startFloat, Math.min(endFloat, dataSize));
+      if(isMetricsEnabled()) getMetrics().recordUploadBytes('edge-curve', dirtyData.byteLength);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
       gl.bufferSubData(gl.ARRAY_BUFFER, startFloat * 4, dirtyData);
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
     } else {
       // Full upload (e.g. after process())
+      const fullData = this.buffer.subarray(0, dataSize);
+      if(isMetricsEnabled()) getMetrics().recordUploadBytes('edge-curve', fullData.byteLength);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.glBuffer);
-      gl.bufferSubData(gl.ARRAY_BUFFER, 0, this.buffer.subarray(0, dataSize));
+      gl.bufferSubData(gl.ARRAY_BUFFER, 0, fullData);
       gl.bindBuffer(gl.ARRAY_BUFFER, null);
     }
 
