@@ -72,4 +72,12 @@ describe('PerfMetrics', () => {
     expect(m.chordHistogram.totalCount).to.equal(0);
     expect(m.totalObbArea).to.equal(0);
   });
+
+  it('recordChordProjection silently ignores chordLen === 0 (defensive guard)', () => {
+    const m = new PerfMetrics();
+    m.recordChordProjection(0, 0);
+    m.recordChordProjection(5, 0);
+    expect(m.chordProjectionHistogram.totalCount).to.equal(0);
+    expect(m.chordProjectionOutliers).to.equal(0);
+  });
 });

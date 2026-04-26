@@ -59,8 +59,10 @@ export class PerfMetrics {
   }
 
   recordChordProjection(t, chordLen) {
-    // t = dot(B - A, chordDir) / chordLen (normalized).
-    // Plan Guardrail #2: must lie within [0, 1]; outliers indicate hooked beziers.
+    // t: raw chord-aligned projection of B from A, in pixels (dot(B - A, chordDir));
+    //    chordLen: ||tgt - src||. Plan Guardrail #2 requires t ∈ [0, chordLen];
+    //    outliers indicate hooked beziers where the control point projects outside the chord.
+    if(chordLen <= 0) return;
     this.chordProjectionHistogram.push(t / chordLen);
     if(t < 0 || t > chordLen) {
       this.chordProjectionOutliers++;
