@@ -34,6 +34,19 @@ flat out float vPickId;
 flat out float vUseLOD;  // 1.0 = use polyline LOD, 0.0 = full bezier
 out vec2 vP1;            // polyline bend point 1 (bezier at t=1/3)
 out vec2 vP2;            // polyline bend point 2 (bezier at t=2/3)
+flat out vec4 vRGBA;
+flat out vec4 vPickRGBA;
+
+// Unpack RGBA from single float (same byte layout as FS).
+vec4 unpackColor(float f) {
+  int rgba = floatBitsToInt(f);
+  return vec4(
+    float(rgba & 0xFF) / 255.0,
+    float((rgba >> 8) & 0xFF) / 255.0,
+    float((rgba >> 16) & 0xFF) / 255.0,
+    float((rgba >> 24) & 0xFF) / 255.0
+  );
+}
 
 vec2 toViewport(vec2 clipPos) {
   return (clipPos + 1.0) * uViewportSize * 0.5;
@@ -115,6 +128,8 @@ void main() {
   vColor = aColor;
   vWidth = screenWidth;
   vPickId = aPickId;
+  vRGBA = unpackColor(aColor);
+  vPickRGBA = unpackColor(aPickId);
 
   // Per-edge LOD: precompute polyline bend points in vertex shader (runs 6x per edge)
   // so the fragment shader (runs 1000s of times) can use cheap polyline distance.
@@ -137,19 +152,10 @@ flat in float vPickId;
 flat in float vUseLOD;
 in vec2 vP1;
 in vec2 vP2;
+flat in vec4 vRGBA;
+flat in vec4 vPickRGBA;
 
 out vec4 outColor;
-
-// Unpack RGBA from single float (same as node-sdf)
-vec4 unpackColor(float f) {
-  int rgba = floatBitsToInt(f);
-  return vec4(
-    float(rgba & 0xFF) / 255.0,
-    float((rgba >> 8) & 0xFF) / 255.0,
-    float((rgba >> 16) & 0xFF) / 255.0,
-    float((rgba >> 24) & 0xFF) / 255.0
-  );
-}
 
 float det(vec2 a, vec2 b) {
   return a.x * b.y - b.x * a.y;
@@ -197,7 +203,7 @@ void main() {
   } else {
     dist = distToQuadraticBezierCurve(gl_FragCoord.xy, vCpA, vCpB, vCpC);
   }
-  vec4 color = unpackColor(vColor);
+  vec4 color = vRGBA;
   float alpha = 1.0 - smoothstep(halfWidth - 1.0, halfWidth + 0.5, dist);
   outColor = vec4(color.rgb * color.a * alpha, color.a * alpha);
 }
@@ -222,7 +228,7 @@ void main() {
   if(dist > halfWidth + 1.0) {
     discard;
   }
-  outColor = unpackColor(vPickId);
+  outColor = vPickRGBA;
 }
 `;
 

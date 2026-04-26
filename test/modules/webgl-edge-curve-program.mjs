@@ -472,9 +472,10 @@ describe('EdgeCurveProgram', () => {
 
     it('picking shader uses separate main with discard (no PICKING_MODE needed)', () => {
       // Picking and screen shaders use separate main functions,
-      // so PICKING_MODE preprocessor define is no longer needed
+      // so PICKING_MODE preprocessor define is no longer needed.
+      // Phase 1: unpackColor(vPickId) was lifted to VS as flat varying vPickRGBA.
       expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('discard');
-      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('unpackColor(vPickId)');
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('vPickRGBA');
     });
 
     it('picking shader contains distToQuadraticBezierCurve', () => {
@@ -562,6 +563,26 @@ describe('EdgeCurveProgram', () => {
       // uZoom is used for screenWidth = aWidth * uZoom and in the LOD check
       expect(VERTEX_SHADER_SOURCE).to.include('uZoom');
       expect(VERTEX_SHADER_SOURCE).to.include('screenWidth < 1.0');
+    });
+
+    it('vertex shader unpacks color once per instance into vRGBA', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include('unpackColor');
+      expect(VERTEX_SHADER_SOURCE).to.include('vRGBA');
+      expect(VERTEX_SHADER_SOURCE).to.match(/flat\s+out\s+vec4\s+vRGBA/);
+    });
+
+    it('vertex shader unpacks pickId once per instance into vPickRGBA', () => {
+      expect(VERTEX_SHADER_SOURCE).to.match(/flat\s+out\s+vec4\s+vPickRGBA/);
+    });
+
+    it('screen fragment shader reads vRGBA without per-pixel unpackColor', () => {
+      expect(FRAGMENT_SHADER_SOURCE).to.include('vRGBA');
+      expect(FRAGMENT_SHADER_SOURCE).to.not.match(/unpackColor\s*\(\s*vColor/);
+    });
+
+    it('picking fragment shader reads vPickRGBA without per-pixel unpackColor', () => {
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('vPickRGBA');
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.not.match(/unpackColor\s*\(\s*vPickId/);
     });
   });
 
