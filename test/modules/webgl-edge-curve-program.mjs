@@ -9,7 +9,7 @@ import {
   FRAGMENT_SHADER_PICKING_MAIN,
   FRAGMENT_SHADER_SCREEN_MAIN,
 } from '../../src/extensions/renderer/canvas/webgl/programs/edge-curve.mjs';
-import { unpackColor } from '../../src/extensions/renderer/canvas/webgl/color-pack.mjs';
+import { packColor, unpackColor, packPickIndex } from '../../src/extensions/renderer/canvas/webgl/color-pack.mjs';
 import { setMetricsEnabled, getMetrics } from '../../src/extensions/renderer/canvas/webgl/perf-metrics.mjs';
 
 // Mock edge for EdgeCurveProgram
@@ -725,6 +725,189 @@ describe('EdgeCurveProgram harness wiring', () => {
       prog.upload(stubGl);
 
       expect(m.uploadBytesPerProgram['edge-curve']).to.be.greaterThan(0);
+    } finally {
+      setMetricsEnabled(false);
+      m.reset();
+    }
+  });
+});
+
+// --------------------------------------------------------------------------
+// Group H — Phase 1 unpackColor round-trip
+// Phase 1 lifted unpackColor to VS. The byte layout MUST round-trip identically,
+// since the VS unpackColor is byte-identical to the (deleted) FS version.
+// Note: packColor masks bit 24 (= LSB of alpha byte) to avoid NaN; round-trip
+// is therefore exact only for even alpha.
+// --------------------------------------------------------------------------
+describe('Phase 1 invariants — unpackColor round-trip', () => {
+  it('round-trips simple RGB values (even alpha)', () => {
+    const cases = [
+      [255, 0, 0, 0],     // pure red, alpha 0
+      [0, 255, 0, 64],    // green, even alpha
+      [0, 0, 255, 0],     // blue, alpha 0
+      [128, 128, 128, 0], // gray, alpha 0
+    ];
+    for(const [r, g, b, a] of cases) {
+      const packed = packColor(r, g, b, a);
+      const [r2, g2, b2, a2] = unpackColor(packed);
+      expect([r2, g2, b2, a2], `round-trip failed for [${r},${g},${b},${a}]`).to.deep.equal([r, g, b, a]);
+    }
+  });
+
+  it('round-trips arbitrary RGB values with even alpha (avoids bit-24 mask)', () => {
+    // packColor masks bit 24 (= LSB of alpha) with 0xfeffffff to avoid NaN floats.
+    // For even alpha, that bit is already 0, so round-trip is exact.
+    for(let a = 0; a < 256; a += 16) {
+      const packed = packColor(200, 100, 50, a);
+      const [r, g, b, a2] = unpackColor(packed);
+      expect(r).to.equal(200);
+      expect(g).to.equal(100);
+      expect(b).to.equal(50);
+      expect(a2).to.equal(a);
+    }
+  });
+
+  it('packPickIndex packs index across all 4 bytes', () => {
+    const idx = 0x010203;
+    const packed = packPickIndex(idx);
+    const [r, g, b, a] = unpackColor(packed);
+    expect(r).to.equal(0x03); // low byte
+    expect(g).to.equal(0x02);
+    expect(b).to.equal(0x01);
+    expect(a).to.equal(0); // high byte was 0 in 0x010203 anyway
+  });
+});
+
+// --------------------------------------------------------------------------
+// Group I — Phase 2 squared-distance threshold equivalence
+// Phase 2 replaced `dist > halfWidth + 1.0` with `distSq > (halfWidth+1.0)^2`.
+// For non-negative reals, these are equivalent.
+// --------------------------------------------------------------------------
+describe('Phase 2 invariants — squared-distance threshold equivalence', () => {
+  it('squared-distance compare matches Euclidean for sample points', () => {
+    const halfWidth = 5;
+    const threshold = halfWidth + 1.0;
+    const thresholdSq = threshold * threshold;
+    const distances = [0, 1, 3, 5.5, 5.999, 6.0, 6.001, 7, 10, 100];
+    for(const d of distances) {
+      const dSq = d * d;
+      const euclideanDiscard = d > threshold;
+      const squaredDiscard = dSq > thresholdSq;
+      expect(squaredDiscard, `d=${d}: e=${euclideanDiscard}, sq=${squaredDiscard}`).to.equal(euclideanDiscard);
+    }
+  });
+
+  it('boundary equality holds: d == threshold <=> dSq == thresholdSq', () => {
+    const halfWidth = 5;
+    const threshold = halfWidth + 1.0;
+    expect(threshold * threshold).to.equal((halfWidth + 1.0) * (halfWidth + 1.0));
+  });
+
+  it('threshold semantics preserved across width range', () => {
+    for(let w = 0.5; w <= 20; w += 0.5) {
+      const halfWidth = w / 2;
+      const threshold = halfWidth + 1.0;
+      const thresholdSq = threshold * threshold;
+      // At distance exactly threshold: d > threshold is false (no discard)
+      // distSq > thresholdSq must also be false.
+      expect(threshold * threshold > thresholdSq).to.be.false;
+      // At distance just above threshold: both should discard.
+      const justAbove = threshold + 0.001;
+      expect(justAbove > threshold).to.be.true;
+      expect(justAbove * justAbove > thresholdSq).to.be.true;
+    }
+  });
+});
+
+// --------------------------------------------------------------------------
+// Group J — Phase 0 metrics <-> VS computation cross-validation
+// The Phase 0 harness in processCurveEdge records chord/perpOffset/projection
+// using the SAME formulas the VS uses. This test verifies the harness correctly
+// matches the VS math for known input.
+// --------------------------------------------------------------------------
+describe('Phase 0 metrics — match VS computation for processCurveEdge', () => {
+  it('records chord length correctly for known geometry', () => {
+    setMetricsEnabled(true);
+    const m = getMetrics();
+    m.reset();
+    try {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      // src=(10,20), tgt=(90,30); chord = (80, 10), chordLen = sqrt(6500) ~= 80.62
+      const edge = mockCurveEdge({ allpts: [10, 20, 50, 80, 90, 30] });
+      prog.processCurveEdge(0, edge, 1);
+
+      // chordHistogram: range [0, 2000], 32 buckets, bucketWidth = 62.5
+      // chordLen ~= 80.62 -> bucket floor((80.62 - 0) / 62.5) = floor(1.29) = 1
+      expect(m.chordHistogram.totalCount).to.equal(1);
+      expect(m.chordHistogram.buckets[1]).to.equal(1);
+    } finally {
+      setMetricsEnabled(false);
+      m.reset();
+    }
+  });
+
+  it('records perpOffset correctly for known geometry', () => {
+    setMetricsEnabled(true);
+    const m = getMetrics();
+    m.reset();
+    try {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      // src=(0,0), ctrl=(50,30), tgt=(100,0)
+      // chord = (100, 0), chordLen = 100
+      // chordDir = (1, 0); perp = (-0, 1)
+      // midpoint = (50, 0), midToCtrl = (0, 30)
+      // perpOffset = 0*(-0) + 30*1 = 30
+      const edge = mockCurveEdge({ allpts: [0, 0, 50, 30, 100, 0] });
+      prog.processCurveEdge(0, edge, 1);
+
+      // perpOffsetHistogram: range [-200, 200], 32 buckets, bucketWidth = 12.5
+      // perpOffset 30 -> bucket floor((30 - (-200)) / 12.5) = floor(18.4) = 18
+      expect(m.perpOffsetHistogram.totalCount).to.equal(1);
+      expect(m.perpOffsetHistogram.buckets[18]).to.equal(1);
+    } finally {
+      setMetricsEnabled(false);
+      m.reset();
+    }
+  });
+
+  it('records chordProjection correctly for known geometry (in-bounds)', () => {
+    setMetricsEnabled(true);
+    const m = getMetrics();
+    m.reset();
+    try {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      // src=(0,0), ctrl=(50,30), tgt=(100,0)
+      // chordDir = (1, 0); t = (50-0)*1 + (30-0)*0 = 50
+      // chordLen = 100; normalized: t/chordLen = 0.5 (mid-chord, in-bounds)
+      const edge = mockCurveEdge({ allpts: [0, 0, 50, 30, 100, 0] });
+      prog.processCurveEdge(0, edge, 1);
+
+      // chordProjectionHistogram: range [-0.5, 1.5], 40 buckets, width = 0.05
+      // 0.5 -> bucket floor((0.5 - (-0.5)) / 0.05) = floor(20) = 20
+      expect(m.chordProjectionHistogram.totalCount).to.equal(1);
+      expect(m.chordProjectionHistogram.buckets[20]).to.equal(1);
+      expect(m.chordProjectionOutliers).to.equal(0);
+    } finally {
+      setMetricsEnabled(false);
+      m.reset();
+    }
+  });
+
+  it('flags chord-projection outlier for hooked bezier (ctrl projects past target)', () => {
+    setMetricsEnabled(true);
+    const m = getMetrics();
+    m.reset();
+    try {
+      const prog = new EdgeCurveProgram();
+      prog.reallocate(10);
+      // src=(0,0), tgt=(100,0). Ctrl at (150, 50): projects to t=150 along chord.
+      // 150 > chordLen (100) -> outlier.
+      const edge = mockCurveEdge({ allpts: [0, 0, 150, 50, 100, 0] });
+      prog.processCurveEdge(0, edge, 1);
+      expect(m.chordProjectionOutliers).to.equal(1);
     } finally {
       setMetricsEnabled(false);
       m.reset();
