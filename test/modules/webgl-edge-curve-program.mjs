@@ -6,6 +6,8 @@ import {
   VERTEX_SHADER_SOURCE,
   FRAGMENT_SHADER_SOURCE,
   FRAGMENT_SHADER_PICKING_SOURCE,
+  FRAGMENT_SHADER_PICKING_MAIN,
+  FRAGMENT_SHADER_SCREEN_MAIN,
 } from '../../src/extensions/renderer/canvas/webgl/programs/edge-curve.mjs';
 import { unpackColor } from '../../src/extensions/renderer/canvas/webgl/color-pack.mjs';
 import { setMetricsEnabled, getMetrics } from '../../src/extensions/renderer/canvas/webgl/perf-metrics.mjs';
@@ -586,11 +588,10 @@ describe('EdgeCurveProgram', () => {
     });
 
     it('picking shader uses squared-distance comparison (no length() in critical path)', () => {
-      // Picking main should compare distSq, not dist.
+      // Picking main should compare distSq, not dist, with squared threshold.
       expect(FRAGMENT_SHADER_PICKING_SOURCE).to.match(/distSq\s*>\s*\(?halfWidth\s*\+\s*1\.0\)?\s*\*\s*\(?halfWidth\s*\+\s*1\.0\)?/);
-      // Should NOT call length() in the picking main (segDistSqPick or distToQuadraticBezierCurveSq).
-      // (Note: length() may still appear in the screen FS — that path uses smoothstep.)
-      // For picking specifically, helpers should return dot(closest, closest) instead.
+      // Critical path (picking main + its helpers) must NOT call length().
+      expect(FRAGMENT_SHADER_PICKING_MAIN).to.not.match(/\blength\s*\(/);
     });
 
     it('picking helper distToQuadraticBezierCurveSq returns dot(closest, closest)', () => {

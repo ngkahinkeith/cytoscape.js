@@ -180,29 +180,9 @@ float distToQuadraticBezierCurve(vec2 p, vec2 b0, vec2 b1, vec2 b2) {
   vec2 closest = mix(mix(b0p, b1p, t), mix(b1p, b2p, t), t);
   return length(closest);
 }
-
-// Squared distance variant — same algorithm, returns dot(closest, closest).
-// Used by the picking FS to skip a sqrt.
-float distToQuadraticBezierCurveSq(vec2 p, vec2 b0, vec2 b1, vec2 b2) {
-  vec2 b0p = b0 - p, b1p = b1 - p, b2p = b2 - p;
-  float a = det(b0p, b2p);
-  float b = 2.0 * det(b1p, b0p);
-  float d = 2.0 * det(b2p, b1p);
-  float f = b * d - a * a;
-  vec2 d21 = b2p - b1p, d10 = b1p - b0p, d20 = b2p - b0p;
-  vec2 gf = 2.0 * (b * d21 + d * d10 + a * d20);
-  gf = vec2(gf.y, -gf.x);
-  vec2 pp = -f * gf / dot(gf, gf);
-  vec2 d0p = b0p - pp;
-  float ap = det(d0p, d20);
-  float bp = 2.0 * det(d10, d0p);
-  float t = clamp((ap + bp) / (2.0 * a + b + d), 0.0, 1.0);
-  vec2 closest = mix(mix(b0p, b1p, t), mix(b1p, b2p, t), t);
-  return dot(closest, closest);
-}
 `;
 
-const FRAGMENT_SHADER_SCREEN_MAIN = `
+export const FRAGMENT_SHADER_SCREEN_MAIN = `
 // Distance from point to line segment (~5 ops).
 float segDist(vec2 p, vec2 a, vec2 b) {
   vec2 ab = b - a;
@@ -229,7 +209,27 @@ void main() {
 }
 `;
 
-const FRAGMENT_SHADER_PICKING_MAIN = `
+export const FRAGMENT_SHADER_PICKING_MAIN = `
+// Squared distance variant — same algorithm as distToQuadraticBezierCurve
+// but returns dot(closest, closest), skipping the final sqrt.
+float distToQuadraticBezierCurveSq(vec2 p, vec2 b0, vec2 b1, vec2 b2) {
+  vec2 b0p = b0 - p, b1p = b1 - p, b2p = b2 - p;
+  float a = det(b0p, b2p);
+  float b = 2.0 * det(b1p, b0p);
+  float d = 2.0 * det(b2p, b1p);
+  float f = b * d - a * a;
+  vec2 d21 = b2p - b1p, d10 = b1p - b0p, d20 = b2p - b0p;
+  vec2 gf = 2.0 * (b * d21 + d * d10 + a * d20);
+  gf = vec2(gf.y, -gf.x);
+  vec2 pp = -f * gf / dot(gf, gf);
+  vec2 d0p = b0p - pp;
+  float ap = det(d0p, d20);
+  float bp = 2.0 * det(d10, d0p);
+  float t = clamp((ap + bp) / (2.0 * a + b + d), 0.0, 1.0);
+  vec2 closest = mix(mix(b0p, b1p, t), mix(b1p, b2p, t), t);
+  return dot(closest, closest);
+}
+
 // Squared distance from point to line segment — same algorithm as segDist
 // but skips the final sqrt. Used by picking which only needs threshold compare.
 float segDistSqPick(vec2 p, vec2 a, vec2 b) {
