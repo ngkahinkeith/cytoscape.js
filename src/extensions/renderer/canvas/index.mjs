@@ -131,7 +131,17 @@ function CanvasRenderer( options ){
     var canvas = r.data.canvases[ i ] = document.createElement( 'canvas' );  // eslint-disable-line no-undef
     var type = CRp.CANVAS_TYPES[ i ];
     r.data.contexts[ i ] = type === 'webgl2'
-      ? canvas.getContext( type, { preserveDrawingBuffer: true } )
+      ? canvas.getContext( type, {
+          preserveDrawingBuffer: false,        // saves a full GPU→system memcpy per frame on Intel iGPUs
+          alpha: true,                          // canvas may overlay other content; keep alpha
+          antialias: false,                     // shaders do their own AA via smoothstep / SDF
+          depth: false,                         // depth test is never enabled by this renderer
+          stencil: false,                       // stencil never used
+          desynchronized: true,                 // bypass compositor sync where browser permits
+          powerPreference: 'high-performance',  // route to dGPU on hybrid systems
+          premultipliedAlpha: true,             // matches packPremulColor; avoids double-multiplication
+          failIfMajorPerformanceCaveat: false,  // allow software fallback path
+        } )
       : canvas.getContext( type );
     if( !r.data.contexts[ i ] ) {
       if( type === 'webgl2' ) {
