@@ -65,7 +65,7 @@ export class LODManager {
    * Whether labels should be drawn this frame.
    * Returns false during interaction — label rendering (275K candidate
    * iteration + Canvas 2D text drawing) is the dominant per-frame CPU cost.
-   * Labels reappear after 100ms debounce when interaction stops.
+   * Labels reappear after 250ms debounce when interaction stops.
    */
   shouldDrawLabels() {
     if(this._exportMode) return true;
