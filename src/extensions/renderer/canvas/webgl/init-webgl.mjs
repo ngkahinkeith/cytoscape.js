@@ -391,10 +391,14 @@ function renderWebgl(r, options) {
  */
 function findNearestElementsWebgl(r, x, y) {
   // Skip picking during active interaction (pan/zoom/drag) to avoid
-  // expensive full re-render of all edges on every mouse move.
-  // Picking resumes when interaction ends (needsDraw stays true).
+  // expensive full re-render of all edges + synchronous readPixels stall
+  // on every mouse move. Picking resumes ~100ms after interaction stops
+  // (lodManager debounces interaction state). On Intel iGPUs, the
+  // synchronous readPixels in this function takes 100ms+, causing
+  // visible jank during pan if not gated.
   if(r.hoverData && r.hoverData.dragging) return [];
   if(r.swipePanning) return [];
+  if(r.renderLoop && r.renderLoop.lodManager && r.renderLoop.lodManager.isInteracting()) return [];
 
   // Debounce: if cursor barely moved and last pick was <16ms ago, return cached result
   const now = performance.now();
