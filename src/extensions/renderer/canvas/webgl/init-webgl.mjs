@@ -149,17 +149,27 @@ function overrideRendererFunctions(r) {
       r.pickingFrameBufferEdge.needsDraw = true;
 
       // LODManager: mark as interacting during viewport changes (pan/zoom),
-      // clear after 100ms debounce. When hideEdgesOnViewport is enabled,
+      // clear after 250ms debounce. When hideEdgesOnViewport is enabled,
       // edges are skipped during interaction for maximum pan/zoom fps.
       r.renderLoop.lodManager.setInteracting(true);
       clearTimeout(r._lodInteractTimeout);
       r._lodInteractTimeout = setTimeout(() => {
         if(r.renderLoop) {
           r.renderLoop.lodManager.setInteracting(false);
-          r.data.canvasNeedsRedraw[r.NODE] = true;
-          r.redraw();
+          // Only force a redraw if pan/zoom actually changed since last full-quality
+          // render — otherwise the labels are already correct and a redraw just
+          // burns budget at the worst moment (right when user starts hovering).
+          const { pan, zoom } = util.getEffectivePanZoom(r);
+          const lastPan = r._lastFullRenderPan;
+          const lastZoom = r._lastFullRenderZoom;
+          if(!lastPan || lastPan.x !== pan.x || lastPan.y !== pan.y || lastZoom !== zoom) {
+            r._lastFullRenderPan = { x: pan.x, y: pan.y };
+            r._lastFullRenderZoom = zoom;
+            r.data.canvasNeedsRedraw[r.NODE] = true;
+            r.redraw();
+          }
         }
-      }, 500);
+      }, 250);
     } else if(eventName === 'bounds') {
       // Position change (drag) — update just the moved elements
       r.pickingFrameBufferNode.needsDraw = true;
