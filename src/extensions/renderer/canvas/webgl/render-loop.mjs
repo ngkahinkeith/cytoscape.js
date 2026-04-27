@@ -411,11 +411,11 @@ export class WebGLRenderLoop {
     glNode.clear(glNode.COLOR_BUFFER_BIT);
     glNode.viewport(0, 0, glNode.canvas.width, glNode.canvas.height);
 
-    // Unbind all textures to prevent feedback loop
-    for(let i = 0; i < 16; i++) {
-      glNode.activeTexture(glNode.TEXTURE0 + i);
-      glNode.bindTexture(glNode.TEXTURE_2D, null);
-    }
+    // Unbind any texture on TEXTURE0 to prevent any feedback loop from FBO sampling.
+    // (NodeSDFProgram doesn't sample textures and picking FBO is separate, so the
+    // other 15 texture units don't need clearing.)
+    glNode.activeTexture(glNode.TEXTURE0);
+    glNode.bindTexture(glNode.TEXTURE_2D, null);
 
     this.nodeSDFProgram.draw(glNode, panZoomMatrix, true, zoom);
 
