@@ -428,7 +428,7 @@ function findNearestElementsWebgl(r, x, y) {
     r.renderLoop.edgeProgram.upload(glEdge);
     r.renderLoop.edgeCurveProgram.upload(glEdge);
 
-    r.renderLoop.renderPicking(r.pickingFrameBufferNode, r.pickingFrameBufferEdge, panZoomMatrix, zoom);
+    r.renderLoop.renderPicking(r.pickingFrameBufferNode, r.pickingFrameBufferEdge, panZoomMatrix, zoom, pan);
     if(isMetricsEnabled()) getMetrics().recordPickingRedraw();
     r.pickingFrameBufferNode.needsDraw = false;
     r.pickingFrameBufferEdge.needsDraw = false;

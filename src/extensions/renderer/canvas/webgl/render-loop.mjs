@@ -378,7 +378,7 @@ export class WebGLRenderLoop {
    * Edge picking on glEdge, node picking on glNode.
    * The caller reads from both FBOs to find nearest elements.
    */
-  renderPicking(pickingFBNode, pickingFBEdge, panZoomMatrix, zoom) {
+  renderPicking(pickingFBNode, pickingFBEdge, panZoomMatrix, zoom, pan) {
     if(!this._initialized) return;
 
     // --- Edge picking (glEdge context) ---
@@ -389,11 +389,17 @@ export class WebGLRenderLoop {
     glEdge.clear(glEdge.COLOR_BUFFER_BIT);
     glEdge.viewport(0, 0, glEdge.canvas.width, glEdge.canvas.height);
 
-    // Picking: no viewport culling — pass infinite bounds so all edges are pickable
-    const noCull = [-1e9, -1e9, 1e9, 1e9];
+    // Picking only reads a 6×6 pixel window around cursor — that window is
+    // always inside the viewport, so off-screen edges can't write to it.
+    // Use the same culling bounds as the screen pass to skip vast vertex shader work.
+    const canvasWidth = glEdge.canvas.width;
+    const canvasHeight = glEdge.canvas.height;
+    const vpBounds = pan
+      ? this._computeViewportBounds(pan, zoom, canvasWidth, canvasHeight)
+      : [-1e9, -1e9, 1e9, 1e9];
     const bgColor = this._getBGColor();
-    this.edgeProgram.draw(glEdge, panZoomMatrix, true, zoom, bgColor, noCull);
-    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, true, zoom, noCull);
+    this.edgeProgram.draw(glEdge, panZoomMatrix, true, zoom, bgColor, vpBounds);
+    this.edgeCurveProgram.draw(glEdge, panZoomMatrix, true, zoom, vpBounds);
 
     glEdge.bindFramebuffer(glEdge.FRAMEBUFFER, null);
 
