@@ -83,8 +83,10 @@ void main() {
   // Skip edges that are too small to see: if the screen-space distance
   // between source and target is < 4px AND line width is sub-pixel,
   // the edge is invisible. Same pattern as node-sdf.mjs LOD cull.
+  // Tighter cull for Intel iGPU: 4px chord with width<1 OR 8px chord with
+  // width<0.5 are both effectively invisible after smoothstep AA.
   float screenDist = distance(vCpA, vCpC);
-  if(screenDist < 4.0 && screenWidth < 1.0) {
+  if((screenDist < 4.0 && screenWidth < 1.0) || (screenDist < 8.0 && screenWidth < 0.5)) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     return;
   }

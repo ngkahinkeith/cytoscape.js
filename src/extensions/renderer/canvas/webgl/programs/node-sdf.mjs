@@ -68,9 +68,11 @@ flat out float vPickId;
 uniform float uZoom;
 
 void main() {
-  // LOD cull: skip if node is < 2 pixels on screen
+  // LOD cull: skip if node is < 4 pixels on screen.
+  // Intel iGPU rasterizer issues 2x2 quads regardless of element size, so
+  // 2-3px elements consume the same fragment budget as 4px. Cull at 4.
   float screenSize = max(aNodeSize.x, aNodeSize.y) * uZoom;
-  if(screenSize < 2.0) {
+  if(screenSize < 4.0) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     return;
   }
