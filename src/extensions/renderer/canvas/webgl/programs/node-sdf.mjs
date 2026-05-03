@@ -33,6 +33,40 @@ export const SHAPE_ENUM = {
   'round-tag': 11,
 };
 
+// ---- Per-element LOD ("per-node pixel ratio") thresholds ----
+//
+// The vertex shader picks one of four tiers from `screenSize = max(width,height) * zoom`:
+//   <  CULL_PX                  → quad is clipped (no fragments)
+//   <  TIER_2_MAX_PX            → tier 2: flat fill, no SDF, no border, no AA
+//   <  TIER_1_MAX_PX            → tier 1: per-shape SDF + solid border, no AA
+//   ≥  TIER_1_MAX_PX            → tier 0: full quality (AA + border + SDF dispatch)
+//
+// Picking always lands at tier 0 because picking sets uZoom = 1e6 (see
+// NodeSDFProgram.draw and FRAGMENT_SHADER_PICKING_SOURCE — picking re-evaluates
+// the full SDF unconditionally so hit-testing is never simplified).
+//
+// Numbers are interpolated into the GLSL template so they can't drift between
+// the JS classifier and the shader.
+export const NODE_LOD = Object.freeze({
+  CULL_PX: 4,
+  TIER_2_MAX_PX: 8,
+  TIER_1_MAX_PX: 24,
+});
+
+/**
+ * Pure-JS mirror of the vertex-shader tier decision.
+ * @param {number} modelSize  max(outerWidth, outerHeight) of the node, in model units
+ * @param {number} zoom       current cy.zoom() — pass 1e6 to simulate picking
+ * @returns {-1|0|1|2}        -1 = culled, 0 = full quality, 1/2 = simplified
+ */
+export function computeNodeSimplifyLevel(modelSize, zoom) {
+  const screenSize = modelSize * zoom;
+  if (screenSize < NODE_LOD.CULL_PX) return -1;
+  if (screenSize < NODE_LOD.TIER_2_MAX_PX) return 2;
+  if (screenSize < NODE_LOD.TIER_1_MAX_PX) return 1;
+  return 0;
+}
+
 // ---- Shader Sources ----
 
 export const VERTEX_SHADER_SOURCE = `#version 300 es
@@ -64,18 +98,28 @@ flat out vec2 vBorderWidth; // [outer, inner]
 flat out int vShape;
 flat out float vCornerRadius;
 flat out float vPickId;
+// Graded per-element LOD tier (the shader equivalent of "per-element pixel ratio"):
+//   0: full path — AA + border + per-shape SDF dispatch
+//   1: solid border, no AA smoothstep         — for nodes ~8–24 px on screen
+//   2: flat fill, no border, no SDF eval      — for nodes ~4–8 px on screen
+// Picking always lands at tier 0 because picking sets uZoom = 1e6.
+flat out int vSimplifyLevel;
 
 uniform float uZoom;
 
 void main() {
-  // LOD cull: skip if node is < 4 pixels on screen.
+  // LOD cull: skip if node is < CULL_PX pixels on screen.
   // Intel iGPU rasterizer issues 2x2 quads regardless of element size, so
-  // 2-3px elements consume the same fragment budget as 4px. Cull at 4.
+  // 2-3px elements consume the same fragment budget as 4px.
   float screenSize = max(aNodeSize.x, aNodeSize.y) * uZoom;
-  if(screenSize < 4.0) {
+  if(screenSize < ${NODE_LOD.CULL_PX}.0) {
     gl_Position = vec4(2.0, 2.0, 0.0, 1.0);
     return;
   }
+
+  if(screenSize < ${NODE_LOD.TIER_2_MAX_PX}.0)      vSimplifyLevel = 2;
+  else if(screenSize < ${NODE_LOD.TIER_1_MAX_PX}.0) vSimplifyLevel = 1;
+  else                                              vSimplifyLevel = 0;
 
   float hw = aNodeSize.x / 2.0;
   float hh = aNodeSize.y / 2.0;
@@ -125,6 +169,7 @@ flat in vec2 vBorderWidth; // [outer, inner]
 flat in int vShape;
 flat in float vCornerRadius;
 flat in float vPickId;
+flat in int vSimplifyLevel;
 
 uniform float uZoom;
 
@@ -413,42 +458,73 @@ void main() {
     vTopRight.y - b.y - outerBorder
   );
 
-  float d = computeSDF(p, b, vShape, vCornerRadius);
+  #ifdef PICKING_MODE
+    // Picking always renders the full SDF — uZoom = 1e6 forces vSimplifyLevel = 0,
+    // but we re-evaluate computeSDF here unconditionally so picking hit-testing
+    // never falls into a simplified path.
+    float dPick = computeSDF(p, b, vShape, vCornerRadius);
+    if(dPick > outerBorder) discard;
+    outColor = unpackColor(vPickId);
+    return;
+  #endif
 
   vec4 fillColor = unpackColor(vColor);
+
+  // Tier 2 — flat fill (4–8 px on screen): drop border + AA, drop the 17-way
+  // shape dispatch, and use the cheapest possible inside-test (rectangleSD).
+  // At this size the rectangle/ellipse/star distinction is sub-pixel.
+  if(vSimplifyLevel == 2) {
+    if(rectangleSD(p, b) > 0.0) discard;
+    if(fillColor.a < 0.004) discard;
+    outColor = fillColor;
+    return;
+  }
+
   vec4 borderColor = unpackColor(vBorderColor);
 
-  #ifdef PICKING_MODE
-    // In picking mode, discard transparent pixels
-    if(d > outerBorder) discard;
-    outColor = unpackColor(vPickId);
-  #else
-    if(d > 0.0) {
-      if(d > outerBorder) {
-        discard;
-      } else {
-        outColor = distInterp(borderColor, vec4(0), d - outerBorder);
-      }
+  // Tier 1 — solid border, no AA (8–24 px on screen): keep the per-shape
+  // SDF (computeSDF still falls back to rectangleSD internally for the
+  // smallest nodes), but replace the smoothstep AA blends with hard
+  // boundaries. Saves two distInterp calls and one blend per fragment.
+  if(vSimplifyLevel == 1) {
+    float d1 = computeSDF(p, b, vShape, vCornerRadius);
+    if(d1 > outerBorder) discard;
+    if(d1 > innerBorder) {
+      outColor = borderColor;
     } else {
-      if(d > innerBorder) {
-        vec4 outerColor = outerBorder == 0.0 ? vec4(0) : borderColor;
-        vec4 innerBorderColor = blend(borderColor, fillColor);
-        outColor = distInterp(innerBorderColor, outerColor, d);
-      } else {
-        vec4 outerColor;
-        if(innerBorder == 0.0 && outerBorder == 0.0) {
-          outerColor = vec4(0);
-        } else if(innerBorder == 0.0) {
-          outerColor = borderColor;
-        } else {
-          outerColor = blend(borderColor, fillColor);
-        }
-        outColor = distInterp(fillColor, outerColor, d - innerBorder);
-      }
+      outColor = fillColor;
     }
-    // Discard fully transparent pixels (e.g. when background-color is transparent)
     if(outColor.a < 0.004) discard;
-  #endif
+    return;
+  }
+
+  // Tier 0 — full quality (≥ 24 px on screen): unchanged behaviour.
+  float d = computeSDF(p, b, vShape, vCornerRadius);
+  if(d > 0.0) {
+    if(d > outerBorder) {
+      discard;
+    } else {
+      outColor = distInterp(borderColor, vec4(0), d - outerBorder);
+    }
+  } else {
+    if(d > innerBorder) {
+      vec4 outerColor = outerBorder == 0.0 ? vec4(0) : borderColor;
+      vec4 innerBorderColor = blend(borderColor, fillColor);
+      outColor = distInterp(innerBorderColor, outerColor, d);
+    } else {
+      vec4 outerColor;
+      if(innerBorder == 0.0 && outerBorder == 0.0) {
+        outerColor = vec4(0);
+      } else if(innerBorder == 0.0) {
+        outerColor = borderColor;
+      } else {
+        outerColor = blend(borderColor, fillColor);
+      }
+      outColor = distInterp(fillColor, outerColor, d - innerBorder);
+    }
+  }
+  // Discard fully transparent pixels (e.g. when background-color is transparent)
+  if(outColor.a < 0.004) discard;
 }
 `;
 

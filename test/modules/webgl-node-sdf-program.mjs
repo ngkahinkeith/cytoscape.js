@@ -1,6 +1,10 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
-import { NodeSDFProgram, NODE_STRIDE, SHAPE_ENUM } from '../../src/extensions/renderer/canvas/webgl/programs/node-sdf.mjs';
+import {
+  NodeSDFProgram, NODE_STRIDE, SHAPE_ENUM,
+  NODE_LOD, computeNodeSimplifyLevel,
+  VERTEX_SHADER_SOURCE, FRAGMENT_SHADER_SOURCE, FRAGMENT_SHADER_PICKING_SOURCE,
+} from '../../src/extensions/renderer/canvas/webgl/programs/node-sdf.mjs';
 import { unpackColor } from '../../src/extensions/renderer/canvas/webgl/color-pack.mjs';
 
 // Mock node
@@ -289,5 +293,96 @@ describe('NodeSDFProgram', () => {
     expect(prog.buffer[NODE_STRIDE + 1]).to.equal(20);
     expect(prog.buffer[NODE_STRIDE + 2]).to.equal(30);
     expect(prog.buffer[NODE_STRIDE + 3]).to.equal(40);
+  });
+});
+
+
+describe('Per-node graded LOD ("per-element pixel ratio")', () => {
+
+  describe('NODE_LOD thresholds', () => {
+    it('exposes a frozen object with the three breakpoints', () => {
+      expect(NODE_LOD).to.have.property('CULL_PX');
+      expect(NODE_LOD).to.have.property('TIER_2_MAX_PX');
+      expect(NODE_LOD).to.have.property('TIER_1_MAX_PX');
+      expect(Object.isFrozen(NODE_LOD)).to.be.true;
+    });
+
+    it('thresholds are strictly increasing', () => {
+      expect(NODE_LOD.CULL_PX).to.be.lessThan(NODE_LOD.TIER_2_MAX_PX);
+      expect(NODE_LOD.TIER_2_MAX_PX).to.be.lessThan(NODE_LOD.TIER_1_MAX_PX);
+    });
+  });
+
+  describe('computeNodeSimplifyLevel — boundaries', () => {
+    it('returns -1 (cull) below CULL_PX', () => {
+      expect(computeNodeSimplifyLevel(10, 0.3)).to.equal(-1);
+      expect(computeNodeSimplifyLevel(NODE_LOD.CULL_PX - 0.1, 1)).to.equal(-1);
+    });
+
+    it('returns 2 (flat fill) at CULL_PX through just under TIER_2_MAX_PX', () => {
+      expect(computeNodeSimplifyLevel(NODE_LOD.CULL_PX, 1)).to.equal(2);
+      expect(computeNodeSimplifyLevel(NODE_LOD.TIER_2_MAX_PX - 0.1, 1)).to.equal(2);
+      expect(computeNodeSimplifyLevel(30, 0.2)).to.equal(2); // 6 px
+    });
+
+    it('returns 1 (solid border, no AA) from TIER_2_MAX_PX through just under TIER_1_MAX_PX', () => {
+      expect(computeNodeSimplifyLevel(NODE_LOD.TIER_2_MAX_PX, 1)).to.equal(1);
+      expect(computeNodeSimplifyLevel(NODE_LOD.TIER_1_MAX_PX - 0.1, 1)).to.equal(1);
+      expect(computeNodeSimplifyLevel(30, 0.5)).to.equal(1); // 15 px
+    });
+
+    it('returns 0 (full quality) at and above TIER_1_MAX_PX', () => {
+      expect(computeNodeSimplifyLevel(NODE_LOD.TIER_1_MAX_PX, 1)).to.equal(0);
+      expect(computeNodeSimplifyLevel(30, 1.0)).to.equal(0);
+      expect(computeNodeSimplifyLevel(100, 4.0)).to.equal(0);
+    });
+  });
+
+  describe('picking-pass override', () => {
+    const PICKING_ZOOM = 1e6;
+
+    it('forces tier 0 even for tiny nodes during picking', () => {
+      expect(computeNodeSimplifyLevel(0.01, PICKING_ZOOM)).to.equal(0);
+      expect(computeNodeSimplifyLevel(1, PICKING_ZOOM)).to.equal(0);
+      expect(computeNodeSimplifyLevel(10, PICKING_ZOOM)).to.equal(0);
+    });
+
+    it('still culls truly degenerate nodes (size = 0)', () => {
+      expect(computeNodeSimplifyLevel(0, PICKING_ZOOM)).to.equal(-1);
+    });
+  });
+
+  describe('GLSL ↔ JS threshold parity', () => {
+    it('vertex shader contains the cull threshold', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include(`screenSize < ${NODE_LOD.CULL_PX}.0`);
+    });
+
+    it('vertex shader contains the tier-2 threshold', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include(`screenSize < ${NODE_LOD.TIER_2_MAX_PX}.0`);
+    });
+
+    it('vertex shader contains the tier-1 threshold', () => {
+      expect(VERTEX_SHADER_SOURCE).to.include(`screenSize < ${NODE_LOD.TIER_1_MAX_PX}.0`);
+    });
+
+    it('vertex shader declares vSimplifyLevel as a flat-out int', () => {
+      expect(VERTEX_SHADER_SOURCE).to.match(/flat\s+out\s+int\s+vSimplifyLevel\s*;/);
+    });
+
+    it('fragment shader declares vSimplifyLevel as a flat-in int', () => {
+      expect(FRAGMENT_SHADER_SOURCE).to.match(/flat\s+in\s+int\s+vSimplifyLevel\s*;/);
+    });
+
+    it('fragment shader branches on vSimplifyLevel == 2 and == 1', () => {
+      expect(FRAGMENT_SHADER_SOURCE).to.include('vSimplifyLevel == 2');
+      expect(FRAGMENT_SHADER_SOURCE).to.include('vSimplifyLevel == 1');
+    });
+
+    it('picking fragment shader still re-evaluates the full SDF (does not branch on tier)', () => {
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.include('#define PICKING_MODE');
+      expect(FRAGMENT_SHADER_PICKING_SOURCE).to.match(
+        /#ifdef PICKING_MODE[\s\S]*?computeSDF\s*\([\s\S]*?#endif/
+      );
+    });
   });
 });

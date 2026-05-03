@@ -7,23 +7,21 @@ var motionBlurDelay = 100;
 
 // var isFirefox = typeof InstallTrigger !== 'undefined';
 
+// Cap pixelRatio at 1: rendering at CSS pixels (instead of device pixels on
+// high-DPI / retina displays) cuts canvas/framebuffer area by 4x or more,
+// dramatically reducing GPU fill cost and bandwidth. Default and effective
+// max are clamped to 1; users supplying pixelRatio > 1 via options are
+// capped at 1, while pixelRatio < 1 (downscale) is still honoured.
+CRp.MAX_PIXEL_RATIO = 1;
+
 CRp.getPixelRatio = function(){
-  var context = this.data.contexts[0];
+  var max = CRp.MAX_PIXEL_RATIO;
 
   if( this.forcedPixelRatio != null ){
-    return this.forcedPixelRatio;
+    return Math.min( max, this.forcedPixelRatio );
   }
 
-  var containerWindow = this.cy.window();
-
-  var backingStore = context.backingStorePixelRatio ||
-    context.webkitBackingStorePixelRatio ||
-    context.mozBackingStorePixelRatio ||
-    context.msBackingStorePixelRatio ||
-    context.oBackingStorePixelRatio ||
-    context.backingStorePixelRatio || 1;
-
-  return (containerWindow.devicePixelRatio || 1) / backingStore; // eslint-disable-line no-undef
+  return max;
 };
 
 CRp.paintCache = function( context ){

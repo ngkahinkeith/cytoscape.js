@@ -5,7 +5,7 @@ let rendererDefaults = util.defaults({
   textureOnViewport: false,
   motionBlur: false,
   motionBlurOpacity: 0.05,
-  pixelRatio: undefined,
+  pixelRatio: 1, // default capped at 1; renderer also enforces max=1 (see CRp.MAX_PIXEL_RATIO)
   desktopTapThreshold: 4,
   touchTapThreshold: 8,
   wheelSensitivity: 1,

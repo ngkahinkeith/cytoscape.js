@@ -426,7 +426,15 @@ export class WebGLRenderLoop {
    * Render labels on a Canvas 2D context using LabelGrid culling.
    * @param {boolean} nodesOnly - true = draw only node labels, false = draw only edge labels
    */
-  renderLabels(context, pan, zoom, viewportWidth, viewportHeight, nodesOnly) {
+  /**
+   * Render all labels (edges first, nodes on top) into a single Canvas 2D context.
+   * Single pass over `_labelCandidates` — viewport-cull and screen-position
+   * computation happen once, then each candidate is appended to the
+   * edge or node bucket. The edge bucket paints first so node labels
+   * appear above edge labels (the merged-LABELS-canvas equivalent of the
+   * old z-stack).
+   */
+  renderLabels(context, pan, zoom, viewportWidth, viewportHeight) {
     const r = this.r;
     if(!this._labelCandidates) return;
 
@@ -435,17 +443,16 @@ export class WebGLRenderLoop {
     const vpY1 = -pan.y / zoom;
     const vpX2 = (viewportWidth - pan.x) / zoom;
     const vpY2 = (viewportHeight - pan.y) / zoom;
-    const margin = 50 / zoom; // margin for labels extending beyond element center
+    const margin = 50 / zoom;
 
     const candidates = this._labelCandidates;
-    const filtered = [];
+    const edgeBucket = [];
+    const nodeBucket = [];
 
-    // Single pass: filter by type AND viewport — skip offscreen labels entirely
+    // Single pass: viewport cull + bucket by isNode.
     for(let i = 0; i < candidates.length; i++) {
       const c = candidates[i];
-      if(c.isNode !== nodesOnly) continue;
 
-      // Get model-space position
       let px, py;
       if(c.isNode) {
         const p = c.ele.position();
@@ -463,7 +470,6 @@ export class WebGLRenderLoop {
         }
       }
 
-      // Skip labels outside viewport
       if(px < vpX1 - margin || px > vpX2 + margin ||
          py < vpY1 - margin || py > vpY2 + margin) continue;
 
@@ -472,15 +478,26 @@ export class WebGLRenderLoop {
       c.gridX = px * zoom;
       c.gridY = py * zoom;
       c.screenSize = c.baseSize * zoom;
-      filtered.push(c);
+      (c.isNode ? nodeBucket : edgeBucket).push(c);
     }
 
-    const visible = this.labelGrid.getLabelsToDisplay(
-      filtered, zoom, viewportWidth, viewportHeight, 4
+    // Density culling runs per type. LabelGrid.getLabelsToDisplay reuses an
+    // internal _result buffer, so the first return value must be snapshotted
+    // before the second call overwrites it.
+    const visibleEdges = this.labelGrid.getLabelsToDisplay(
+      edgeBucket, zoom, viewportWidth, viewportHeight, 4
+    ).slice();
+    const visibleNodes = this.labelGrid.getLabelsToDisplay(
+      nodeBucket, zoom, viewportWidth, viewportHeight, 4
     );
 
-    for(let i = 0; i < visible.length; i++) {
-      r.drawElementText(context, visible[i].ele, null, true);
+    // Paint edges first (bottom), then nodes (top) — z-order:
+    //   Node body > Node label > Edge label > Edge body
+    for(let i = 0; i < visibleEdges.length; i++) {
+      r.drawElementText(context, visibleEdges[i].ele, null, true);
+    }
+    for(let i = 0; i < visibleNodes.length; i++) {
+      r.drawElementText(context, visibleNodes[i].ele, null, true);
     }
   }
 

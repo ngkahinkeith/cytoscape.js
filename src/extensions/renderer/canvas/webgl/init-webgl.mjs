@@ -31,11 +31,10 @@ CRp.initWebgl = function(opts) {
 
   if(!glNode || !glEdge) return;
 
-  // Two-canvas architecture for correct z-ordering:
-  //   NODE_WEBGL (z-5): nodes — above labels
-  //   NODE_LABELS (z-4): node labels
-  //   EDGE_LABELS (z-3): edge labels
-  //   EDGE_WEBGL (z-2): edges — below labels
+  // Three-canvas WebGL stack (top → bottom):
+  //   NODE_WEBGL (z-4): nodes
+  //   LABELS     (z-3): node + edge labels (edges painted first; nodes on top)
+  //   EDGE_WEBGL (z-2): edges
   r.renderLoop = new WebGLRenderLoop(r, opts);
   r.renderLoop.init(glNode, glEdge);
 
@@ -305,6 +304,11 @@ function renderWebgl(r, options) {
     // Unlike CSS transform (which clips at viewport edges), this always
     // re-renders the full scene so content appears seamlessly during pan.
     // ~30fps WebGL during interaction, 60fps when idle.
+    //
+    // Safe with preserveDrawingBuffer: true (canvas/index.mjs) — the browser
+    // re-composites the previous frame's buffer on the skipped rAF, so the
+    // visible canvas never goes blank. Do NOT flip preserveDrawingBuffer to
+    // false without also disabling this throttle.
     const isInteracting = r.renderLoop.lodManager.isInteracting();
     const needsDataUpdate = r.renderLoop.needsProcess;
 
@@ -328,9 +332,9 @@ function renderWebgl(r, options) {
   // text drawing is the dominant per-frame CPU cost (~30-40ms at 275K elements).
   // Labels reappear after interaction stops (100ms debounce via LODManager).
   if(!r.renderLoop.lodManager.shouldDrawLabels()) {
-    // During interaction: use CSS transform to move label canvases with pan/zoom.
+    // During interaction: use CSS transform to move the label canvas with pan/zoom.
     // Like Flightradar24 — labels follow nodes without expensive re-rendering.
-    // Labels re-render at full quality after interaction stops (1s debounce).
+    // Labels re-render at full quality after interaction stops (250ms debounce).
     if(r._lastLabelPan) {
       // pan/zoom values are in device pixels (multiplied by pixelRatio),
       // but CSS transforms operate in CSS pixels. Divide by pixelRatio.
@@ -341,52 +345,38 @@ function renderWebgl(r, options) {
       const originX = r._lastLabelPan.x / pr;
       const originY = r._lastLabelPan.y / pr;
       const tx = `translate(${dpx}px, ${dpy}px) scale(${dzoom})`;
-      const nodeLabelCanvas = r.data.canvases[r.NODE_LABELS];
-      const edgeLabelCanvas = r.data.canvases[r.EDGE_LABELS];
-      if(nodeLabelCanvas) {
-        nodeLabelCanvas.style.transformOrigin = `${originX}px ${originY}px`;
-        nodeLabelCanvas.style.transform = tx;
-      }
-      if(edgeLabelCanvas) {
-        edgeLabelCanvas.style.transformOrigin = `${originX}px ${originY}px`;
-        edgeLabelCanvas.style.transform = tx;
+      const labelCanvas = r.data.canvases[r.LABELS];
+      if(labelCanvas) {
+        labelCanvas.style.transformOrigin = `${originX}px ${originY}px`;
+        labelCanvas.style.transform = tx;
       }
     }
   } else {
     // Reset CSS transform and re-render labels at full quality
-    const nodeLabelCanvas = r.data.canvases[r.NODE_LABELS];
-    const edgeLabelCanvas = r.data.canvases[r.EDGE_LABELS];
-    if(nodeLabelCanvas) nodeLabelCanvas.style.transform = '';
-    if(edgeLabelCanvas) edgeLabelCanvas.style.transform = '';
+    const labelCanvas = r.data.canvases[r.LABELS];
+    if(labelCanvas) labelCanvas.style.transform = '';
 
-    // Helper: render labels to an offscreen buffer then blit to a target canvas
-    const blitLabels = (targetCtx, bufferKey, renderFn) => {
-      if(!targetCtx) return;
-      if(!r[bufferKey] || r[bufferKey].width !== r.canvasWidth || r[bufferKey].height !== r.canvasHeight) {
-        r[bufferKey] = r.makeOffscreenCanvas(r.canvasWidth, r.canvasHeight);
+    // Render the merged label canvas: edges first, then nodes (in renderLabels).
+    // Single offscreen buffer, single blit — replaces the previous two-canvas
+    // path which iterated _labelCandidates twice and held two full-canvas buffers.
+    const targetCtx = r.data.contexts[r.LABELS];
+    if(targetCtx) {
+      if(!r._labelBuffer || r._labelBuffer.width !== r.canvasWidth || r._labelBuffer.height !== r.canvasHeight) {
+        r._labelBuffer = r.makeOffscreenCanvas(r.canvasWidth, r.canvasHeight);
       }
-      const bufCtx = r[bufferKey].getContext('2d');
+      const bufCtx = r._labelBuffer.getContext('2d');
       bufCtx.setTransform(1, 0, 0, 1, 0, 0);
       bufCtx.clearRect(0, 0, r.canvasWidth, r.canvasHeight);
       bufCtx.translate(pan.x, pan.y);
       bufCtx.scale(zoom, zoom);
-      renderFn(bufCtx);
+      r.renderLoop.renderLabels(bufCtx, pan, zoom, r.canvasWidth, r.canvasHeight);
       targetCtx.save();
       targetCtx.setTransform(1, 0, 0, 1, 0, 0);
       targetCtx.globalCompositeOperation = 'copy';
-      targetCtx.drawImage(r[bufferKey], 0, 0);
+      targetCtx.drawImage(r._labelBuffer, 0, 0);
       targetCtx.globalCompositeOperation = 'source-over';
       targetCtx.restore();
-    };
-
-    blitLabels(
-      r.data.contexts[r.NODE_LABELS], '_nodeLabelBuffer',
-      (ctx) => r.renderLoop.renderLabels(ctx, pan, zoom, r.canvasWidth, r.canvasHeight, true)
-    );
-    blitLabels(
-      r.data.contexts[r.EDGE_LABELS], '_edgeLabelBuffer',
-      (ctx) => r.renderLoop.renderLabels(ctx, pan, zoom, r.canvasWidth, r.canvasHeight, false)
-    );
+    }
 
     // Track pan/zoom for CSS transform during next interaction
     r._lastLabelPan = { x: pan.x, y: pan.y };

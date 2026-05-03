@@ -69,24 +69,28 @@ function CanvasRenderer( options ){
   }
 
   if( options.webgl ){
-    // WebGL layer stack (top to bottom: node bodies → node labels → edge labels → edges):
-    //   0 (SELECT_BOX):  2d context, z-index 7 (top - mouse events)
-    //   1 (DRAG):        2d context, z-index 6
-    //   2 (NODE_WEBGL):  webgl2 context, z-index 5 (SDF shapes + texture overlays — topmost)
-    //   3 (NODE_LABELS): 2d context, z-index 4 (node labels below nodes)
-    //   4 (EDGE_LABELS): 2d context, z-index 3 (edge labels below node labels)
-    //   5 (EDGE_WEBGL):  webgl2 context, z-index 2 (edges + arrows — bottom)
-    //   6 (NODE):        2d context, z-index 1 (Canvas 2D fallback for nodes, used by export)
-    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 7;
+    // WebGL layer stack (top to bottom: node bodies → labels → edges):
+    //   0 (SELECT_BOX):  2d context, z-index 6 (top - mouse events)
+    //   1 (DRAG):        2d context, z-index 5
+    //   2 (NODE_WEBGL):  webgl2 context, z-index 4 (SDF shapes + texture overlays — topmost)
+    //   3 (LABELS):      2d context, z-index 3 (node + edge labels in a single canvas;
+    //                    edges painted first, nodes on top → enforces
+    //                    Node > Node Label > Edge Label > Edge z-order)
+    //   4 (EDGE_WEBGL):  webgl2 context, z-index 2 (edges + arrows — bottom)
+    //   5 (NODE):        2d context, z-index 1 (Canvas 2D fallback for nodes, used by export)
+    CRp.CANVAS_LAYERS = r.CANVAS_LAYERS = 6;
     CRp.SELECT_BOX = r.SELECT_BOX = 0;
     CRp.DRAG = r.DRAG = 1;
     CRp.NODE_WEBGL = r.NODE_WEBGL = 2;
     CRp.WEBGL = r.WEBGL = 2; // backward compat
+    CRp.LABELS = r.LABELS = 3;
+    // Backward-compatible aliases — kept so external code referencing the old
+    // split layer indices doesn't crash; both now point at the merged canvas.
     CRp.NODE_LABELS = r.NODE_LABELS = 3;
-    CRp.EDGE_LABELS = r.EDGE_LABELS = 4;
-    CRp.EDGE_WEBGL = r.EDGE_WEBGL = 5;
-    CRp.NODE = r.NODE = 6;
-    CRp.CANVAS_TYPES = [ '2d', '2d', 'webgl2', '2d', '2d', 'webgl2', '2d' ];
+    CRp.EDGE_LABELS = r.EDGE_LABELS = 3;
+    CRp.EDGE_WEBGL = r.EDGE_WEBGL = 4;
+    CRp.NODE = r.NODE = 5;
+    CRp.CANVAS_TYPES = [ '2d', '2d', 'webgl2', '2d', 'webgl2', '2d' ];
     console.log('webgl rendering enabled');
   }
 
@@ -132,15 +136,27 @@ function CanvasRenderer( options ){
     var type = CRp.CANVAS_TYPES[ i ];
     r.data.contexts[ i ] = type === 'webgl2'
       ? canvas.getContext( type, {
-          preserveDrawingBuffer: false,        // saves a full GPU→system memcpy per frame on Intel iGPUs
-          alpha: true,                          // canvas may overlay other content; keep alpha
-          antialias: false,                     // shaders do their own AA via smoothstep / SDF
-          depth: false,                         // depth test is never enabled by this renderer
-          stencil: false,                       // stencil never used
-          desynchronized: true,                 // bypass compositor sync where browser permits
-          powerPreference: 'high-performance',  // route to dGPU on hybrid systems
-          premultipliedAlpha: true,             // matches packPremulColor; avoids double-multiplication
-          failIfMajorPerformanceCaveat: false,  // allow software fallback path
+          // preserveDrawingBuffer:true and the (intentionally absent)
+          // desynchronized flag are load-bearing — they fix a whole-graph
+          // flicker during pan/zoom/drag.
+          //
+          // desynchronized:true (previously set in commit 0e10074c) lets the
+          // WebGL canvas present to the display independently from the main
+          // page composition. With the labels canvas + DOM stacked on top of
+          // the WebGL canvases, the layers go out of phase under motion and
+          // the user sees the whole graph "shudder" where overlaps happen.
+          //
+          // preserveDrawingBuffer:false compounds it — after each present
+          // the GL drawing buffer is discarded, so any time the compositor
+          // needs to re-read the canvas it can hit an empty buffer.
+          preserveDrawingBuffer: true,
+          alpha: true,
+          antialias: false,                    // shaders do their own AA via smoothstep / SDF
+          depth: false,                        // depth test is never enabled by this renderer
+          stencil: false,                      // stencil never used
+          powerPreference: 'high-performance', // route to dGPU on hybrid systems
+          premultipliedAlpha: true,            // matches packPremulColor; avoids double-multiplication
+          failIfMajorPerformanceCaveat: false, // allow software fallback path
         } )
       : canvas.getContext( type );
     if( !r.data.contexts[ i ] ) {
@@ -169,8 +185,7 @@ function CanvasRenderer( options ){
   r.data.canvases[ CRp.DRAG ].setAttribute( 'data-id', 'layer' + CRp.DRAG + '-drag' );
   r.data.canvases[ CRp.NODE ].setAttribute( 'data-id', 'layer' + CRp.NODE + '-node' );
   if( options.webgl ) {
-    r.data.canvases[ CRp.NODE_LABELS ].setAttribute( 'data-id', 'layer' + CRp.NODE_LABELS + '-node-labels' );
-    r.data.canvases[ CRp.EDGE_LABELS ].setAttribute( 'data-id', 'layer' + CRp.EDGE_LABELS + '-edge-labels' );
+    r.data.canvases[ CRp.LABELS ].setAttribute( 'data-id', 'layer' + CRp.LABELS + '-labels' );
     r.data.canvases[ CRp.NODE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.NODE_WEBGL + '-node-webgl' );
     r.data.canvases[ CRp.EDGE_WEBGL ].setAttribute( 'data-id', 'layer' + CRp.EDGE_WEBGL + '-edge-webgl' );
   }

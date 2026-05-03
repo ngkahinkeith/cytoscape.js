@@ -143,15 +143,16 @@ CRp._bufferCanvasImageWebgl = function( buffCxt, options, width, height, scale, 
     buffCxt.scale( scale / this.getPixelRatio(), scale / this.getPixelRatio() );
   }
 
-  // Composite layers in order: edges (bottom) -> edge labels -> node labels -> nodes (top)
+  // Composite layers in order: edges (bottom) -> labels -> nodes (top).
+  // Within the label canvas, edges are painted first then nodes — the
+  // resulting Node > Node-label > Edge-label > Edge z-order matches the
+  // on-screen DOM stack.
   var edgeCanvas = this.data.canvases[this.EDGE_WEBGL];
-  var edgeLabelCanvas = this.data.canvases[this.EDGE_LABELS];
-  var nodeLabelCanvas = this.data.canvases[this.NODE_LABELS];
+  var labelCanvas = this.data.canvases[this.LABELS];
   var nodeCanvas = this.data.canvases[this.NODE_WEBGL];
 
   if( edgeCanvas ) buffCxt.drawImage( edgeCanvas, 0, 0 );
-  if( edgeLabelCanvas ) buffCxt.drawImage( edgeLabelCanvas, 0, 0 );
-  if( nodeLabelCanvas ) buffCxt.drawImage( nodeLabelCanvas, 0, 0 );
+  if( labelCanvas ) buffCxt.drawImage( labelCanvas, 0, 0 );
   if( nodeCanvas ) buffCxt.drawImage( nodeCanvas, 0, 0 );
 
   buffCxt.restore();
